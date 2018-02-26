@@ -1,8 +1,9 @@
 package TCP;
 
+import Utilitaires.TestRegex;
+
 import java.io.*;
 import java.net.*;
-import java.util.logging.Logger;
 
 public class TCP {
     protected int m_port;
@@ -10,15 +11,13 @@ public class TCP {
     protected InetAddress m_server;
     protected BufferedReader m_input;
     protected PrintStream m_output;
-    protected Logger m_logger;
 
-    public TCP(Logger logs) {
+    public TCP() {
         m_port = 0;
         m_socket = null;
         m_server = null;
         m_input = null;
         m_output = null;
-        m_logger = logs;
     }
 
     protected String getSocketString() {
@@ -87,14 +86,36 @@ public class TCP {
         }
     }
 
-    public void Run() throws  TCPException {
+    public void Close() throws TCPException {
+        if(m_socket != null) {
+            try {
+                m_socket.close();
+                m_output = null;
+                m_input = null;
+                m_socket = null;
+            } catch(Exception e) {
+                throw new TCPException("Unable to close socket.", e);
+            }
+        }
+    }
 
-        try {
-            Connect();
-            m_logger.info("Test OK");
+    public void Send(String message) throws TCPException {
+        if(m_output != null) {
+            m_output.println(message);
+            m_output.flush();
+        } else {
+            throw new TCPException("Unable to send message with an undefined output.");
+        }
+    }
 
-        } catch (Exception e) {
-            throw e;
+    public String Receive() throws TCPException {
+        String result = "";
+        try{
+            result = m_input.readLine();
+        } catch(Exception e) {
+            throw new TCPException("Unable to receive anything.", e);
+        } finally {
+            return result;
         }
     }
 }
