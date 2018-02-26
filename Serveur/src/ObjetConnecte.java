@@ -1,6 +1,13 @@
+import com.sun.corba.se.impl.logging.POASystemException;
+
+import javax.print.DocFlavor;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.SimpleTimeZone;
 
 /**
  * Created by tardy on 13/02/2018.
@@ -9,19 +16,66 @@ public class ObjetConnecte extends Thread {
     private static final String POP3_ETAT_AUTORISATION = "Autorisation";
     private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
     private static final String POP3_ETAT_TRANSACTION = "Transaction";
-    private static final boolean POP3_ETAT_OUVERT = true;
+    private static final String POP3_REPONSE_NEGATIVE = "-ERR";
+    private static final String POP3_REPONSE_POSITIVE = "+OK";
+
+    protected ServerSocket m_soc;
+    protected boolean m_continuer;
+    protected int m_port;
+    private Socket m_connexion;
+    private String m_etat;
+    private ArrayList<Email> m_listeEmails;
+    private ArrayList<Utilisateur> m_listeUtilisateurs;
+
+    public ObjetConnecte()
+    {
+        this(80);
+    }
+
+    public ObjetConnecte(int port)
+    {
+
+        m_port = port;
+        m_continuer = true;
+//        try
+//        {
+//            m_soc = new ServerSocket(m_port);
+//            connexion = new Socket();
+//        }
+//        catch (IOException e)
+//        {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+        m_listeEmails = new ArrayList<Email>();
+
+    }
 
     @Override
     public void run() {
+//        try {
+//            System.out.println("Attente d'une connexion.\n");
+//            connexion = m_soc.accept();
+//
+//            System.out.println("Connexion effectuee avec " + connexion.getInetAddress().getHostName() + "\n");
+//
+//            //renvoyer message de bienvenue
+//            Comm cm = new Comm(connexion);
+//            new Thread(cm).start();
+//            cm.Emission("Bienvenue");
+//        } catch (Exception e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//
+//        }
 
-//        Socket socket = new Socket();
-//        InetAddress inetAddress = new InetAddress();
-        boolean pop3EtatOuvert = POP3_ETAT_OUVERT;
         String etat = POP3_ETAT_AUTHENTIFICATION;
-        while (pop3EtatOuvert) {
+        while (m_continuer) {
 
             String commande = "test";
-
+            String message = "2";
+            int messageId = 2;
+            String reponse = "2";
             switch (etat) {
                 case POP3_ETAT_AUTORISATION :
                     if (Objects.equals(commande, "USER")) {
@@ -43,7 +97,7 @@ public class ObjetConnecte extends Thread {
                         break;
                         case "QUIT":
                             System.out.println("QUIT");
-                            pop3EtatOuvert = false;
+                            m_continuer = false;
                             break;
                     }
                     break;
@@ -52,26 +106,129 @@ public class ObjetConnecte extends Thread {
                         case "QUIT":
                             break;
                         case "RETR":
+                            reponse = retr(message);
                             break;
                         case "NOOP":
+                            reponse = noop();
                             break;
                         case "RSET":
+                            reponse = rset();
                             break;
                         case "DELE":
+                            reponse = dele(messageId);
                             break;
                         case "LIST":
+                            reponse = list(messageId);
                             break;
                         case "STAT":
+                            reponse = stat();
                             break;
                         case "FERMETURE_AUTRE_QUE_QUIT":
                         default:
+                            fermetureAutreQueQuit();
                             break;
                     }
                     break;
                 default:
                     break;
             }
-            pop3EtatOuvert = false;
+//            m_continuer = false;
+        }
+
+        try{
+
+            m_soc.close();
+        }
+        catch(IOException ioException){
+            ioException.printStackTrace();
         }
     }
+
+    private String list(int idMessage) {
+
+        if (idMessage == 0) {
+            return POP3_REPONSE_POSITIVE;
+        } else {
+            return POP3_REPONSE_NEGATIVE;
+        }
+        //if no idMessage list all message
+        // return positive answer + idMessage ++ number of octet
+        // return negative answer if idMessage doesn't exist
+
+    }
+
+    private String quit() {
+        return POP3_REPONSE_POSITIVE;
+    }
+
+    private String retr(String message) {
+        return POP3_REPONSE_POSITIVE;
+    }
+
+    private String noop() {
+        //return postive answer
+        return POP3_REPONSE_POSITIVE;
+    }
+
+    private String rset() {
+        int nombreEmailsEffaces = 0;
+        int nombreOctets = 0;
+        //drop deleted tag on all message a=tagged as deleted
+        //return positive answwer + number of message in maildrop + number of octets
+
+        return POP3_REPONSE_POSITIVE + " " + nombreEmailsEffaces + " " + nombreOctets;
+    }
+
+    private String dele(int idMessage) {
+        String reponse = POP3_REPONSE_NEGATIVE;
+        //tag message as deleted
+        //return positive answer or negative if message already tagged as deleted + "message" idMessage + "deleted"
+        return POP3_REPONSE_POSITIVE + " message " + idMessage + "deleted";
+    }
+
+    private String stat() {
+        //return positive answer + space + number of email + space + number of octets
+        return POP3_REPONSE_POSITIVE + " " + 5 + " " + 5;
+    }
+
+    private void fermetureAutreQueQuit() {
+        //close something
+    }
+
+    private String pass(String nomUtilisateur,String mdp) {
+        // check if password related to userName
+        return POP3_REPONSE_POSITIVE;
+    }
+
+    private String user(String nomUtilisateur) {
+        //check if nomUtilisateur exists
+        return POP3_REPONSE_POSITIVE;
+    }
+
+    public void ajouteUtilisateur(String nom, String email, String mdp) {
+
+    }
+
+    public Utilisateur getUtilisateur(String email) {
+        int i = 0;
+        while (i <= m_listeUtilisateurs.size()) {
+            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
+            if (utilisateur.getM_adresseEmail() == email) {
+                return utilisateur;
+            }
+        }
+        return null;
+    }
+    public void ajouteEmail(String emailEmetteur, String emailDestinataire, String message) {
+        Utilisateur emetteur = getUtilisateur(emailEmetteur);
+        Utilisateur destinataire = getUtilisateur(emailDestinataire);
+
+        if (emetteur ==null || destinataire == null ) {
+            System.out.println("Erreur pas d'emetteur ou de destinataire");
+        } else {
+            Email email = new Email(0, message, destinataire, emetteur,"");
+            m_listeEmails.add(email);
+        }
+    }
+
 }
