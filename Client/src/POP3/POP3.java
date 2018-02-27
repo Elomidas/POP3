@@ -3,15 +3,47 @@ package POP3;
 import TCP.*;
 
 public class POP3 {
+    //Constants
+    public static final int _DISCONNECTED = 0;
+    public static final int _CONNECTED = 0;
+    public static final int _AUTHENTICATED = 0;
+
     //Variables
     protected TCP m_tcp;
-    protected boolean m_authenticate;
+    protected boolean m_authenticated;
 
     public POP3() {
         m_tcp = null;
-        m_authenticate = false;
+        m_authenticated = false;
     }
 
+    /*  Check if client is connected and authenticated to server.
+     *  Parameters :
+     *      None.
+     *  Return :
+     *      POP3._DISCONNECTED if client isn't connected to server through TCP
+     *      POP3._CONNECTED if client is connected to server through TCP but user isn't authenticated.
+     *      POP3._AUTHENTICATED if client is connected to server through TCP and user is authenticated.
+     */
+    public int Status() {
+        if((m_tcp == null) || (m_tcp.Status() != TCP._CONNECTED)) {
+            return POP3._DISCONNECTED;
+        }
+        if(m_authenticated) {
+            return POP3._AUTHENTICATED;
+        }
+        return POP3._CONNECTED;
+    }
+
+    /*  Try to connect client to server through TCP.
+     *  Parameters :
+     *      String containing the server address (can be an IP address as an URL).
+     *      Integer containing the port to target on the server.
+     *  Return :
+     *      Nothing.
+     *  Throw :
+     *      POP3Exception in case of error.
+     */
     public void Connect(String address, int port) throws POP3Exception {
         try {
             m_tcp = new TCP();
@@ -30,23 +62,59 @@ public class POP3 {
      *  Return :
      *      true :  Successfully authenticated
      *      false : Error in login and/or password
-     *  Throw
+     *  Throw :
      *      POP3Exception in case of other error.
      */
 
     public boolean Authentication(String login, String password) throws POP3Exception {
-        if(m_authenticate) {
-            throw new POP3Exception("Already authenticate.");
-        }
         if(m_tcp == null) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
-        //TO-DO
+        if(m_authenticated) {
+            throw new POP3Exception("Already authenticate.");
+        }
+        /*  TODO
+         *  #############################
+         *  # POP3 authentication code  #
+         *  #############################
+         */
         return false;
     }
 
+    /*  Disconnect current user
+     *  Parameters :
+     *      None.
+     *  Return :
+     *      Nothing.
+     *  Throw :
+     *      POP3Exception in case of error
+     */
+    public void Disconnect() throws POP3Exception {
+        if(m_tcp == null) {
+            throw new POP3Exception("Unable to disconnect, client not connected to server.");
+        }
+        if(m_authenticated) {
+            /*  TODO
+             *  #############################
+             *  # POP3 disconnection code   #
+             *  #############################
+             */
+            m_authenticated = false;
+        }
+        try {
+            m_tcp.Close();
+        } catch(TCPException e) {
+            throw new POP3Exception("Unable to disconnect.", e);
+        }
+    }
+
     /*  Wait TCP Server to send a response
-     *
+     *  Parameters :
+     *      None
+     *  Return :
+     *      String received through TCP connection
+     *  Throw :
+     *      POP3Exception in case of error
      */
     protected String Response() throws POP3Exception {
         String result = "";
