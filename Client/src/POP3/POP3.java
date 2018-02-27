@@ -12,10 +12,37 @@ public class POP3 {
     protected TCP m_tcp;
     protected boolean m_authenticated;
 
+    /*  ###
+     *  # CONSTRUCTOR
+     *  ###
+     */
+
     public POP3() {
-        m_tcp = null;
+        m_tcp = new TCP();
         m_authenticated = false;
     }
+
+    /*  ###
+     *  # CHECK FUNCTIONS
+     *  ###
+     */
+
+    /*  Check if client is connected to server through TCP
+     *  Parameters :
+     *      None
+     *  Return :
+     *      boolean
+     *      - true if client is connected to server
+     *      - false if not
+     */
+    protected boolean checkConnected() {
+        return (m_tcp.Status() == TCP._CONNECTED);
+    }
+
+    /*  ###
+     *  # ACCESSORS
+     *  ###
+     */
 
     /*  Check if client is connected and authenticated to server.
      *  Parameters :
@@ -26,7 +53,7 @@ public class POP3 {
      *      POP3._AUTHENTICATED if client is connected to server through TCP and user is authenticated.
      */
     public int Status() {
-        if((m_tcp == null) || (m_tcp.Status() != TCP._CONNECTED)) {
+        if(this.checkConnected() == false) {
             return POP3._DISCONNECTED;
         }
         if(m_authenticated) {
@@ -34,6 +61,11 @@ public class POP3 {
         }
         return POP3._CONNECTED;
     }
+
+    /*  ###
+     *  # MUTATORS
+     *  ###
+     */
 
     /*  Try to connect client to server through TCP.
      *  Parameters :
@@ -46,7 +78,6 @@ public class POP3 {
      */
     public void Connect(String address, int port) throws POP3Exception {
         try {
-            m_tcp = new TCP();
             m_tcp.setServerAddress(address);
             m_tcp.setServerPort(port);
             m_tcp.Connect();
@@ -67,7 +98,7 @@ public class POP3 {
      */
 
     public boolean Authentication(String login, String password) throws POP3Exception {
-        if(m_tcp == null) {
+        if(this.checkConnected() == false) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
         if(m_authenticated) {
@@ -90,7 +121,7 @@ public class POP3 {
      *      POP3Exception in case of error
      */
     public void Disconnect() throws POP3Exception {
-        if(m_tcp == null) {
+        if(this.checkConnected() == false) {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
@@ -117,8 +148,8 @@ public class POP3 {
      *      POP3Exception in case of error
      */
     protected String Response() throws POP3Exception {
-        String result = "";
-        if(m_tcp == null) {
+        String result;
+        if(this.checkConnected() == false) {
             throw new POP3Exception("Unable to receive message, client not connected to server.");
         }
         try {

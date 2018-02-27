@@ -184,7 +184,7 @@ public class TCP {
                 m_input = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
                 m_output = new PrintStream(m_socket.getOutputStream());
             } catch(Exception e) {
-                String err = "Unable to create IO streams from server " + getSocketString();
+                String err = "Unable to create IO streams from server " + this.getSocketString();
                 throw new TCPException(err, e);
             }
         } else {
@@ -205,9 +205,9 @@ public class TCP {
         if(this.checkConfiguration()) {
             try {
                 m_socket = new Socket(m_server, m_port);
-                createIO();
+                this.createIO();
             } catch(Exception e) {
-                throw new TCPException("Error while trying to connect to server " + m_server.getHostAddress() + " on port " + m_port, e);
+                throw new TCPException("Error while trying to connect to server " + this.getSocketString(), e);
             }
         } else {
             String err;
