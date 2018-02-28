@@ -1,13 +1,13 @@
 package Controller;
 
-import Main.Main;
+import Main.Main_Client;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
 
-public class Controller {
+public class Controller_Client {
 
     //Récupération des objets relatifs à la réception de mail
     @FXML
@@ -30,9 +30,9 @@ public class Controller {
     @FXML
     private TextArea _tfContenu;
 
-    private Main _main;
+    private Main_Client _mainClient;
 
-    public Controller(){
+    public Controller_Client(){
 
     }
     private int itemsPerPage() {
@@ -84,9 +84,9 @@ public class Controller {
         });
     }
 
-    public void SetMain(Main main)
+    public void SetMain(Main_Client mainClient)
     {
-        _main = main;
+        _mainClient = mainClient;
         _btnEnvoi.setOnMouseClicked(mouseEvent -> EnvoiMail());
     }
 }

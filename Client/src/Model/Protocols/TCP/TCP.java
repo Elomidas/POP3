@@ -1,6 +1,6 @@
-package TCP;
+package Model.Protocols.TCP;
 
-import Utilitaires.TestRegex;
+import Uilities.TestRegex;
 
 import java.io.*;
 import java.net.*;
@@ -104,14 +104,14 @@ public class TCP {
         return info;
     }
 
-    /*  Check the current TCP client status
+    /*  Check the current Model.Protocols.TCP client status
      *  Parameters :
      *      None.
      *  Return :
      *      Integer
-     *      - TCP._UNCONFIGURED if port and/or server address isn't set.
-     *      - TCP._CONFIGURED if port and address are set but client isn't connected to server.
-     *      - TCP.CONNECTED if client is connected to server.
+     *      - Model.Protocols.TCP._UNCONFIGURED if port and/or server address isn't set.
+     *      - Model.Protocols.TCP._CONFIGURED if port and address are set but client isn't connected to server.
+     *      - Model.Protocols.TCP.CONNECTED if client is connected to server.
      */
     public int Status() {
         if(this.checkConnection()) {
@@ -169,7 +169,7 @@ public class TCP {
         m_port = port;
     }
 
-    /*  Create input and output streams, used to transfer data through TCP connection.
+    /*  Create input and output streams, used to transfer data through Model.Protocols.TCP connection.
      *  Store them in this.m_input and this.m_output
      *  Parameters :
      *      None.
@@ -243,7 +243,7 @@ public class TCP {
         }
     }
 
-    /*  Send a message through TCP connection
+    /*  Send a message through Model.Protocols.TCP connection
      *  Parameters :
      *      String containing the message to be send.
      *  Return :
@@ -260,7 +260,7 @@ public class TCP {
         }
     }
 
-    /*  Wait to receive a message through TCP connection
+    /*  Wait to receive a message through Model.Protocols.TCP connection
      *  Parameters :
      *      None.
      *  Return :

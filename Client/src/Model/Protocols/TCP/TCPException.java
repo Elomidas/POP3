@@ -1,4 +1,4 @@
-package TCP;
+package Model.Protocols.TCP;
 
 public class TCPException extends Exception {
 	

@@ -3,30 +3,27 @@ package Main;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import Controller.*;
 
-public class Main extends Application {
+public class Main_Client extends Application {
 
     private Stage primaryStage;
     private BorderPane rootLayout;
 
-    private Controller _controller;
+    private Controller_Client _controllerClient;
     //private Client _client;
 
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Client POP3");
+        this.primaryStage.setTitle("Client Model.Protocols.POP3");
 
         //_client = new Client();
-        _controller = new Controller();
+        _controllerClient = new Controller_Client();
 
         initRootLayout();
 
@@ -40,9 +37,9 @@ public class Main extends Application {
     }
     */
 
-    public Controller getController()
+    public Controller_Client getController()
     {
-        return this._controller;
+        return this._controllerClient;
     }
 
     /**
@@ -61,7 +58,7 @@ public class Main extends Application {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
 
-            loader.setLocation(Main.class.getResource("../View/Root.fxml"));
+            loader.setLocation(Main_Client.class.getResource("../View/Root.fxml"));
             rootLayout = (BorderPane) loader.load();
 
             // Show the scene containing the root layout.
@@ -82,12 +79,12 @@ public class Main extends Application {
         try {
             // Load person overview.
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main.class.getResource("../View/Client.fxml"));
+            loader.setLocation(Main_Client.class.getResource("../View/Client.fxml"));
             AnchorPane personOverview = (AnchorPane) loader.load();
 
 
-            Controller controller = loader.getController();
-            controller.SetMain(this);
+            Controller_Client controllerClient = loader.getController();
+            controllerClient.SetMain(this);
 
 
             // Set person overview into the center of root layout.

@@ -1,6 +1,6 @@
-package POP3;
+package Model.Protocols.POP3;
 
-import TCP.*;
+import Model.Protocols.TCP.*;
 
 public class POP3 {
     //Constants
@@ -27,7 +27,7 @@ public class POP3 {
      *  ###
      */
 
-    /*  Check if client is connected to server through TCP
+    /*  Check if client is connected to server through Model.Protocols.TCP
      *  Parameters :
      *      None
      *  Return :
@@ -48,9 +48,9 @@ public class POP3 {
      *  Parameters :
      *      None.
      *  Return :
-     *      POP3._DISCONNECTED if client isn't connected to server through TCP
-     *      POP3._CONNECTED if client is connected to server through TCP but user isn't authenticated.
-     *      POP3._AUTHENTICATED if client is connected to server through TCP and user is authenticated.
+     *      Model.Protocols.POP3._DISCONNECTED if client isn't connected to server through Model.Protocols.TCP
+     *      Model.Protocols.POP3._CONNECTED if client is connected to server through Model.Protocols.TCP but user isn't authenticated.
+     *      Model.Protocols.POP3._AUTHENTICATED if client is connected to server through Model.Protocols.TCP and user is authenticated.
      */
     public int Status() {
         if(this.checkConnected() == false) {
@@ -67,7 +67,7 @@ public class POP3 {
      *  ###
      */
 
-    /*  Try to connect client to server through TCP.
+    /*  Try to connect client to server through Model.Protocols.TCP.
      *  Parameters :
      *      String containing the server address (can be an IP address as an URL).
      *      Integer containing the port to target on the server.
@@ -82,7 +82,7 @@ public class POP3 {
             m_tcp.setServerPort(port);
             m_tcp.Connect();
         } catch(TCPException e) {
-            throw new POP3Exception("Unable to connect POP3.", e);
+            throw new POP3Exception("Unable to connect Model.Protocols.POP3.", e);
         }
     }
 
@@ -106,7 +106,7 @@ public class POP3 {
         }
         /*  TODO
          *  #############################
-         *  # POP3 authentication code  #
+         *  # Model.Protocols.POP3 authentication code  #
          *  #############################
          */
         return false;
@@ -127,7 +127,7 @@ public class POP3 {
         if(m_authenticated) {
             /*  TODO
              *  #############################
-             *  # POP3 disconnection code   #
+             *  # Model.Protocols.POP3 disconnection code   #
              *  #############################
              */
             m_authenticated = false;
@@ -139,11 +139,11 @@ public class POP3 {
         }
     }
 
-    /*  Wait TCP Server to send a response
+    /*  Wait Model.Protocols.TCP Server to send a response
      *  Parameters :
      *      None
      *  Return :
-     *      String received through TCP connection
+     *      String received through Model.Protocols.TCP connection
      *  Throw :
      *      POP3Exception in case of error
      */

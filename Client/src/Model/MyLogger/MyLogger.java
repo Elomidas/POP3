@@ -1,4 +1,4 @@
-package MyLogger;
+package Model.MyLogger;
 
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -19,7 +19,7 @@ public class MyLogger {
             fh.setFormatter(formatter);
 
             // the following statement is used to log any messages
-            logger.info("Beginning of TCP Test execution");
+            logger.info("Beginning of Model.Protocols.TCP Test execution");
 
         } catch (Exception e) {
             e.printStackTrace();

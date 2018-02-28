@@ -1,4 +1,4 @@
-package Messagerie;
+package Model.MailBox;
 
 public class Mailbox {
 }
