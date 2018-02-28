@@ -85,10 +85,10 @@ public class Main extends Application {
             loader.setLocation(Main.class.getResource("../View/Client.fxml"));
             AnchorPane personOverview = (AnchorPane) loader.load();
 
-            /*
+
             Controller controller = loader.getController();
             controller.SetMain(this);
-            */
+
 
             // Set person overview into the center of root layout.
             rootLayout.setCenter(personOverview);
