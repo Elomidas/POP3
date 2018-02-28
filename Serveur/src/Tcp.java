@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -15,27 +12,38 @@ public class Tcp extends Thread{
 
     public void run(){
         traitements();
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         //fermer le socket à la fin du run
     }
 
     public void traitements(){
-        String message ="";
+        String messageReceive ="";
         try{
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            message = in.readLine();
-            PrintStream out = new PrintStream(socket.getOutputStream());
-            out.println(message);
+            InputStream in = socket.getInputStream();
+            BufferedInputStream bufIn = new BufferedInputStream(in);
+            messageReceive = readBuffer(bufIn);
+            System.out.println(messageReceive);
+
+            OutputStream out = socket.getOutputStream();
+            BufferedOutputStream bufOut = new BufferedOutputStream(out);
+            out.write(messageReceive.getBytes());
+            out.flush();
+
         }catch(Exception e){
             e.printStackTrace();
         }
     }
-/*   private String read() throws IOException{
+   private String readBuffer(BufferedInputStream buf) throws IOException{
       String response = "";
-      int stream;<question></question>
+      int stream;
       byte[] b = new byte[4096];
-      stream = reader.read(b);
+      stream = buf.read(b);
       response = new String(b, 0, stream);
       return response;
-   } */
+   }
 
 }
