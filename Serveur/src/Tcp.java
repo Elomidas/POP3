@@ -5,39 +5,48 @@ import java.net.Socket;
 public class Tcp extends Thread{
 
     private Socket socket;
+    private String messageSend;
+    private String messageReceived;
 
     public Tcp(Socket socket){
         this.socket = socket;
     }
 
     public void run(){
-        traitements();
         try {
+            messageReceived = receiveMessage();
+            sendMessage(messageSend);
             socket.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //fermer le socket à la fin du run
+
     }
 
-    public void traitements(){
-        String messageReceive ="";
-        try{
-            InputStream in = socket.getInputStream();
-            BufferedInputStream bufIn = new BufferedInputStream(in);
-            messageReceive = readBuffer(bufIn);
-            System.out.println(messageReceive);
+    private String receiveMessage() throws IOException {
+        String messageReceived ="";
 
-            OutputStream out = socket.getOutputStream();
-            BufferedOutputStream bufOut = new BufferedOutputStream(out);
-            out.write(messageReceive.getBytes());
-            out.flush();
+        InputStream in = socket.getInputStream();
+        BufferedInputStream bufIn = new BufferedInputStream(in);
+        messageReceived = readBuffer(bufIn);
+        System.out.println("Requête reçue: "+messageReceived);
 
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        return messageReceived;
     }
-   private String readBuffer(BufferedInputStream buf) throws IOException{
+
+    private void sendMessage(String messageSend) throws IOException {
+        OutputStream out;
+        out = socket.getOutputStream();
+        BufferedOutputStream bufOut = new BufferedOutputStream(out);
+        byte b[] = messageSend.getBytes();
+
+        bufOut.write(b);
+        bufOut.close();
+
+    }
+
+    private String readBuffer(BufferedInputStream buf) throws IOException{
       String response = "";
       int stream;
       byte[] b = new byte[4096];
