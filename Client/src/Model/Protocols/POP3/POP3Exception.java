@@ -1,4 +1,4 @@
-package POP3;
+package Model.Protocols.POP3;
 
 public class POP3Exception extends Exception {
 

@@ -1,4 +1,4 @@
-package Messagerie;
+package Model.MailBox;
 
 import java.util.ArrayList;
 import java.util.Date;

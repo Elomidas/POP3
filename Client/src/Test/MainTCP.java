@@ -1,7 +1,7 @@
 package Test;
 
-import MyLogger.MyLogger;
-import TCP.*;
+import Model.MyLogger.MyLogger;
+import Model.Protocols.TCP.*;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,15 +20,15 @@ public class MainTCP {
                 myTCP.setServerPort(_port);
                 myTCP.setServerAddress(_address);
             } catch(TCPException e) {
-                logger.log(Level.SEVERE, "Error while testing TCP Client.", e);
+                logger.log(Level.SEVERE, "Error while testing Model.Protocols.TCP Client.", e);
             } finally {
                 try {
                     myTCP.Close();
                 } catch(TCPException e) {
-                    logger.log(Level.SEVERE, "Unable to close TCP Client.", e);
+                    logger.log(Level.SEVERE, "Unable to close Model.Protocols.TCP Client.", e);
                 }
             }
         }
-        logger.info("End of TCP Test execution");
+        logger.info("End of Model.Protocols.TCP Test execution");
     }
 }

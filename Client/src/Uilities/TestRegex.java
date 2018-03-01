@@ -1,4 +1,4 @@
-package Utilitaires;
+package Uilities;
 
 import java.util.regex.*;
 
