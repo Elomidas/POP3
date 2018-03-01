@@ -12,7 +12,7 @@ public class Main {
                 Socket socketClient = serverSocket.accept();
                 Tcp t = new Tcp(socketClient);
                 t.start();
-                socketClient.close();
+
             }
         }catch(Exception e){
             e.printStackTrace();

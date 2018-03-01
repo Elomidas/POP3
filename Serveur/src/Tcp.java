@@ -5,8 +5,8 @@ import java.net.Socket;
 public class Tcp extends Thread{
 
     private Socket socket;
-    private String messageSend;
-    private String messageReceived;
+    private String messageSend = "bienvenue";
+    private StringBuilder messageReceived;
 
     public Tcp(Socket socket){
         this.socket = socket;
@@ -14,22 +14,31 @@ public class Tcp extends Thread{
 
     public void run(){
         try {
+
             messageReceived = receiveMessage();
             sendMessage(messageSend);
-            socket.close();
-
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    private String receiveMessage() throws IOException {
-        String messageReceived ="";
+    private StringBuilder receiveMessage() throws IOException {
+        StringBuilder messageReceived = new StringBuilder();
+        char iChar;
 
+        int i;
         InputStream in = socket.getInputStream();
         BufferedInputStream bufIn = new BufferedInputStream(in);
-        messageReceived = readBuffer(bufIn);
+
+        do {
+            i = bufIn.read();
+            iChar = (char) i;
+            if((i != -1) & (i != '\n') & (i != '\r'))
+                messageReceived.append(iChar);
+
+        } while((i != -1) & (iChar != '\n') & (i != '\r'));
         System.out.println("Requête reçue: "+messageReceived);
 
         return messageReceived;
@@ -42,7 +51,6 @@ public class Tcp extends Thread{
         byte b[] = messageSend.getBytes();
 
         bufOut.write(b);
-        bufOut.close();
 
     }
 
