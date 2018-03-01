@@ -9,6 +9,7 @@ public class Mail {
     protected MailAddress m_from;
     protected Date m_date;
     protected ArrayList<MailAddress> m_to;
+    protected String m_object;
     protected String m_message;
 
     /*  ###
@@ -19,6 +20,7 @@ public class Mail {
     public Mail() {
         m_from = null;
         m_to = new ArrayList<>();
+        m_object = "";
         m_message = "";
         m_date = new Date();
     }
