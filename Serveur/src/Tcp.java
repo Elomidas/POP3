@@ -14,10 +14,10 @@ public class Tcp extends Thread{
 
     public void run(){
         try {
-
-            messageReceived = receiveMessage();
-            sendMessage(messageSend);
-            
+            do { 
+                messageReceived = receiveMessage();
+                sendMessage(messageSend);
+            }while (!socket.isClosed());
         } catch (IOException e) {
             e.printStackTrace();
         }
