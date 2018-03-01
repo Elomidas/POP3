@@ -173,7 +173,7 @@ public class ObjetConnecte extends Thread {
     private String rset() {
         int nombreEmailsEffaces = 0;
         int nombreOctets = 0;
-        //drop deleted tag on all message a=tagged as deleted
+        //drop deleted tag on all message tagged as deleted
         //return positive answwer + number of message in maildrop + number of octets
 
         return POP3_REPONSE_POSITIVE + " " + nombreEmailsEffaces + " " + nombreOctets;
@@ -197,19 +197,28 @@ public class ObjetConnecte extends Thread {
 
     private String pass(String nomUtilisateur,String mdp) {
         // check if password related to userName
-        return POP3_REPONSE_POSITIVE;
+        Utilisateur utilisateur = getUtilisateurParNom(nomUtilisateur);
+        if (mdp == utilisateur.getM_mdp()) {
+            return POP3_REPONSE_POSITIVE;
+        }
+        return POP3_REPONSE_NEGATIVE;
     }
 
     private String user(String nomUtilisateur) {
         //check if nomUtilisateur exists
-        return POP3_REPONSE_POSITIVE;
+        if (getUtilisateurParNom(nomUtilisateur) != null) {
+            return POP3_REPONSE_POSITIVE;
+        }
+        return POP3_REPONSE_NEGATIVE;
     }
 
     public void ajouteUtilisateur(String nom, String email, String mdp) {
 
+        Utilisateur utilisateur = new Utilisateur(0, nom, mdp, email);
+        m_listeUtilisateurs.add(utilisateur);
     }
 
-    public Utilisateur getUtilisateur(String email) {
+    public Utilisateur getUtilisateurParEmail(String email) {
         int i = 0;
         while (i <= m_listeUtilisateurs.size()) {
             Utilisateur utilisateur = m_listeUtilisateurs.get(i);
@@ -219,16 +228,32 @@ public class ObjetConnecte extends Thread {
         }
         return null;
     }
+    
+    public Utilisateur getUtilisateurParNom(String nomUtilisateur) {
+        int i = 0;
+        while (i <= m_listeUtilisateurs.size()) {
+            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
+            if (utilisateur.getM_adresseEmail() == nomUtilisateur) {
+                return utilisateur;
+            }
+        }
+        return null;
+    }
     public void ajouteEmail(String emailEmetteur, String emailDestinataire, String message) {
-        Utilisateur emetteur = getUtilisateur(emailEmetteur);
-        Utilisateur destinataire = getUtilisateur(emailDestinataire);
+        Utilisateur emetteur = getUtilisateurParEmail(emailEmetteur);
+        Utilisateur destinataire = getUtilisateurParEmail(emailDestinataire);
 
         if (emetteur ==null || destinataire == null ) {
             System.out.println("Erreur pas d'emetteur ou de destinataire");
         } else {
-            Email email = new Email(0, message, destinataire, emetteur,"");
+            Email email = new Email(0, message, destinataire, emetteur, true);
             m_listeEmails.add(email);
         }
+    }
+
+    public void enregistreEmail(String emailEmetteur, String emailDestinataire, String message) {
+        XStream xstream = new XStream();
+
     }
 
 }

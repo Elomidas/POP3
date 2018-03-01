@@ -8,9 +8,10 @@ public class Email {
     protected String m_message;
     protected Utilisateur m_destinataire;
     protected Utilisateur m_emetteur;
-    protected String m_etat;
+    protected boolean m_etat;
 
-    public Email(int m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, String m_etat) {
+
+    public Email(int m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
         this.m_id = m_id;
         this.m_message = m_message;
         this.m_destinataire = m_destinataire;
@@ -18,11 +19,11 @@ public class Email {
         this.m_etat = m_etat;
     }
 
-    public String getM_etat() {
+    public boolean getM_etat() {
         return m_etat;
     }
 
-    public void setM_etat(String m_etat) {
+    public void setM_etat(boolean m_etat) {
         this.m_etat = m_etat;
     }
 
