@@ -5,7 +5,7 @@ import java.net.Socket;
 public class Tcp extends Thread{
 
     private Socket socket;
-    private String messageSend;
+    private String messageSend = "bienvenue";
     private StringBuilder messageReceived;
 
     public Tcp(Socket socket){
@@ -14,10 +14,10 @@ public class Tcp extends Thread{
 
     public void run(){
         try {
+
             messageReceived = receiveMessage();
             sendMessage(messageSend);
-            socket.close();
-
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,7 +51,6 @@ public class Tcp extends Thread{
         byte b[] = messageSend.getBytes();
 
         bufOut.write(b);
-        bufOut.close();
 
     }
 
