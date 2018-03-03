@@ -1,7 +1,6 @@
 package Main;
 
 import java.io.IOException;
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -9,25 +8,21 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import Controller.*;
 
-public class Main_Client extends Application {
-
-    private Stage primaryStage;
-    private BorderPane rootLayout;
+public class Main_Client extends Main_Connexion {
 
     private Controller_Client _controllerClient;
     //private Client _client;
 
     @Override
     public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Client Model.Protocols.POP3");
+        super.primaryStage = primaryStage;
+        super.primaryStage.setTitle("Client POP3");
 
         //_client = new Client();
-        _controllerClient = new Controller_Client();
 
         initRootLayout();
 
-        showPersonOverview();
+        afficheClient();
     }
 
     /*
@@ -47,13 +42,13 @@ public class Main_Client extends Application {
      * @return
      */
     public Stage getPrimaryStage() {
-        return primaryStage;
+        return super.primaryStage;
     }
 
     /**
      * Initializes the root layout.
      */
-    public void initRootLayout() {
+    protected void initRootLayout() {
         try {
             // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
@@ -75,7 +70,7 @@ public class Main_Client extends Application {
     /**
      * Shows the person overview inside the root layout.
      */
-    public void showPersonOverview() {
+    private void afficheClient() {
         try {
             // Load person overview.
             FXMLLoader loader = new FXMLLoader();
@@ -83,8 +78,8 @@ public class Main_Client extends Application {
             AnchorPane personOverview = (AnchorPane) loader.load();
 
 
-            Controller_Client controllerClient = loader.getController();
-            controllerClient.SetMain(this);
+            _controllerClient = loader.getController();
+            _controllerClient.SetMain(this);
 
 
             // Set person overview into the center of root layout.
@@ -94,35 +89,11 @@ public class Main_Client extends Application {
         }
     }
 
-    //Fonctions autres
-    /*
-    public boolean Connexion(String pseudo)
-    {
-        return _client.Connexion(pseudo);
+    public void EnvoiMail(String destinataire, String objet, String contenu){
+        //Envoi du mail depuis couche métier
     }
 
-    public void EnvMsg(String msg)
-    {
-        _client.EnvoiMessage(msg);
+    public void SupprMail(int ind){
+        //Suppression du mail depuis couche métier
     }
-
-
-
-    public String RecMsg()
-    {
-        return this._client.ReceptionMessage();
-
-    }
-
-    public String RecPseudo()
-    {
-        //System.out.println("test");
-        return this._client.ReceptionPseudo();
-    }
-    */
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
 }
