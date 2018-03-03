@@ -5,8 +5,8 @@ import Model.Protocols.TCP.*;
 public class POP3 {
     //Constants
     public static final int _DISCONNECTED = 0;
-    public static final int _CONNECTED = 0;
-    public static final int _AUTHENTICATED = 0;
+    public static final int _CONNECTED = 1;
+    public static final int _AUTHENTICATED = 2;
 
     //Variables
     protected TCP m_tcp;
@@ -35,7 +35,7 @@ public class POP3 {
      *      - true if client is connected to server
      *      - false if not
      */
-    protected boolean checkConnected() {
+    public boolean CheckConnected() {
         return (m_tcp.Status() == TCP._CONNECTED);
     }
 
@@ -53,7 +53,7 @@ public class POP3 {
      *      Model.Protocols.POP3._AUTHENTICATED if client is connected to server through Model.Protocols.TCP and user is authenticated.
      */
     public int Status() {
-        if(this.checkConnected() == false) {
+        if(this.CheckConnected() == false) {
             return POP3._DISCONNECTED;
         }
         if(m_authenticated) {
@@ -98,7 +98,7 @@ public class POP3 {
      */
 
     public boolean Authentication(String login, String password) throws POP3Exception {
-        if(this.checkConnected() == false) {
+        if(this.CheckConnected() == false) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
         if(m_authenticated) {
@@ -121,7 +121,7 @@ public class POP3 {
      *      POP3Exception in case of error
      */
     public void Disconnect() throws POP3Exception {
-        if(this.checkConnected() == false) {
+        if(this.CheckConnected() == false) {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
@@ -149,7 +149,7 @@ public class POP3 {
      */
     protected String Response() throws POP3Exception {
         String result;
-        if(this.checkConnected() == false) {
+        if(this.CheckConnected() == false) {
             throw new POP3Exception("Unable to receive message, client not connected to server.");
         }
         try {
