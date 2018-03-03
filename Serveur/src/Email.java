@@ -1,17 +1,18 @@
 import javax.print.DocFlavor;
+import java.util.UUID;
 
 /**
  * Created by tardy on 26/02/2018.
  */
 public class Email {
-    protected int m_id;
+    protected UUID m_id;
     protected String m_message;
     protected Utilisateur m_destinataire;
     protected Utilisateur m_emetteur;
     protected boolean m_etat;
 
 
-    public Email(int m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
+    public Email(UUID m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
         this.m_id = m_id;
         this.m_message = m_message;
         this.m_destinataire = m_destinataire;
@@ -27,11 +28,11 @@ public class Email {
         this.m_etat = m_etat;
     }
 
-    public int getM_id() {
+    public UUID getM_id() {
         return m_id;
     }
 
-    public void setM_id(int m_id) {
+    public void setM_id(UUID m_id) {
         this.m_id = m_id;
     }
 
