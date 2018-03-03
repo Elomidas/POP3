@@ -5,7 +5,7 @@ import java.net.Socket;
 public class Tcp extends Thread{
 
     private Socket socket;
-    private String messageSend = "bienvenue";
+    private String messageSend = "";
     private StringBuilder messageReceived;
 
     public Tcp(Socket socket){
@@ -14,10 +14,20 @@ public class Tcp extends Thread{
 
     public void run(){
         try {
-            do { 
+            sendMessage("Bienvenue sur Pop3\n");
+            do {
                 messageReceived = receiveMessage();
                 sendMessage(messageSend);
+
+                //Fermeture du socket sur commande
+                if(messageReceived.toString().toUpperCase().equals("QUIT"))
+                    socket.close();
+                //Rajouter une fermeture lorsque l'utilisateur ferme la fenetre de l'application
             }while (!socket.isClosed());
+
+            if(socket.isClosed()){
+                System.out.println("Fin de Connexion");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,7 +61,7 @@ public class Tcp extends Thread{
         byte b[] = messageSend.getBytes();
 
         bufOut.write(b);
-
+        bufOut.flush();
     }
 
     private String readBuffer(BufferedInputStream buf) throws IOException{
