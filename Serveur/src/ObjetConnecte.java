@@ -1,4 +1,5 @@
 import com.sun.corba.se.impl.logging.POASystemException;
+import com.sun.org.apache.bcel.internal.generic.POP;
 
 import javax.print.DocFlavor;
 import javax.rmi.CORBA.Util;
@@ -62,7 +63,7 @@ public class ObjetConnecte extends Thread {
 
         System.out.println("message:");
 
-        List<String> list = this.recupereSauvegardeEmail("mtardy@email.com");
+        List<String> list = this.recupereSauvegardeEmail("mtardy@email.com",false);
 
 
         String etat = POP3_ETAT_AUTHENTIFICATION;
@@ -144,8 +145,12 @@ public class ObjetConnecte extends Thread {
     private String list(int idMessage) {
 
         if (idMessage == 0) {
-            return POP3_REPONSE_POSITIVE;
+            return POP3_REPONSE_POSITIVE + m_listeEmails.toString();
         } else {
+            if (idMessage < m_listeEmails.size()) {
+                Email email = m_listeEmails.get(idMessage);
+                return POP3_REPONSE_POSITIVE + idMessage + email.getM_message().length();
+            }
             return POP3_REPONSE_NEGATIVE;
         }
         //if no idMessage list all message
@@ -168,12 +173,24 @@ public class ObjetConnecte extends Thread {
     }
 
     private String rset() {
-        int nombreEmailsEffaces = 0;
+        int nombreEmailsReset = 0;
         int nombreOctets = 0;
         //drop deleted tag on all message tagged as deleted
+
+        for (Email email: m_listeEmails) {
+
+            if (!email.getM_etat()){
+                email.setM_etat(true);
+                nombreEmailsReset++;
+                nombreOctets += email.getM_message().length();
+            }
+
+
+        }
         //return positive answwer + number of message in maildrop + number of octets
 
-        return POP3_REPONSE_POSITIVE + " " + nombreEmailsEffaces + " " + nombreOctets;
+
+        return POP3_REPONSE_POSITIVE + " " + nombreEmailsReset + " " + nombreOctets;
     }
 
     private String dele(int idMessage) {
@@ -273,9 +290,10 @@ public class ObjetConnecte extends Thread {
         return null;
     }
 
-    public List<String> recupereSauvegardeEmail(String adresseEmail) {
+    public List<String> recupereSauvegardeEmail(String adresseEmail,boolean reset) {
         List<String> results = new ArrayList<String>();
 
+        m_listeEmails = reset? null : m_listeEmails;
 
         File[] files = new File("./data").listFiles();
         //If this pathname does not denote a directory, then listFiles() returns null.
@@ -321,7 +339,18 @@ public class ObjetConnecte extends Thread {
                 }
             }
         }
-return results;
+        return results;
+    }
+
+    public List<Email> recupereEmails(Utilisateur utilisateur) {
+        List<Email> listEmails = new ArrayList<Email>();
+        for (Email email: m_listeEmails) {
+            if (email.getM_emetteur().equals(utilisateur.getM_adresseEmail())
+                || email.getM_destinataire().equals(utilisateur.getM_adresseEmail())) {
+                listEmails.add(email);
+            }
+        }
+        return listEmails;
     }
 
 }
