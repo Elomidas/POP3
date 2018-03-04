@@ -53,8 +53,12 @@ public class Controller_Client {
     @FXML
     private Button _btnDeconnexion;
 
+    @FXML
+    private Button _btnActualiser;
+
 
     private Main_Client _mainClient;
+    
 
     /*
     Constructeur
@@ -74,7 +78,7 @@ public class Controller_Client {
     Crée une nouvelle page
      */
     private VBox createPage(int pageIndex) {
-        VBox box = new VBox(25);
+        VBox box = new VBox(15);
         int page = pageIndex * itemsPerPage();
         //String headerMail = "";
         for (int i = page; i < page + itemsPerPage(); i++) {
@@ -192,6 +196,10 @@ public class Controller_Client {
 
     }
 
+    private void UpdatePagination(){
+
+    }
+
     private void SupprMail(int ind){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Suppression message !");
@@ -216,6 +224,21 @@ public class Controller_Client {
         _tfContenu.setText(contenu);
     }
 
+    private void Deconnexion(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Déconnexion !");
+        alert.setContentText("Etes-vous sûr de vouloir vous déconnecter ?" );
+        ButtonType btnOui = new ButtonType("Oui");
+        ButtonType btnNon = new ButtonType("Non");
+        alert.getButtonTypes().setAll(btnOui, btnNon);
+        Optional<ButtonType> resultat = alert.showAndWait();
+
+        if(resultat.get() == btnOui)
+            _mainClient.RetourConnexion();
+        else
+            alert.close();
+    }
+
     /*
     Synchronisation du main avec le controlleur
      */
@@ -223,5 +246,7 @@ public class Controller_Client {
     {
         _mainClient = mainClient;
         _btnEnvoi.setOnMouseClicked(mouseEvent -> TestEnvoiMail());
+        _btnDeconnexion.setOnMouseClicked(mouseEvent -> Deconnexion());
+        _btnActualiser.setOnMouseClicked(mouseEvent -> UpdatePagination());
     }
 }

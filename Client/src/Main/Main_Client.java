@@ -11,6 +11,7 @@ import Controller.*;
 public class Main_Client extends Main_Connexion {
 
     private Controller_Client _controllerClient;
+    private Main_Connexion _mainConnexion;
     //private Client _client;
 
     @Override
@@ -95,5 +96,12 @@ public class Main_Client extends Main_Connexion {
 
     public void SupprMail(int ind){
         //Suppression du mail depuis couche métier
+    }
+
+    public void RetourConnexion(){
+        //On indique à la couche métier et au serveur que le client s'est déconnecté
+
+        _mainConnexion = new Main_Connexion();
+        _mainConnexion.start(primaryStage);
     }
 }

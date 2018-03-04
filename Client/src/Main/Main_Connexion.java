@@ -80,6 +80,12 @@ public class Main_Connexion extends Application {
         _mainClient.start(primaryStage);
     }
 
+
+    @Override
+    public void stop(){
+        //On pense bien à fermer la connexion...etc.
+    }
+
     public static void main(String[] args)
     {
         launch(args);
