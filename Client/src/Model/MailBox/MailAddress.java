@@ -26,6 +26,6 @@ public class MailAddress {
     }
 
     public String toString() {
-        return m_address;
+        return this.getAddress();
     }
 }
