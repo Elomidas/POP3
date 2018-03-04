@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Created by tardy on 13/02/2018.
  */
-public class ObjetConnecte extends Thread {
+public class ObjetConnecte {
     private static final String POP3_ETAT_AUTORISATION = "Autorisation";
     private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
     private static final String POP3_ETAT_TRANSACTION = "Transaction";
@@ -18,37 +18,16 @@ public class ObjetConnecte extends Thread {
 
     protected ServerSocket m_soc;
     protected boolean m_continuer;
-    protected int m_port;
-    private Socket m_connexion;
     private String m_etat;
     private ArrayList<Email> m_listeEmails;
     private ArrayList<Utilisateur> m_listeUtilisateurs;
+    protected Tcp m_tcp;
 
-    public ObjetConnecte()
-    {
-        this(80);
+    public ObjetConnecte(Tcp tcp) {
+        m_tcp = tcp;
     }
 
-    public ObjetConnecte(int port)
-    {
-
-        m_port = port;
-        m_continuer = true;
-        try {
-            m_soc = new ServerSocket(m_port);
-            m_connexion = new Socket();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        m_listeEmails = new ArrayList<Email>();
-        m_listeUtilisateurs = new ArrayList<Utilisateur>();
-
-    }
-
-    @Override
-    public void run() {
+    public void Launch() {
         ajouteUtilisateur("MTARDY", "mtardy@email.com", "Something");
         ajouteUtilisateur("VREMOND", "vremond@email.com", "Something else");
         ajouteEmail("mtardy@email.com", "vremond@email.com", "This is a message");
