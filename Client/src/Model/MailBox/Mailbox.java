@@ -3,8 +3,10 @@ package Model.MailBox;
 import Model.Protocols.POP3.POP3;
 import Model.Protocols.POP3.POP3Exception;
 
-import java.util.ArrayList;
+import java.io.*;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.logging.FileHandler;
 
 public class Mailbox {
     protected HashMap<String, Mail> m_mails;
@@ -17,6 +19,66 @@ public class Mailbox {
         m_user = null;
         m_pop = null;
         m_UUIDs = new String[0];
+    }
+
+    protected void openStorage() {
+        if(m_user != null) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(m_user.getAddress() + ".pop"));
+                int i = 0;
+                while (this.readMail(br)) {
+                    i++;
+                }
+                System.out.println(i + " message loaded.");
+                br.close();
+            } catch(FileNotFoundException e) {
+                //Do nothing
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected boolean readMail(BufferedReader br) {
+        try {
+            StringBuilder sBuilder = new StringBuilder();
+            String UUID = br.readLine();
+            if(UUID == null) {
+                return false;
+            }
+            while(true) {
+                String line = br.readLine();
+                if(line == ".") {
+                    sBuilder.append(".\n");
+                    m_mails.put(UUID, new Mail(sBuilder.toString()));
+                    return true;
+                } else if(line == null) {
+                    return false;
+                } else {
+                    sBuilder.append(line + "\n");
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    protected void saveStorage() {
+        try {
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(m_user.getAddress() + ".pop"));
+
+            Set<String> keys = m_mails.keySet();
+            for(String key : keys) {
+                writer.write(key + "\n");
+                writer.write(m_mails.get(key).getEncoded());
+            }
+
+            writer.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean joinServer(String address, int port) throws MailException {
@@ -39,7 +101,10 @@ public class Mailbox {
         }
         boolean result = false;
         try {
-            m_pop.Authentication(m_user.getAddress(), password);
+            if(m_pop.Authentication(m_user.getAddress(), password)) {
+                this.openStorage();
+                return true;
+            }
         } catch(POP3Exception e) {
             throw new MailException("Unable to authenticate user '" + m_user.getAddress() + "'", e);
         }
@@ -71,6 +136,7 @@ public class Mailbox {
     }
 
     public void Close() throws MailException {
+        this.saveStorage();
         try {
             m_pop.Disconnect();
         } catch(POP3Exception e) {
@@ -150,7 +216,9 @@ public class Mailbox {
     public void Update() throws MailException {
         this.assertUsable();
         try {
-            m_UUIDs = m_pop.getUUIDList();
+            if(m_pop.getMailNumber() != m_UUIDs.length) {
+                m_UUIDs = m_pop.getUUIDList();
+            }
         } catch(POP3Exception e) {
             throw new MailException("Unable to get an updated UUID list.", e);
         }

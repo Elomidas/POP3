@@ -373,4 +373,22 @@ public class POP3 {
             throw new POP3Exception("Unable to reset.\nServer response :\n  " + response);
         }
     }
+
+    /*  Get the number of mails on the server
+     *  Parameters :
+     *      None.
+     *  Return :
+     *      Int representing the number of mails on the server.
+     *  Throw :
+     *      POP3Exception in case of error
+     */
+    public int getMailNumber() throws POP3Exception {
+        String cmd = "STAT";
+        String response = this.dialog(cmd);
+        if(TestRegex.Match("+OK .*", response) == false) {
+            m_error = response.substring(4);
+            throw new POP3Exception("Unable to stat.\nServer response :\n  " + response);
+        }
+        return Integer.parseInt(response.split(" ")[1]);
+    }
 }

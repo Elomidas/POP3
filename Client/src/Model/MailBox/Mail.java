@@ -21,7 +21,7 @@ public class Mail {
     protected static final String _SUBJECT = "Subject: ";
     protected static final String _MIME = "MIME-Version: 1.0";
     protected static final String _CONTENT  = "Content-Type: text/plain; charset)UTF-8\nContent-Transfer-Encoding: quoted-printable";
-    protected static final String _EOM = "\n.\n";
+    public static final String _EOM = "\n.\n";
     protected static final String _PATTERN = (_DATE + " ([^\n]*)\n" + _FROM + " ([^\n]*)\n" + _SUBJECT + " ([^\n]*)\n" + _MIME + "\n" + _CONTENT + "\n(.*)" + _EOM).replace("\n", "\\n");
 
     /*  ###
