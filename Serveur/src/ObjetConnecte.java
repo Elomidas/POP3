@@ -1,14 +1,10 @@
-import com.sun.corba.se.impl.logging.POASystemException;
-import com.sun.org.apache.bcel.internal.generic.POP;
-
-import javax.print.DocFlavor;
-import javax.rmi.CORBA.Util;
 import java.io.*;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Created by tardy on 13/02/2018.
@@ -38,16 +34,14 @@ public class ObjetConnecte extends Thread {
 
         m_port = port;
         m_continuer = true;
-//        try
-//        {
-//            m_soc = new ServerSocket(m_port);
-//            connexion = new Socket();
-//        }
-//        catch (IOException e)
-//        {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
+        try {
+            m_soc = new ServerSocket(m_port);
+            m_connexion = new Socket();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
         m_listeEmails = new ArrayList<Email>();
         m_listeUtilisateurs = new ArrayList<Utilisateur>();
 
@@ -55,116 +49,143 @@ public class ObjetConnecte extends Thread {
 
     @Override
     public void run() {
-        ajouteUtilisateur("MTARDY", "mtardy@email.com", "abcd123");
-        ajouteUtilisateur("VREMOND", "vremond@email.com", "abcd1234");
-        ajouteEmail("mtardy@email.com", "vremond@email.com", "coucou");
-        ajouteEmail("mtardy@email.com", "vremond@email.com", "coucou2");
-        ajouteEmail("mtardy@email.com", "vremond@email.com", "coucou3");
+        ajouteUtilisateur("MTARDY", "mtardy@email.com", "Something");
+        ajouteUtilisateur("VREMOND", "vremond@email.com", "Something else");
+        ajouteEmail("mtardy@email.com", "vremond@email.com", "This is a message");
+        ajouteEmail("mtardy@email.com", "vremond@email.com", "This is another message");
+        ajouteEmail("mtardy@email.com", "vremond@email.com", "Another again");
 
         System.out.println("message:");
 
         List<String> list = this.recupereSauvegardeEmail("mtardy@email.com",false);
 
 
-        String etat = POP3_ETAT_AUTHENTIFICATION;
+        m_etat = POP3_ETAT_AUTHENTIFICATION;
         while (m_continuer) {
 
-            String commande = "test";
-            String message = "2";
-            int messageId = 2;
-            String reponse = "2";
-            switch (etat) {
-                case POP3_ETAT_AUTORISATION:
-                    if (Objects.equals(commande, "USER")) {
-                        System.out.println("USER");
-
-                        //if user ok
-                        etat = POP3_ETAT_AUTHENTIFICATION;
-
-                    }
+            String input = "test";
+            //TODO
+            //Receive command
+            String[] explodedCommand = input.split(" ", 2);
+            String command = explodedCommand[0];
+            String[] parameters = explodedCommand[1].split(" ");
+            String response;
+            switch (m_etat) {
+                case ObjetConnecte.POP3_ETAT_AUTORISATION:
+                    response = this.AuthorisationState(command, parameters);
                     break;
-                case POP3_ETAT_AUTHENTIFICATION:
-
-                    switch (commande) {
-                        case "PASS":
-                            System.out.println("PASS");
-
-                            //if pwd ok
-                            etat = POP3_ETAT_TRANSACTION;
-                            break;
-                        case "QUIT":
-                            System.out.println("QUIT");
-                            m_continuer = false;
-                            break;
-                    }
+                case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
+                    response = this.AuthenticationState(command, parameters);
                     break;
-                case POP3_ETAT_TRANSACTION:
-                    switch (commande) {
-                        case "QUIT":
-                            break;
-                        case "RETR":
-                            reponse = retr(message);
-                            break;
-                        case "NOOP":
-                            reponse = noop();
-                            break;
-                        case "RSET":
-                            reponse = rset();
-                            break;
-                        case "DELE":
-                            reponse = dele(messageId);
-                            break;
-                        case "LIST":
-                            reponse = list(messageId);
-                            break;
-                        case "STAT":
-                            reponse = stat();
-                            break;
-                        case "FERMETURE_AUTRE_QUE_QUIT":
-                        default:
-                            fermetureAutreQueQuit();
-                            break;
-                    }
+                case ObjetConnecte.POP3_ETAT_TRANSACTION:
+                    response = this.TransactionState(command, parameters);
                     break;
                 default:
+                    System.out.println("What is that (state/command) : " + m_etat + "/" + command);
                     break;
             }
-            m_continuer = false;
+            // TODO
+            // Send response
         }
 
-//        try{
-//
-//            m_soc.close();
-//        }
-//        catch(IOException ioException){
-//            ioException.printStackTrace();
-//        }
-//    }
+        try{
+
+            m_soc.close();
+        }
+        catch(IOException ioException){
+            ioException.printStackTrace();
+        }
     }
 
-    private String list(int idMessage) {
+    protected String AuthorisationState(String command, String[] parameters) {
+        if (command.equals("USER")) {
+            boolean userOK = false;
+            //TODO
+            //User authentication
 
-        if (idMessage == 0) {
-            return POP3_REPONSE_POSITIVE + m_listeEmails.toString();
-        } else {
-            if (idMessage < m_listeEmails.size()) {
-                Email email = m_listeEmails.get(idMessage);
-                return POP3_REPONSE_POSITIVE + idMessage + email.getM_message().length();
+            if(userOK) {
+                m_etat = POP3_ETAT_AUTHENTIFICATION;
+                return ObjetConnecte.POP3_REPONSE_POSITIVE;
+            } else {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
             }
-            return POP3_REPONSE_NEGATIVE;
         }
-        //if no idMessage list all message
-        // return positive answer + idMessage ++ number of octet
-        // return negative answer if idMessage doesn't exist
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+    }
 
+    protected String AuthenticationState(String command, String[] parameters) {
+        if(command.equals("PASS")) {
+            boolean passOK = false;
+            //TODO
+            //Check PASS
+
+            if(passOK) {
+                boolean openLock = false;
+                //TODO
+                //Open and lock repository
+                if(openLock) {
+                    m_etat = POP3_ETAT_TRANSACTION;
+                    return ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready";
+                } else {
+                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
+                }
+            }
+        } else if(command.equals("QUIT")) {
+            m_continuer = false;
+        }
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+    }
+
+    protected String TransactionState(String command, String[] parameters) {
+        if(command.equals("QUIT")) {
+            //TODO
+            //Quit
+        } else if(command.equals("RETR")) {
+            //To be tested
+            return retr(parameters[0]);
+        } else if(command.equals("NOOP")) {
+            //To be tested
+            return noop();
+        } else if(command.equals("RSET")) {
+            //To be tested
+            return rset();
+        } else if(command.equals("DELE")) {
+            //To be tested
+            return dele(Integer.parseInt(parameters[0]));
+        } else if(command.equals("LIST")) {
+            //To be tested
+            return list();
+        } else if(command.equals("STAT")) {
+            return stat();
+        } else {
+            //TODO
+            //return something
+            //TODO
+            //Don't quit on unknown command
+            fermetureAutreQueQuit();
+            return ObjetConnecte.POP3_REPONSE_NEGATIVE;
+        }
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE;
+    }
+
+    private String list() {
+        //TODO
+        //LIST function
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE;
     }
 
     private String quit() {
+        //TODO
         return POP3_REPONSE_POSITIVE;
     }
 
-    private String retr(String message) {
-        return POP3_REPONSE_POSITIVE;
+    private String retr(String id) {
+        //TODO
+        Email m = getEmail(UUID.fromString(id));
+        if(m == null) {
+            return POP3_REPONSE_NEGATIVE;
+        }
+        return POP3_REPONSE_POSITIVE + " \n" + m.encode();
     }
 
     private String noop() {
@@ -173,6 +194,7 @@ public class ObjetConnecte extends Thread {
     }
 
     private String rset() {
+        //To be tested
         int nombreEmailsReset = 0;
         int nombreOctets = 0;
         //drop deleted tag on all message tagged as deleted
@@ -189,11 +211,12 @@ public class ObjetConnecte extends Thread {
         }
         //return positive answwer + number of message in maildrop + number of octets
 
-
         return POP3_REPONSE_POSITIVE + " " + nombreEmailsReset + " " + nombreOctets;
     }
 
     private String dele(int idMessage) {
+        //TODO
+        //Function delete
         String reponse = POP3_REPONSE_NEGATIVE;
         //tag message as deleted
         //return positive answer or negative if message already tagged as deleted + "message" idMessage + "deleted"
@@ -201,15 +224,22 @@ public class ObjetConnecte extends Thread {
     }
 
     private String stat() {
+        //TODO
+        //Function stat
+
+
         //return positive answer + space + number of email + space + number of octets
         return POP3_REPONSE_POSITIVE + " " + 5 + " " + 5;
     }
 
     private void fermetureAutreQueQuit() {
+        //TODO
+        //All
         //close something
     }
 
     private String pass(String nomUtilisateur,String mdp) {
+        //To be tested
         // check if password related to userName
         Utilisateur utilisateur = getUtilisateurParNom(nomUtilisateur);
         if (mdp == utilisateur.getM_mdp()) {
@@ -219,6 +249,7 @@ public class ObjetConnecte extends Thread {
     }
 
     private String user(String nomUtilisateur) {
+        //To be tested
         //check if nomUtilisateur exists
         if (getUtilisateurParNom(nomUtilisateur) != null) {
             return POP3_REPONSE_POSITIVE;
@@ -281,8 +312,7 @@ public class ObjetConnecte extends Thread {
     }
 
     public Email getEmail(UUID emailId){
-        for (Email email: m_listeEmails
-             ) {
+        for (Email email: m_listeEmails) {
             if (email.getM_id() == emailId) {
                 return email;
             }
@@ -291,7 +321,8 @@ public class ObjetConnecte extends Thread {
     }
 
     public List<String> recupereSauvegardeEmail(String adresseEmail,boolean reset) {
-        List<String> results = new ArrayList<String>();
+        //To be tested
+        List<String> results = new ArrayList<>();
 
         m_listeEmails = reset? null : m_listeEmails;
 
@@ -326,8 +357,6 @@ public class ObjetConnecte extends Thread {
                         }
                         message = stringBuilder.toString();
 
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -343,6 +372,7 @@ public class ObjetConnecte extends Thread {
     }
 
     public List<Email> recupereEmails(Utilisateur utilisateur) {
+        //To be tested
         List<Email> listEmails = new ArrayList<Email>();
         for (Email email: m_listeEmails) {
             if (email.getM_emetteur().equals(utilisateur.getM_adresseEmail())

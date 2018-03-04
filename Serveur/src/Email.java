@@ -1,4 +1,3 @@
-import javax.print.DocFlavor;
 import java.util.UUID;
 
 /**
@@ -7,9 +6,19 @@ import java.util.UUID;
 public class Email {
     protected UUID m_id;
     protected String m_message;
+    protected String m_date;
+    protected String m_subject;
     protected Utilisateur m_destinataire;
     protected Utilisateur m_emetteur;
     protected boolean m_etat;
+
+    protected static final String _DATE = "Date: ";
+    protected static final String _FROM = "From: ";
+    protected static final String _SUBJECT = "Subject: ";
+    protected static final String _MIME = "MIME-Version: 1.0";
+    protected static final String _CONTENT  = "Content-Type: text/plain; charset)UTF-8\nContent-Transfer-Encoding: quoted-printable";
+    public static final String _EOM = "\n.\n";
+
 
 
     public Email(UUID m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
@@ -18,6 +27,27 @@ public class Email {
         this.m_destinataire = m_destinataire;
         this.m_emetteur = m_emetteur;
         this.m_etat = m_etat;
+    }
+
+
+    public String encode() {
+        StringBuilder sbuilder = new StringBuilder();
+        sbuilder.append(_DATE)
+                .append(m_date)
+                .append("\n")
+                .append(_FROM)
+                .append(m_emetteur)
+                .append(_SUBJECT)
+                .append(m_subject)
+                .append("\n")
+                .append(_MIME)
+                .append("\n")
+                .append(_CONTENT)
+                .append("\n\n")
+                .append(m_message)
+                .append("\n")
+                .append(_EOM);
+        return sbuilder.toString();
     }
 
     public boolean getM_etat() {
