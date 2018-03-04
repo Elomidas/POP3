@@ -1,5 +1,6 @@
 package Uilities;
 
+import java.util.ArrayList;
 import java.util.regex.*;
 
 public class TestRegex {
@@ -10,6 +11,16 @@ public class TestRegex {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(target);
         return m.matches();
+    }
+
+    public static String[] Submatches(String pattern, String target) {
+        Pattern p = Pattern.compile(pattern);
+        Matcher m = p.matcher(target);
+        ArrayList<String> strs = new ArrayList<>();
+        while(m.find()) {
+            strs.add(m.group());
+        }
+        return (String[])strs.toArray();
     }
 
     public static boolean CheckMail(String mail) {
