@@ -14,6 +14,7 @@ public class Mailbox {
     protected MailAddress m_user;
     protected POP3 m_pop;
 
+    //Constructor
     public Mailbox() {
         m_mails = new HashMap<>();
         m_user = null;
@@ -81,6 +82,7 @@ public class Mailbox {
         }
     }
 
+    //Step 1 : join the server (check address an port, return bool)
     public boolean joinServer(String address, int port) throws MailException {
         m_pop = new POP3();
         try {
@@ -91,10 +93,12 @@ public class Mailbox {
         return this.ServerJoined();
     }
 
+    //Step 2 : set user (check mail validity, throw exception if not valid)
     public void setUser(String user) throws MailException {
         m_user = MailAddress.createFromString(user);
     }
 
+    //Step 3 : try the password with previously set username
     public boolean Authenticate(String password) throws MailException {
         if(this.ServerJoined() == false) {
             throw new MailException("You should try to join the server before trying to authenticate yourself.");
@@ -111,6 +115,7 @@ public class Mailbox {
         return false;
     }
 
+    //Check if server and port are correctly set
     public boolean ServerJoined() {
         if(m_pop == null) {
             return false;
@@ -118,6 +123,7 @@ public class Mailbox {
         return (m_pop.Status() != POP3._DISCONNECTED);
     }
 
+    //Check if user is authenticated
     public boolean Usable() {
         if(this.ServerJoined() == false) {
             return false;
@@ -131,10 +137,12 @@ public class Mailbox {
         }
     }
 
+    //Return user address
     public String getUser() {
         return m_user.getAddress();
     }
 
+    //Close connection
     public void Close() throws MailException {
         this.saveStorage();
         try {
@@ -144,6 +152,7 @@ public class Mailbox {
         }
     }
 
+    //TODO later
     public void AddMail(String strMail, String id) throws MailException {
         Mail m;
         try {
@@ -154,10 +163,12 @@ public class Mailbox {
         m_mails.put(id, m);
     }
 
+    //Number of mail currently downloadable
     public int getMailNumber() {
         return m_UUIDs.length;
     }
 
+    //Number of mail currently downloaded
     public int getSize() {
         return m_mails.size();
     }
@@ -208,11 +219,13 @@ public class Mailbox {
         return this.getMails(first, length);
     }
 
+    //TODO later
     public void SendMail(String to, String object, String message) throws MailException {
         this.assertUsable();
         //TODO
     }
 
+    //Update the list of downloadable mails
     public void Update() throws MailException {
         this.assertUsable();
         try {
@@ -224,10 +237,12 @@ public class Mailbox {
         }
     }
 
+    //Delete a mail
     public void DeleteMail(Mail m) throws MailException {
         this.DeleteMail(m.getID());
     }
 
+    //Delete a mail
     public void DeleteMail(String id) throws MailException {
         this.assertUsable();
         try {
@@ -237,6 +252,7 @@ public class Mailbox {
         }
     }
 
+    //Cancel all delete tags
     public void Reset() throws MailException {
         this.assertUsable();
         try {
@@ -245,4 +261,7 @@ public class Mailbox {
             throw new MailException("Unable to reset this repository.", e);
         }
     }
+
+    //TODO
+    //Sending QUIT command
 }
