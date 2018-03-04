@@ -6,8 +6,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static java.util.stream.Collectors.joining;
-
 public class Mail {
     protected String m_id;
     protected MailAddress m_from;
@@ -63,7 +61,7 @@ public class Mail {
         this.m_message = fields[3];
     }
 
-    protected String encode() throws MailException {
+    protected String encode() {
         StringBuilder sbuilder = new StringBuilder();
         sbuilder.append(_DATE)
                 .append(m_date)
@@ -122,13 +120,9 @@ public class Mail {
         return field;
     }
 
-    public String getEncoded() throws MailException {
+    public String getEncoded() {
         String result;
-        try {
-            result = this.encode();
-        } catch(MailException e) {
-            throw e;
-        }
+        result = this.encode();
         return result;
     }
 
