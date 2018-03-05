@@ -1,6 +1,8 @@
 package Main;
 
 import java.io.IOException;
+
+import Model.MailBox.Mailbox;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -12,7 +14,19 @@ public class Main_Client extends Main_Connexion {
 
     private Controller_Client _controllerClient;
     private Main_Connexion _mainConnexion;
-    //private Client _client;
+    private Mailbox _mailbox;
+
+    public Main_Client(){
+
+    }
+
+    public Main_Client(Mailbox mailbox){
+        _mailbox = mailbox;
+    }
+
+    public Mailbox getMailbox() {
+        return _mailbox;
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -24,26 +38,6 @@ public class Main_Client extends Main_Connexion {
         initRootLayout();
 
         afficheClient();
-    }
-
-    /*
-    public Client getClient()
-    {
-        return this._client;
-    }
-    */
-
-    public Controller_Client getController()
-    {
-        return this._controllerClient;
-    }
-
-    /**
-     * Returns the main stage.
-     * @return
-     */
-    public Stage getPrimaryStage() {
-        return super.primaryStage;
     }
 
     /**
@@ -90,12 +84,10 @@ public class Main_Client extends Main_Connexion {
         }
     }
 
-    public void EnvoiMail(String destinataire, String objet, String contenu){
-        //Envoi du mail depuis couche métier
-    }
-
-    public void SupprMail(int ind){
-        //Suppression du mail depuis couche métier
+    @Override
+    public void stop(){
+        //todo
+        _controllerClient.FinSession();
     }
 
     public void RetourConnexion(){
