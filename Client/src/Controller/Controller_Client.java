@@ -121,7 +121,7 @@ public class Controller_Client {
             HBox element = new HBox();
             final String ind;
 
-            Hyperlink link = new Hyperlink("Message " + mails[i].getID());
+            Hyperlink link = new Hyperlink("Mail " + mails[i].getID() + " :");
             //link.setVisited(true);
             Label destinataire = new Label(mails[i].getFrom());
             Label objet = new Label(mails[i].getSubject());
