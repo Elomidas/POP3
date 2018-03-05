@@ -3,18 +3,15 @@ package Controller;
 import Main.Main_Connexion;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
-import Uilities.TestRegex;
+import Utilities.TestRegex;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.Text;
 
 
 public class Controller_Connexion {
@@ -50,13 +47,12 @@ public class Controller_Connexion {
 
     @FXML
     private void initialize(){
-        //_btnConnexion.setDisable(true);
+        _btnConnexion.setDisable(true);
     }
 
     private void connexion(){
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
-            /*
             try {
                 if(_mailBox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText())))
                 {
@@ -89,13 +85,7 @@ public class Controller_Connexion {
                 alert.setContentText(e.getMessage());
                 alert.show();
             }
-            */
-            try {
-                _mailBox.setUser(_tfAdresseMail.getText());
-                _main.lancerClient();
-            } catch (MailException e) {
-                e.printStackTrace();
-            }
+
         });
     }
 

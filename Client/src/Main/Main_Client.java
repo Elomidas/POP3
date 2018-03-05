@@ -33,8 +33,6 @@ public class Main_Client extends Main_Connexion {
         super.primaryStage = primaryStage;
         super.primaryStage.setTitle("Client POP3");
 
-        //_client = new Client();
-
         initRootLayout();
 
         afficheClient();

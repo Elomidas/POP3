@@ -1,6 +1,6 @@
 package Model.MailBox;
 
-import Uilities.TestRegex;
+import Utilities.TestRegex;
 
 public class MailAddress {
     protected String m_address;

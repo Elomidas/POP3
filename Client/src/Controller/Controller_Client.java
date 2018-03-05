@@ -4,11 +4,10 @@ import Main.Main_Client;
 import Model.MailBox.Mail;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
-import Uilities.TestRegex;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
+import Utilities.TestRegex;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -16,7 +15,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 
-import java.awt.event.MouseEvent;
 import java.util.Optional;
 
 public class Controller_Client {

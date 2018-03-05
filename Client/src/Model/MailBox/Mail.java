@@ -1,6 +1,6 @@
 package Model.MailBox;
 
-import Uilities.TestRegex;
+import Utilities.TestRegex;
 
 import java.time.Instant;
 import java.util.ArrayList;
