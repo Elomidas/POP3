@@ -199,7 +199,7 @@ public class POP3 {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
-            this.dialog("QUIT");
+            this.Message("QUIT");
             m_authenticated = false;
         }
         try {
