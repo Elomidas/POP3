@@ -44,14 +44,24 @@ public class Tcp extends Thread{
             int i;
             InputStream in = socket.getInputStream();
             BufferedInputStream bufIn = new BufferedInputStream(in);
+            int count = 0;
+            boolean first = true;
 
             do {
                 i = bufIn.read();
                 iChar = (char) i;
-                if ((i != -1) & (i != '\n') & (i != '\r'))
+                if ((i != -1) & (i != '\n') & (i != '\r')) {
                     messageReceived.append(iChar);
-
-            } while ((i != -1) & (iChar != '\n') & (i != '\r'));
+                    first = false;
+                } else {
+                    if(first) {
+                        count++;
+                        if(count >= 5) {
+                            first = false;
+                        }
+                    }
+                }
+            } while (((i != -1) & (iChar != '\n') & (i != '\r')) || first);
             System.out.println("Requête reçue: " + messageReceived);
         } catch(Exception e) {
             return "";
