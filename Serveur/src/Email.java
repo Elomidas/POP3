@@ -1,10 +1,12 @@
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
  * Created by tardy on 26/02/2018.
  */
 public class Email {
-    protected UUID m_id;
+    protected String m_id;
     protected String m_message;
     protected String m_date;
     protected String m_subject;
@@ -16,12 +18,13 @@ public class Email {
     protected static final String _FROM = "From: ";
     protected static final String _SUBJECT = "Subject: ";
     protected static final String _MIME = "MIME-Version: 1.0";
-    protected static final String _CONTENT  = "Content-Type: text/plain; charset)UTF-8\nContent-Transfer-Encoding: quoted-printable";
+    protected static final String _CONTENT  = "Content-Type: text/plain; charset: UTF-8\nContent-Transfer-Encoding: quoted-printable";
     public static final String _EOM = "\n.\n";
+    protected static final String _PATTERN = (_DATE + "([^\\\\]*)\n" + _FROM + "([^\\\\]*)\n" + _SUBJECT + "([^\\\\]*)\n" + _MIME + "\n" + _CONTENT + "\n(.*)\n" + _EOM);
 
 
 
-    public Email(UUID m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
+    public Email(String m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
         this.m_id = m_id;
         this.m_message = m_message;
         this.m_destinataire = m_destinataire;
@@ -29,21 +32,44 @@ public class Email {
         this.m_etat = m_etat;
     }
 
+    public Email(Utilisateur dest, String encoded, ArrayList<Utilisateur> list) {
+        m_destinataire = dest;
+        decode(encoded, list);
+    }
+
+    protected void decode(String encrypted, ArrayList<Utilisateur> usrs) {
+        String[] fields = TestRegex.Submatches(_PATTERN.replace("\n", "\\\\n"), encrypted.replace("\n", "\\n"));
+        if(fields.length != 4) {
+            System.out.println("Fail, not enough fields (" + fields.length + ").");
+        } else {
+            this.m_date = fields[0];
+            this.m_subject = fields[2];
+            this.m_message = fields[3];
+            for (Utilisateur u : usrs) {
+                if (u.getM_adresseEmail().equals(fields[1])) {
+                    this.m_emetteur = u;
+                }
+            }
+        }
+    }
 
     public String encode() {
         StringBuilder sbuilder = new StringBuilder();
-        sbuilder.append(_DATE)
+        sbuilder.append(m_id)
+                .append("\n")
+                .append(_DATE)
                 .append(m_date)
                 .append("\n")
                 .append(_FROM)
-                .append(m_emetteur)
+                .append(m_emetteur.getM_adresseEmail())
+                .append("\n")
                 .append(_SUBJECT)
                 .append(m_subject)
                 .append("\n")
                 .append(_MIME)
                 .append("\n")
                 .append(_CONTENT)
-                .append("\n\n")
+                .append("\n")
                 .append(m_message)
                 .append("\n")
                 .append(_EOM);
@@ -58,11 +84,11 @@ public class Email {
         this.m_etat = m_etat;
     }
 
-    public UUID getM_id() {
+    public String getM_id() {
         return m_id;
     }
 
-    public void setM_id(UUID m_id) {
+    public void setM_id(String m_id) {
         this.m_id = m_id;
     }
 
@@ -88,5 +114,15 @@ public class Email {
 
     public void setM_emetteur(Utilisateur m_emetteur) {
         this.m_emetteur = m_emetteur;
+    }
+
+    public int Size() {
+        int size = 0;
+        try {
+            size = this.encode().getBytes("UTF-8").length;
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return size;
     }
 }
