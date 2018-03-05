@@ -85,7 +85,7 @@ public class Controller_Client {
         _pagination.setPageFactory(new Callback<Integer, Node>() {
             @Override
             public Node call(Integer pageIndex) {
-                if(pageIndex > nbPages)
+                if(pageIndex >= nbPages)
                     return null;
                 else
                     return createPage(pageIndex,recuperationMails(pageIndex));
@@ -100,7 +100,7 @@ public class Controller_Client {
             mails = _mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //todo
+            //TODO
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
@@ -116,8 +116,8 @@ public class Controller_Client {
     private VBox createPage(int pageIndex, Mail[] mails) {
         VBox box = new VBox(15);
         //int page = pageIndex * itemsPerPage();
-
-        for (int i = 0; i < mails.length && mails[i] != null; i++) {
+        int length = mails.length;
+        for (int i = 0; (i < length) && (mails[i] != null); i++) {
             HBox element = new HBox();
             final String ind;
 
