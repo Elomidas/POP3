@@ -32,26 +32,30 @@ public class Tcp extends Thread{
     }
 
     public void Send(String message) {
-        m_output.println(message.replace("\n", "\r\n") + "\r");
+        m_output.println(message + "\r");
         m_output.flush();
     }
 
     public String Receive() throws IOException {
         StringBuilder messageReceived = new StringBuilder();
-        char iChar;
-        //
-        int i;
-        InputStream in = socket.getInputStream();
-        BufferedInputStream bufIn = new BufferedInputStream(in);
+        try {
+            char iChar;
 
-        do {
-            i = bufIn.read();
-            iChar = (char) i;
-            if((i != -1) & (i != '\n') & (i != '\r'))
-                messageReceived.append(iChar);
+            int i;
+            InputStream in = socket.getInputStream();
+            BufferedInputStream bufIn = new BufferedInputStream(in);
 
-        } while((i != -1) & (iChar != '\n') & (i != '\r'));
-        System.out.println("Requête reçue: "+messageReceived);
+            do {
+                i = bufIn.read();
+                iChar = (char) i;
+                if ((i != -1) & (i != '\n') & (i != '\r'))
+                    messageReceived.append(iChar);
+
+            } while ((i != -1) & (iChar != '\n') & (i != '\r'));
+            System.out.println("Requête reçue: " + messageReceived);
+        } catch(Exception e) {
+            return "";
+        }
 
         return messageReceived.toString();
     }
