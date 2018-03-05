@@ -129,7 +129,10 @@ public class POP3 {
             throw new POP3Exception("Already authenticate.");
         }
         if(checkUser(login)) {
-            return checkPassword(password);
+            if(checkPassword(password)) {
+                m_authenticated = true;
+                return true;
+            }
         }
         return false;
     }
@@ -198,7 +201,7 @@ public class POP3 {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
-            this.Message("QUIT");
+            this.dialog("QUIT");
             m_authenticated = false;
         }
         try {
@@ -284,8 +287,9 @@ public class POP3 {
     protected String retrieveMailString(String response) throws POP3Exception {
         StringBuilder sBuilder = new StringBuilder();
         String[] lines = response.split("\\n");
-
-        for(int i = 1; i < lines.length; i++) {
+        sBuilder.append(lines[1])
+                .append(" - ");
+        for(int i = 2; i < lines.length; i++) {
             sBuilder.append(lines[i])
                     .append("\\n");
         }

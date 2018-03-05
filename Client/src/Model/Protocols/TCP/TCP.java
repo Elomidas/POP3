@@ -253,6 +253,7 @@ public class TCP {
      */
     public void Send(String message) throws TCPException {
         if(this.checkConnection()) {
+            System.out.println("Message : " + message);
             m_output.println(message);
             m_output.flush();
         } else {
@@ -292,7 +293,7 @@ public class TCP {
                     }
                 }
 
-            } while ((i != -1) &  (i != '\r'));
+            } while (((i != -1) & (i != '\r')) || first);
         } catch(IOException e) {
             throw new TCPException("Unable to receive.", e);
         }

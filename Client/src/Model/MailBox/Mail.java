@@ -20,7 +20,7 @@ public class Mail {
     protected static final String _MIME = "MIME-Version: 1.0";
     protected static final String _CONTENT  = "Content-Type: text/plain; charset: UTF-8\nContent-Transfer-Encoding: quoted-printable";
     public static final String _EOM = "\n.\n";
-    protected static final String _PATTERN = (_DATE + "([^\\\\]*)\n" + _FROM + "([^\\\\]*)\n" + _SUBJECT + "([^\\\\]*)\n" + _MIME + "\n" + _CONTENT + "\n(.*)\n" + _EOM);
+    protected static final String _PATTERN = (_DATE + "([^\\\\\n]*)[\nn]" + _FROM + "([^\\\\\n]*)[\nn]" + _SUBJECT + "([^\\\\\n]*)[\nn]" + _MIME + "[\nn]" + _CONTENT + "[\nn](.*)[\nn]" + _EOM);
 
     /*  ###
      *  # CONSTRUCTORS
@@ -51,7 +51,7 @@ public class Mail {
      */
 
     protected void decode(String encrypted) throws MailException {
-        String[] fields = TestRegex.Submatches(_PATTERN, encrypted);
+        String[] fields = TestRegex.Submatches(_PATTERN, encrypted.replace("\\n", "\n"));
         if(fields.length != 4) {
             throw new MailException(encrypted + " isn't a valid mail string, only " + fields.length + " field(s) found");
         }
