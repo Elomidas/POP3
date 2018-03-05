@@ -23,6 +23,10 @@ public class Main_Connexion extends Application {
 
     }
 
+    public Controller_Connexion getController(){
+        return _controllerConnexion;
+    }
+
     @Override
     public void start(Stage primaryStage)
     {
@@ -76,13 +80,14 @@ public class Main_Connexion extends Application {
     }
 
     public void lancerClient(){
-        _mainClient = new Main_Client();
+        _mainClient = new Main_Client(_controllerConnexion.getMailbox());
         _mainClient.start(primaryStage);
     }
 
 
     @Override
     public void stop(){
+        //todo
         //On pense bien à fermer la connexion...etc.
     }
 
