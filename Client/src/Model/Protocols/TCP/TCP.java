@@ -1,6 +1,6 @@
 package Model.Protocols.TCP;
 
-import Uilities.TestRegex;
+import Utilities.TestRegex;
 
 import java.io.*;
 import java.net.*;

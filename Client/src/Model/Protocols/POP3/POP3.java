@@ -1,7 +1,7 @@
 package Model.Protocols.POP3;
 
 import Model.Protocols.TCP.*;
-import Uilities.TestRegex;
+import Utilities.TestRegex;
 
 public class POP3 {
     //Constants

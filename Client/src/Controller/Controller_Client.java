@@ -1,17 +1,15 @@
 package Controller;
 
 import Main.Main_Client;
-import Uilities.TestRegex;
+import Utilities.TestRegex;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-import java.awt.event.MouseEvent;
 import java.util.Optional;
 
 public class Controller_Client {
