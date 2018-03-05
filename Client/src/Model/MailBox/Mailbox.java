@@ -49,7 +49,7 @@ public class Mailbox {
             }
             while(true) {
                 String line = br.readLine();
-                if(line == ".") {
+                if(line.equals(".")) {
                     sBuilder.append(".\n");
                     m_mails.put(UUID, new Mail(sBuilder.toString()));
                     return true;
