@@ -1,6 +1,5 @@
-package Uilities;
+package Utilities;
 
-import java.util.ArrayList;
 import java.util.regex.*;
 
 public class TestRegex {
@@ -14,13 +13,17 @@ public class TestRegex {
     }
 
     public static String[] Submatches(String pattern, String target) {
-        Pattern p = Pattern.compile(pattern);
+        Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
         Matcher m = p.matcher(target);
-        ArrayList<String> strs = new ArrayList<>();
+        String[] tab = new String[0];
         while(m.find()) {
-            strs.add(m.group());
+            int size = m.groupCount();
+            tab = new String[size];
+            for(int i = 0; i < size; i++) {
+                tab[i] = m.group(i+1);
+            }
         }
-        return (String[])strs.toArray();
+        return tab;
     }
 
     public static boolean CheckMail(String mail) {
