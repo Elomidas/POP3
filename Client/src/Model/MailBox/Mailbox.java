@@ -2,6 +2,7 @@ package Model.MailBox;
 
 import Model.Protocols.POP3.POP3;
 import Model.Protocols.POP3.POP3Exception;
+import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 
 import java.io.*;
 import java.util.HashMap;
@@ -103,10 +104,10 @@ public class Mailbox {
         if(this.ServerJoined() == false) {
             throw new MailException("You should try to join the server before trying to authenticate yourself.");
         }
-        boolean result = false;
         try {
             if(m_pop.Authentication(m_user.getAddress(), password)) {
                 this.openStorage();
+                this.Update();
                 return true;
             }
         } catch(POP3Exception e) {
@@ -187,8 +188,12 @@ public class Mailbox {
      */
     public Mail[] getMails(int first, int length) throws MailException {
         this.assertUsable();
-        Mail[] array = new Mail[length];
-        for(int i = 0; (i < length) && (i < m_UUIDs.length); i++) {
+        int size = (m_UUIDs.length - first);
+        if(size > length) {
+            size = length;
+        }
+        Mail[] array = new Mail[size];
+        for(int i = 0; i < size; i++) {
             String UUID = m_UUIDs[first+i];
             //If we didn't retrieve this mail before, we retrieve it now
             if(m_mails.containsKey(UUID) == false) {
@@ -198,7 +203,9 @@ public class Mailbox {
                 } catch(POP3Exception e) {
                     throw new MailException("Unable to create mail with UUID " + UUID, e);
                 }
-                Mail m = new Mail(message);
+                System.out.println(message);
+                String[] parts = message.split("\\n", 2);
+                Mail m = new Mail(parts[1], parts[0]);
                 m_mails.put(UUID, m);
             }
             array[i] = m_mails.get(UUID);
@@ -231,10 +238,11 @@ public class Mailbox {
     public void Update() throws MailException {
         this.assertUsable();
         try {
-            if(m_pop.getMailNumber() != m_UUIDs.length) {
+            if(m_UUIDs.length == 0 || m_pop.getMailNumber() != m_UUIDs.length) {
                 m_UUIDs = m_pop.getUUIDList();
             }
         } catch(POP3Exception e) {
+            e.printStackTrace();
             throw new MailException("Unable to get an updated UUID list.", e);
         }
     }

@@ -117,7 +117,7 @@ public class Controller_Client {
         VBox box = new VBox(15);
         //int page = pageIndex * itemsPerPage();
 
-        for (int i = 0; i < mails.length; i++) {
+        for (int i = 0; i < mails.length && mails[i] != null; i++) {
             HBox element = new HBox();
             final String ind;
 
