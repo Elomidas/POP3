@@ -145,10 +145,12 @@ public class Mailbox {
     //Close connection
     public void Close() throws MailException {
         this.saveStorage();
-        try {
-            m_pop.Disconnect();
-        } catch(POP3Exception e) {
-            throw new MailException("Unable to quit.", e);
+        if(this.Usable()) {
+            try {
+                m_pop.Disconnect();
+            } catch (POP3Exception e) {
+                throw new MailException("Unable to quit.", e);
+            }
         }
     }
 

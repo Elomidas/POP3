@@ -156,4 +156,8 @@ public class Mail {
             m_to.add(to);
         }
     }
+
+    public String getSubject() {
+        return m_subject;
+    }
 }
