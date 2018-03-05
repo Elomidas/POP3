@@ -134,6 +134,7 @@ public class ObjetConnecte {
                 if(this.isFree(m_current.getM_adresseEmail())) {
                     this.lock(m_current.getM_adresseEmail());
                     this.loadMails(m_current);
+                    this.setEmailsUndeleted(m_current);
                     m_etat = POP3_ETAT_TRANSACTION;
                     return ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready";
                 } else {
@@ -146,8 +147,20 @@ public class ObjetConnecte {
         return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
 
+    private void setEmailsUndeleted(Utilisateur utilisateur) {
+
+        List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
+
+        for (Email email: listeEmailsDeUtilisateur
+             ) {
+            email.setM_etat(true);
+            m_listeEmails.set(m_listeEmails.indexOf(email), email);
+        }
+    }
+
     protected String TransactionState(String command, String[] parameters) {
         if(command.equals("QUIT")) {
+            this.quitTransaction();
             return this.quit();
         } else if(command.equals("RETR")) {
             if(parameters.length < 1) {
@@ -220,6 +233,33 @@ public class ObjetConnecte {
         return POP3_REPONSE_POSITIVE;
     }
 
+    private String quitTransaction() {
+        m_continuer = false;
+        if(m_lock) {
+            this.unlock(m_current.getM_adresseEmail());
+        }
+        List<Email> listEmailsToRemove = new ArrayList<>();
+        List<Email> listEmailsOfUser = recupereEmails(m_current);
+        for (Email email: listEmailsOfUser) {
+            if (!email.getM_etat()) {
+                m_listeEmails.remove(email);
+                //TODO call function which drop in the adresseemail.pop
+                listEmailsToRemove.add(email);
+            }
+        }
+
+        for (Email email2: listEmailsToRemove
+             ) {
+            System.out.println("n=\n\n\n\n\n\n\n\n\n\n\n\n\n\nEmail2:");
+            System.out.println(email2.getM_id());
+            System.out.println(email2.getM_destinataire());
+            System.out.println(email2.getM_emetteur());
+            System.out.println(email2.getM_etat() + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        }
+        this.removeMails(m_current, listEmailsToRemove);
+        return POP3_REPONSE_POSITIVE;
+    }
+
     private String retr(String id) {
         Email m = getEmail(id);
         if(m == null) {
@@ -258,8 +298,25 @@ public class ObjetConnecte {
         //Function delete
         String reponse = POP3_REPONSE_NEGATIVE;
         //tag message as deleted
-        //return positive answer or negative if message already tagged as deleted + "message" idMessage + "deleted"
-        return POP3_REPONSE_POSITIVE + " message " + idMessage + "deleted";
+        StringBuilder stringBuilder = new StringBuilder();
+        Email email = getEmail(stringBuilder.append(idMessage).toString());
+        int index = m_listeEmails.indexOf(email);
+        for (Email email2: m_listeEmails
+             ) {
+            System.out.println("Email:");
+            System.out.println(email2.getM_id());
+            System.out.println(email2.getM_destinataire());
+            System.out.println(email2.getM_emetteur());
+            System.out.println(email2.getM_etat());
+        }
+        if (email.getM_etat()) {
+            email.setM_etat(false);
+            m_listeEmails.set(index, email);
+            //return positive answer or negative if message already tagged as deleted + "message" idMessage + "deleted"
+            return POP3_REPONSE_POSITIVE + " message " + idMessage + "deleted";
+        } else {
+            return POP3_REPONSE_NEGATIVE + " message " + idMessage + "already deleted";
+        }
     }
 
     private String stat() {
@@ -422,8 +479,8 @@ public class ObjetConnecte {
         //To be tested
         List<Email> listEmails = new ArrayList<Email>();
         for (Email email: m_listeEmails) {
-            if (email.getM_emetteur().equals(utilisateur.getM_adresseEmail())
-                || email.getM_destinataire().equals(utilisateur.getM_adresseEmail())) {
+            if (email.getM_emetteur().equals(utilisateur)
+                || email.getM_destinataire().equals(utilisateur)) {
                 listEmails.add(email);
             }
         }
@@ -493,6 +550,50 @@ public class ObjetConnecte {
             e.printStackTrace();
         }
         return false;
+    }
+
+    protected int removeMails(Utilisateur u, List<Email> listeEmailsToRemove) {
+        String temp ="";
+        String idMail ="";
+        int i = 0;
+        if(u != null) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
+                BufferedWriter bw = new BufferedWriter(new FileWriter("data/" + u.getM_adresseEmail() + "temp.pop"));
+                idMail = br.readLine();
+                Email email = getEmail(idMail);
+                if (email != null) {
+                    bw.write(email.encodeWithReturn());
+                }
+
+                while ((temp = br.readLine()) != null) {
+                    if (temp.equals(".")) {
+                        idMail = br.readLine();
+                        if (idMail != null) {
+                            email = getEmail(idMail);
+                            if (email != null) {
+                                System.out.println("Email est contenu dans la liste" + idMail);
+
+                                bw.write(email.encodeWithReturn());
+                            } else {
+                                System.out.println("Email pas dans la liste" + idMail);
+                            }
+                        }
+                    }
+                }
+                bw.close();
+                br.close();
+                File oldFile =  new File("data/" + u.getM_adresseEmail() + ".pop");
+                oldFile.delete();
+                File newFile = new File("data/" + u.getM_adresseEmail() + "temp.pop");
+                newFile.renameTo(new File("data/" + u.getM_adresseEmail() + ".pop"));
+            } catch(FileNotFoundException e) {
+                //Do nothing
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return i;
     }
 
 }
