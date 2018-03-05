@@ -15,14 +15,17 @@ public class ObjetConnecte {
     private static final String POP3_REPONSE_NEGATIVE = "-ERR";
     private static final String POP3_REPONSE_POSITIVE = "+OK";
     protected static HashMap<String, Boolean> m_locked;
+    protected static ArrayList<Utilisateur> m_listeUtilisateurs;
+
     static {
         m_locked = new HashMap<>();
+        m_listeUtilisateurs = new ArrayList<>();
+        loadUsersFromFile();
     }
 
     protected boolean m_continuer;
     private String m_etat;
     private ArrayList<Email> m_listeEmails;
-    private ArrayList<Utilisateur> m_listeUtilisateurs;
     protected Utilisateur m_current;
     protected boolean m_lock;
     protected Tcp m_tcp;
@@ -33,14 +36,12 @@ public class ObjetConnecte {
     }
 
     protected void initialize() {
-        m_listeUtilisateurs = new ArrayList<>();
         m_listeEmails = new ArrayList<>();
         m_current = null;
         m_continuer = true;
         m_lock = false;
         m_blankCount = 0;
 
-        this.loadUsersFromFile();
     }
 
     public void Launch() {
@@ -91,7 +92,7 @@ public class ObjetConnecte {
                             break;
                     }
                 }
-
+                System.out.println("Response : " + response);
                 m_tcp.Send(response);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -283,8 +284,14 @@ public class ObjetConnecte {
      */
 
     private boolean checkUser(String username) {
+        for(Utilisateur u : m_listeUtilisateurs) {
+            System.out.println("'" + u.getM_adresseEmail() + "' - " + u.getM_mdp());
+        }
         System.out.println("Check 1");
         Utilisateur u = getUtilisateurParNom(username);
+        if(u == null) {
+            u = getUtilisateurParEmail(username);
+        }
         System.out.println("Check 2");
         if (u != null) {
             m_current = u;
@@ -317,13 +324,11 @@ public class ObjetConnecte {
     }
 
     public Utilisateur getUtilisateurParEmail(String email) {
-        int i = 0;
-        while (i < m_listeUtilisateurs.size()) {
+        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
             Utilisateur utilisateur = m_listeUtilisateurs.get(i);
             if (utilisateur.getM_adresseEmail().equals(email)) {
                 return utilisateur;
             }
-            i++;
         }
         return null;
     }
@@ -338,7 +343,7 @@ public class ObjetConnecte {
         return null;
     }
 
-    protected void loadUsersFromFile() {
+    protected static void loadUsersFromFile() {
         try {
             BufferedReader br = new BufferedReader(new FileReader("data/users.pop"));
             String line = br.readLine();
