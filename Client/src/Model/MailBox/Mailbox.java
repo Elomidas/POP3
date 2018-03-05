@@ -263,7 +263,4 @@ public class Mailbox {
             throw new MailException("Unable to reset this repository.", e);
         }
     }
-
-    //TODO
-    //Sending QUIT command
 }
