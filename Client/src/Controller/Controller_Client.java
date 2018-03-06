@@ -15,6 +15,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 public class Controller_Client {
@@ -63,13 +64,15 @@ public class Controller_Client {
     private Main_Client _mainClient;
 
     private Mailbox _mailbox;
+
+    private HashMap<String, Hyperlink> m_links;
     
 
     /*
     Constructeur
      */
     public Controller_Client(){
-
+        m_links = new HashMap<>();
     }
 
     /*
@@ -81,6 +84,7 @@ public class Controller_Client {
 
     private void creationPagination(){
         int nbPages = (int)Math.ceil(_mailbox.getMailNumber()/(float)itemsPerPage());
+        _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         _pagination.setPageCount(nbPages);
         _pagination.setPageFactory(new Callback<Integer, Node>() {
             @Override
@@ -126,6 +130,7 @@ public class Controller_Client {
             Label destinataire = new Label(mails[i].getFrom());
             Label objet = new Label(mails[i].getSubject());
             Text contenu = new Text(mails[i].getMessage());
+            m_links.put(mails[i].getID(), link);
 
             element.getChildren().addAll(link, destinataire, objet);
 
@@ -257,8 +262,9 @@ public class Controller_Client {
 
         if(resultat.get() == btnOui) {
             try {
-                _pagination..getChildrenUnmodifiable().get(0).setStyle("-fx-text-fill: red");
+                //_pagination.getControlCssMetaData();
                 _mailbox.DeleteMail(ind);
+                m_links.get(ind).setStyle("-fx-color: red");
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
                 //todo

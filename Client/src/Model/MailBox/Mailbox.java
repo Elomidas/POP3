@@ -261,6 +261,7 @@ public class Mailbox {
     public void DeleteMail(String id) throws MailException {
         this.assertUsable();
         try {
+            m_mails.get(id).Delete();
             m_pop.Delete(id);
         } catch(POP3Exception e) {
             throw new MailException("Unable to delete mail " + id + ".", e);
