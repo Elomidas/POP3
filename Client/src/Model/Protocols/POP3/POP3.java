@@ -90,7 +90,48 @@ public class POP3 {
         return this.Response();
     }
 
-    /*  Try to connect client to server through Model.Protocols.TCP.
+    /*  Check if a POP3 response is positive
+     *  Parameters :
+     *      > response : String containing the response to check
+     *  Return :
+     *      > boolean representing response validity
+     */
+    protected boolean checkResponse(String response) {
+        if(TestRegex.CheckPOP(response) == false) {
+            m_error = "Server respond to with :\n  " + response;
+            System.out.println(m_error);
+            return false;
+        }
+        return true;
+    }
+
+    /*  Send a message and wait the response
+     *  Check if the response is positive.
+     *  Parameters :
+     *      msg :   String containing the message to be sent
+     *  Return :
+     *      String containing the server's response
+     *  Throw :
+     *      POP3Exception in case of error.
+     */
+
+    protected boolean checkedDialog(String message) throws POP3Exception {
+        String response = this.dialog(message);
+        return this.checkResponse(response);
+    }
+
+    /*
+     *
+     */
+    protected String getDialogResponseIfValid(String message) throws POP3Exception {
+        String response = this.dialog(message);
+        if(this.checkResponse(response)) {
+            return response;
+        }
+        return "";
+    }
+
+    /*  Try to connect client to server through TCP.
      *  Parameters :
      *      String containing the server address (can be an IP address as an URL).
      *      Integer containing the port to target on the server.
