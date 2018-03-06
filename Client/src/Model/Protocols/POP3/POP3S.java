@@ -80,6 +80,7 @@ public class POP3S extends POP3 {
                     .append(login)
                     .append(" ")
                     .append(digestedPassword);
+            //TODO
             //String response = dialog()
         }
         return false;
