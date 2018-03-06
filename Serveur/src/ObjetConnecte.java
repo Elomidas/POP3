@@ -147,17 +147,6 @@ public class ObjetConnecte {
         return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
 
-    private void setEmailsUndeleted(Utilisateur utilisateur) {
-
-        List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
-
-        for (Email email: listeEmailsDeUtilisateur
-             ) {
-            email.setM_etat(true);
-            m_listeEmails.set(m_listeEmails.indexOf(email), email);
-        }
-    }
-
     protected String TransactionState(String command, String[] parameters) {
         if(command.equals("QUIT")) {
             this.quitTransaction();
@@ -248,14 +237,6 @@ public class ObjetConnecte {
             }
         }
 
-        for (Email email2: listEmailsToRemove
-             ) {
-            System.out.println("n=\n\n\n\n\n\n\n\n\n\n\n\n\n\nEmail2:");
-            System.out.println(email2.getM_id());
-            System.out.println(email2.getM_destinataire());
-            System.out.println(email2.getM_emetteur());
-            System.out.println(email2.getM_etat() + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-        }
         this.removeMails(m_current, listEmailsToRemove);
         return POP3_REPONSE_POSITIVE;
     }
@@ -329,12 +310,6 @@ public class ObjetConnecte {
         return POP3_REPONSE_POSITIVE + " " + number + " " + size;
     }
 
-    private void fermetureAutreQueQuit() {
-        //TODO
-        //All
-        //close something
-    }
-
     /*  ###
      *  # Check functions
      *  ###
@@ -373,12 +348,6 @@ public class ObjetConnecte {
      *  # Users
      *  ###
      */
-
-    public void ajouteUtilisateur(String nom, String email, String mdp) {
-
-        Utilisateur utilisateur = new Utilisateur(0, nom, mdp, email);
-        m_listeUtilisateurs.add(utilisateur);
-    }
 
     public Utilisateur getUtilisateurParEmail(String email) {
         for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
@@ -439,32 +408,6 @@ public class ObjetConnecte {
      *  # Emails
      *  ###
      */
-
-    public void ajouteEmail(String emailEmetteur, String emailDestinataire, String message) {
-        Utilisateur emetteur = getUtilisateurParEmail(emailEmetteur);
-        Utilisateur destinataire = getUtilisateurParEmail(emailDestinataire);
-        String id = "" + UUID.randomUUID();
-        if (emetteur == null || destinataire == null ) {
-            System.out.println("Erreur pas d'emetteur ou de destinataire");
-        } else {
-            Email email = new Email(id, message, destinataire, emetteur, true);
-            m_listeEmails.add(email);
-            //enregistreEmail(emailEmetteur,emailDestinataire, message, uuid);
-        }
-    }
-
-    public void enregistreEmail(String emailEmetteur, String emailDestinataire, String message, UUID id) {
-
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream("./data/"+ emailEmetteur + "_" + emailDestinataire + "_" + id +".txt");
-            out.write(message.getBytes());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public Email getEmail(String emailId){
         for (Email email: m_listeEmails) {
@@ -563,7 +506,7 @@ public class ObjetConnecte {
                 idMail = br.readLine();
                 Email email = getEmail(idMail);
                 if (email != null) {
-                    bw.write(email.encodeWithReturn());
+                    bw.write(email.encode());
                 }
 
                 while ((temp = br.readLine()) != null) {
@@ -574,7 +517,7 @@ public class ObjetConnecte {
                             if (email != null) {
                                 System.out.println("Email est contenu dans la liste" + idMail);
 
-                                bw.write(email.encodeWithReturn());
+                                bw.write(email.encode());
                             } else {
                                 System.out.println("Email pas dans la liste" + idMail);
                             }
@@ -594,6 +537,17 @@ public class ObjetConnecte {
             }
         }
         return i;
+    }
+    
+    private void setEmailsUndeleted(Utilisateur utilisateur) {
+
+        List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
+
+        for (Email email: listeEmailsDeUtilisateur
+                ) {
+            email.setM_etat(true);
+            m_listeEmails.set(m_listeEmails.indexOf(email), email);
+        }
     }
 
 }
