@@ -45,6 +45,20 @@ public class Controller_Connexion {
         return _mailBox;
     }
 
+    public void close(){
+        try {
+            _mailBox.Close();
+        } catch (MailException e) {
+            //gestion erreur de connexion dans les logs
+            //todo
+            //affichage message erreur à l'utilisateur
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Une erreur est survenue.");
+            alert.setContentText(e.getMessage());
+            alert.show();
+        }
+    }
+
     @FXML
     private void initialize(){
         _btnConnexion.setDisable(true);

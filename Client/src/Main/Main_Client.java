@@ -84,7 +84,7 @@ public class Main_Client extends Main_Connexion {
 
     @Override
     public void stop(){
-        //todo
+        //Ferme la connexion
         _controllerClient.FinSession();
     }
 

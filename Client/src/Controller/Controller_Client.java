@@ -257,6 +257,7 @@ public class Controller_Client {
 
         if(resultat.get() == btnOui) {
             try {
+                _pagination..getChildrenUnmodifiable().get(0).setStyle("-fx-text-fill: red");
                 _mailbox.DeleteMail(ind);
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
