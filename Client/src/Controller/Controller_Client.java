@@ -65,14 +65,14 @@ public class Controller_Client {
 
     private Mailbox _mailbox;
 
-    private HashMap<String, Hyperlink> m_links;
+    private HashMap<String, HBox> m_ligne;
     
 
     /*
     Constructeur
      */
     public Controller_Client(){
-        m_links = new HashMap<>();
+        m_ligne = new HashMap<>();
     }
 
     /*
@@ -92,7 +92,7 @@ public class Controller_Client {
                 if(pageIndex >= nbPages)
                     return null;
                 else
-                    return createPage(pageIndex,recuperationMails(pageIndex));
+                    return createPage(recuperationMails(pageIndex));
             }
         });
     }
@@ -117,7 +117,7 @@ public class Controller_Client {
     /*
     Crée une nouvelle page
      */
-    private VBox createPage(int pageIndex, Mail[] mails) {
+    private VBox createPage(Mail[] mails) {
         VBox box = new VBox(15);
         //int page = pageIndex * itemsPerPage();
         int length = mails.length;
@@ -126,25 +126,31 @@ public class Controller_Client {
             final String ind;
 
             Hyperlink link = new Hyperlink("Mail " + mails[i].getID() + " :");
-            //link.setVisited(true);
             Label destinataire = new Label(mails[i].getFrom());
             Label objet = new Label(mails[i].getSubject());
             Text contenu = new Text(mails[i].getMessage());
-            m_links.put(mails[i].getID(), link);
 
             element.getChildren().addAll(link, destinataire, objet);
-
             element.setSpacing(25);
+
+            m_ligne.put(mails[i].getID(), element);
+
             box.getChildren().add(element);
 
             ind = mails[i].getID();
+
+            if(mails[i].Deleted()){
+                for(Node mail : element.getChildren()){
+                    mail.setStyle("-fx-text-fill : red;");
+                }
+            }
             link.setOnMouseClicked(MouseEvent -> updateTF(ind, destinataire.getText(), objet.getText(), contenu));
         }
         return box;
     }
 
     /*
-    Initialise la fenêtre, en particulier la pagination
+    Initialise la fenêtre
      */
     @FXML
     private void initialize(){
@@ -262,10 +268,12 @@ public class Controller_Client {
 
         if(resultat.get() == btnOui) {
             try {
-                //_pagination.getControlCssMetaData();
                 _mailbox.DeleteMail(ind);
-                m_links.get(ind).setStyle("-fx-color: red");
-            } catch (MailException e) {
+                for(Node mail : m_ligne.get(ind).getChildren()){
+                    mail.setStyle("-fx-text-fill : red;");
+                }
+
+            } catch (/*MailException e*/Exception e) {
                 //gestion erreur de connexion dans les logs
                 //todo
                 //affichage message erreur à l'utilisateur

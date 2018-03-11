@@ -88,6 +88,8 @@ public class Main_Connexion extends Application {
     @Override
     public void stop(){
         //On pense bien à fermer la connexion...etc.
+        //a modifier
+        //TODO
         _controllerConnexion.close();
     }
 
