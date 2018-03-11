@@ -76,6 +76,30 @@ public class Email {
         return sbuilder.toString();
     }
 
+    public String encodeWithReturn() {
+        StringBuilder sbuilder = new StringBuilder();
+        sbuilder.append(m_id)
+                .append("\r\n")
+                .append(_DATE)
+                .append(m_date)
+                .append("\r\n")
+                .append(_FROM)
+                .append(m_emetteur.getM_adresseEmail())
+                .append("\r\n")
+                .append(_SUBJECT)
+                .append(m_subject)
+                .append("\r\n")
+                .append(_MIME)
+                .append("\r\n")
+                .append(_CONTENT)
+                .append("\r\n")
+                .append(m_message)
+                .append("\r\n")
+                .append("\r\n")
+                .append(_EOM);
+        return sbuilder.toString();
+    }
+
     public boolean getM_etat() {
         return m_etat;
     }
