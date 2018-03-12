@@ -68,7 +68,7 @@ public class POP3S extends POP3 {
         return m_authenticated;
     }
 
-    protected boolean APOP(String login, String password) {
+    protected boolean APOP(String login, String password) throws POP3Exception {
         if(checkKey()) {
             StringBuilder mBuilder = new StringBuilder();
             StringBuilder sBuilder = new StringBuilder();
@@ -80,8 +80,12 @@ public class POP3S extends POP3 {
                     .append(login)
                     .append(" ")
                     .append(digestedPassword);
-            //TODO
-            //String response = dialog()
+            String response = dialog(sBuilder.toString());
+            if(TestRegex.CheckPOP(response)) {
+                return true;
+            } else {
+                throw new POP3Exception("Unable to authenticate : \n" + response);
+            }
         }
         return false;
     }
