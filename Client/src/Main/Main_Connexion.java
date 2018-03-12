@@ -131,8 +131,7 @@ public class Main_Connexion extends Application {
      */
     @Override
     public void stop(){
-        //todo
-        //On pense bien à fermer la connexion...etc.
+        _controllerConnexion.close();
     }
 
     /**
@@ -142,6 +141,5 @@ public class Main_Connexion extends Application {
     public static void main(String[] args)
     {
         launch(args);
-
     }
 }

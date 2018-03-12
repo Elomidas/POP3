@@ -104,15 +104,19 @@ public class Main_Client extends Main_Connexion {
         }
     }
 
+    /**
+     * Redéfinition de la fermeture lors d'un clic sur la croix rouge
+     * Ferme la connexion
+     */
     @Override
     public void stop(){
-        //todo
         _controllerClient.FinSession();
     }
 
+    /**
+     * Gestion du retour au menu de connexion
+     */
     public void RetourConnexion(){
-        //On indique à la couche métier et au serveur que le client s'est déconnecté
-
         _mainConnexion = new Main_Connexion();
         _mainConnexion.start(primaryStage);
     }

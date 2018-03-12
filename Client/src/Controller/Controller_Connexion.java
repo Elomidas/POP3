@@ -75,6 +75,23 @@ public class Controller_Connexion {
     }
 
     /**
+     * Fonction appelée par le main lors d'un clic sur la croix rouge
+     */
+    public void close(){
+        try {
+            _mailBox.Close();
+        } catch (MailException e) {
+            //gestion erreur de connexion dans les logs
+            //todo
+            //affichage message erreur à l'utilisateur
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Une erreur est survenue.");
+            alert.setContentText(e.getMessage());
+            alert.show();
+        }
+    }
+
+    /**
      * Redéfinition de la fonction initialisation
      * Par défaut, le bouton est désactivé
      */

@@ -1,6 +1,6 @@
 # Compiled class file
 *.class
-
+.idea/
 # Log file
 *.log
 
@@ -23,3 +23,5 @@ hs_err_pid*
 
 #intellij
 */.idea/
+Client/.idea/
+Serveur/

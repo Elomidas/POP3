@@ -18,6 +18,57 @@ Content-Transfer-Encoding: quoted-printable
 Another again 13
 
 .
+13
+
+Date: null
+From: mtardy@email.comSubject: objet14
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Another again 14
+
+.
+0
+Date: null
+From: mtardy@email.comSubject: objet1
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+This is a message
+
+.
+1
+Date: null
+From: mtardy@email.comSubject: objet2
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+This is another message
+
+.
+2
+Date: null
+From: mtardy@email.comSubject: objet3
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Another again
+
+.
+3
+Date: null
+From: mtardy@email.comSubject: objet4
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Another again 4
+
+.
 4
 Date: null
 From: mtardy@email.comSubject: objet5
@@ -56,17 +107,6 @@ Content-Type: text/plain; charset: UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 Another again 8
-
-.
-13
-
-Date: null
-From: mtardy@email.comSubject: objet14
-MIME-Version: 1.0
-Content-Type: text/plain; charset: UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Another again 14
 
 .
 8
