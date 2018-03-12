@@ -13,6 +13,7 @@ public class Mail {
     protected ArrayList<MailAddress> m_to;
     protected String m_subject;
     protected String m_message;
+    protected boolean m_deleted;
 
     protected static final String _DATE = "Date: ";
     protected static final String _FROM = "From: ";
@@ -34,6 +35,7 @@ public class Mail {
         m_subject = "";
         m_message = "";
         m_date = Date.from(Instant.now()).toString();
+        m_deleted = false;
     }
 
     public Mail(String encrypted, String id) throws MailException {
@@ -59,6 +61,14 @@ public class Mail {
         this.m_from = MailAddress.createFromString(fields[1]);
         this.m_subject = fields[2];
         this.m_message = fields[3];
+    }
+
+    public void Delete() {
+        m_deleted = true;
+    }
+
+    public boolean Deleted() {
+        return m_deleted;
     }
 
     protected String encode() {
