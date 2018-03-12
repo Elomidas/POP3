@@ -23,6 +23,12 @@ public class POP3S extends POP3 {
         }
     }
 
+    /**
+     * Trying to join the server
+     * @param address   Server's address (IP or URL)
+     * @param port      Port on which trying to join the server
+     * @throws POP3Exception Exception during connection
+     */
     @Override
     public void Connect(String address, int port) throws POP3Exception {
         super.Connect(address, port);
@@ -43,15 +49,12 @@ public class POP3S extends POP3 {
         }
     }
 
-    /*  Try to authenticate the user on the server
-     *  Parameters :
-     *      login :     String containing the username
-     *      password :  String containing the password for the given username
-     *  Return :
-     *      true :  Successfully authenticated
-     *      false : Error in login and/or password
-     *  Throw :
-     *      POP3Exception in case of other error.
+    /**
+     * Authentication function with password encoded through MD5 protocol
+     * @param login     User's login
+     * @param password  User's password
+     * @return true if authentication succeeded, false else
+     * @throws POP3Exception Error with authentication
      */
     @Override
     public boolean Authentication(String login, String password) throws POP3Exception {
@@ -68,15 +71,17 @@ public class POP3S extends POP3 {
         return m_authenticated;
     }
 
-
+    /**
+     * Send APOP command
+     * @param login     User's login
+     * @param password  User's password
+     * @return true if authentication succeeded, false else
+     * @throws POP3Exception Error during message sending
+     */
     protected boolean APOP(String login, String password) throws POP3Exception {
         if(checkKey()) {
-            StringBuilder mBuilder = new StringBuilder();
+            String digestedPassword = this.encrypt(password);
             StringBuilder sBuilder = new StringBuilder();
-            mBuilder.append(m_secureKey)
-                    .append(password);
-            byte[] digestedBytes = m_digest.digest(mBuilder.toString().getBytes());
-            String digestedPassword = String.format("%02x", digestedBytes);
             sBuilder.append("APOP ")
                     .append(login)
                     .append(" ")
@@ -91,6 +96,27 @@ public class POP3S extends POP3 {
         return false;
     }
 
+    /**
+     * Encrypt the string given in parameter with the secure key previously get
+     * @param clear String to be encrypted
+     * @return Encrypted String
+     * @throws POP3Exception If secure key is not set
+     */
+    protected String encrypt(String clear) throws POP3Exception {
+        if(this.checkKey()) {
+            throw new POP3Exception("Secure Key not set");
+        }
+        StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append(m_secureKey)
+                .append(clear);
+        byte[] digestedBytes = m_digest.digest(sBuilder.toString().getBytes());
+        return String.format("%02x", digestedBytes);
+    }
+
+    /**
+     * Check if secure key is correctly set
+     * @return true if secure key is correct, false else
+     */
     protected  boolean checkKey() {
         return TestRegex.CheckMD5(m_secureKey);
     }
