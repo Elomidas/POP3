@@ -67,19 +67,21 @@ public class Mailbox {
     }
 
     protected void saveStorage() {
-        try {
+        if((m_user != null) && (m_mails != null)) {
+            try {
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
+                BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
 
-            Set<String> keys = m_mails.keySet();
-            for(String key : keys) {
-                writer.write(key + "\n");
-                writer.write(m_mails.get(key).getEncoded());
+                Set<String> keys = m_mails.keySet();
+                for (String key : keys) {
+                    writer.write(key + "\n");
+                    writer.write(m_mails.get(key).getEncoded());
+                }
+
+                writer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            writer.close();
-        } catch(Exception e) {
-            e.printStackTrace();
         }
     }
 
