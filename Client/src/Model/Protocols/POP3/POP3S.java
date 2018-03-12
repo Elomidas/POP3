@@ -60,13 +60,14 @@ public class POP3S extends POP3 {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
         if(m_authenticated) {
-            throw new POP3Exception("Already authenticate.");
+            throw new POP3Exception("Already authenticated.");
         }
         if(APOP(login, password)) {
             m_authenticated = true;
         }
         return m_authenticated;
     }
+
 
     protected boolean APOP(String login, String password) throws POP3Exception {
         if(checkKey()) {
