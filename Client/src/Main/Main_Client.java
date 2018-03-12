@@ -12,22 +12,48 @@ import Controller.*;
 
 public class Main_Client extends Main_Connexion {
 
+    /**
+     * Controlleur utilisé poru le client
+     */
     private Controller_Client _controllerClient;
+
+    /**
+     *
+     */
     private Main_Connexion _mainConnexion;
+
+    /**
+     * MailBox utilisée
+     */
     private Mailbox _mailbox;
 
+    /**
+     * Constructeur par défaut
+     */
     public Main_Client(){
 
     }
 
+    /**
+     * Constructeur surchargé
+     * @param mailbox
+     */
     public Main_Client(Mailbox mailbox){
         _mailbox = mailbox;
     }
 
+    /**
+     *
+     * @return
+     */
     public Mailbox getMailbox() {
         return _mailbox;
     }
 
+    /**
+     * Redéfinition de la fonction start
+     * @param primaryStage
+     */
     @Override
     public void start(Stage primaryStage) {
         super.primaryStage = primaryStage;
@@ -61,21 +87,17 @@ public class Main_Client extends Main_Connexion {
     }
 
     /**
-     * Shows the person overview inside the root layout.
+     * Shows the client windows inside the root layout.
      */
     private void afficheClient() {
         try {
-            // Load person overview.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main_Client.class.getResource("../View/Client.fxml"));
             AnchorPane personOverview = (AnchorPane) loader.load();
 
-
             _controllerClient = loader.getController();
             _controllerClient.SetMain(this);
 
-
-            // Set person overview into the center of root layout.
             rootLayout.setCenter(personOverview);
         } catch (IOException e) {
             e.printStackTrace();
