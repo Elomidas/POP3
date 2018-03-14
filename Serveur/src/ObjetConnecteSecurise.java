@@ -2,7 +2,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,6 +22,8 @@ public class ObjetConnecteSecurise {
     private static final String POP3_REPONSE_POSITIVE = "+OK";
     protected static HashMap<String, Boolean> m_locked;
     protected static ArrayList<Utilisateur> m_listeUtilisateurs;
+    private Timestamp timeConnexion;
+    private int processId;
 
     static {
         m_locked = new HashMap<>();
@@ -118,18 +120,38 @@ public class ObjetConnecteSecurise {
                 mgmt.getClass().getDeclaredMethod("getProcessId");
         pid_method.setAccessible(true);
 
-        int pid = (Integer) pid_method.invoke(mgmt);
-        return pid;
+        this.processId = (Integer) pid_method.invoke(mgmt);
+        return processId;
     }
 
     public Long getTimestamp(){
-        Timestamp timestamp = new Timestamp(currentTimeMillis());
-        return  timestamp.getTime();
+        this.timeConnexion = new Timestamp(System.currentTimeMillis());
+        return  timeConnexion.getTime();
 
     }
 
     public String generateTimbre(String username) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
-        return getProcessId()+"."+getTimestamp()+"@"+username;
+        return "<"+getProcessId()+"."+getTimestamp()+"@"+username+">";
+    }
+
+    public boolean decrypteTimbre(String encryptUser) throws NoSuchAlgorithmException {
+        StringBuilder decrypt = new StringBuilder();
+
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        decrypt.append(timeConnexion)
+                .append(m_current.getM_mdp())
+                .append(processId);
+        md.update(decrypt.toString().getBytes());
+
+        byte byteData[] = md.digest();
+        StringBuffer sb = new StringBuffer();
+        for(int i = 0; i < byteData.length; i++){
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+        if(sb.equals(encryptUser))
+            return true;
+        return false;
     }
 
     /*  ###
@@ -168,8 +190,14 @@ public class ObjetConnecteSecurise {
                     this.setEmailsUndeleted(m_current);
                     m_etat = POP3_ETAT_TRANSACTION;
                     try {
-                        return ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready" + "<" + generateTimbre() + ">";
-                    } catch (NoSuchAlgorithmException e) {
+                        return ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready"  + generateTimbre(m_current.getM_adresseEmail());
+                    }  catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchFieldException e) {
                         e.printStackTrace();
                     }
                 } else {
