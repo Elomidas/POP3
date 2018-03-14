@@ -3,6 +3,9 @@ import org.omg.CORBA.OBJECT_NOT_EXIST;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -232,7 +235,6 @@ public class ObjetConnecte {
         for (Email email: listEmailsOfUser) {
             if (!email.getM_etat()) {
                 m_listeEmails.remove(email);
-                //TODO call function which drop in the adresseemail.pop
                 listEmailsToRemove.add(email);
             }
         }
@@ -275,7 +277,6 @@ public class ObjetConnecte {
     }
 
     private String dele(int idMessage) {
-        //TODO
         //Function delete
         String reponse = POP3_REPONSE_NEGATIVE;
         //tag message as deleted
