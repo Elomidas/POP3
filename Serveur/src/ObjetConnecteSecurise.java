@@ -16,7 +16,6 @@ import static java.lang.System.*;
  */
 public class ObjetConnecteSecurise {
     private static final String POP3_ETAT_AUTORISATION = "Autorisation";
-    private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
     private static final String POP3_ETAT_TRANSACTION = "Transaction";
     private static final String POP3_REPONSE_NEGATIVE = "-ERR";
     private static final String POP3_REPONSE_POSITIVE = "+OK";
@@ -57,6 +56,11 @@ public class ObjetConnecteSecurise {
 
         m_etat = POP3_ETAT_AUTORISATION;
         String input;
+        try {
+            m_tcp.Send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
+        } catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         while (m_continuer) {
             try {
                 out.println("Wait...");
@@ -87,9 +91,6 @@ public class ObjetConnecteSecurise {
                     switch (m_etat) {
                         case ObjetConnecteSecurise.POP3_ETAT_AUTORISATION:
                             response = this.AuthorisationState(command, parameters);
-                            break;
-                        case ObjetConnecteSecurise.POP3_ETAT_AUTHENTIFICATION:
-                            response = this.AuthenticationState(command, parameters);
                             break;
                         case ObjetConnecteSecurise.POP3_ETAT_TRANSACTION:
                             response = this.TransactionState(command, parameters);
@@ -130,8 +131,8 @@ public class ObjetConnecteSecurise {
 
     }
 
-    public String generateTimbre(String username) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
-        return "<"+getProcessId()+"."+getTimestamp()+"@"+username+">";
+    public String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+        return "<"+getProcessId()+"."+getTimestamp()+"@localhost>";
     }
 
     public boolean decrypteTimbre(String encryptUser) throws NoSuchAlgorithmException {
@@ -160,52 +161,36 @@ public class ObjetConnecteSecurise {
      */
 
     protected String AuthorisationState(String command, String[] parameters) {
-        if (command.equals("USER")) {
+        if (command.equals("APOP")) {
             if(parameters.length < 1) {
                 return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
             String username = parameters[0];
+            String password = parameters[1];
             out.println("username : " + username);
+
             if(this.checkUser(username)) {
-                m_etat = POP3_ETAT_AUTHENTIFICATION;
-                return ObjetConnecteSecurise.POP3_REPONSE_POSITIVE;
+                try {
+                    if(this.decrypteTimbre(password)) {
+                        if (this.isFree(m_current.getM_adresseEmail())) {
+                            this.lock(m_current.getM_adresseEmail());
+                            this.loadMails(m_current);
+                            this.setEmailsUndeleted(m_current);
+                            m_etat = POP3_ETAT_TRANSACTION;
+                            return ObjetConnecteSecurise.POP3_REPONSE_POSITIVE;
+                        } else {
+                            return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
+                        }
+                    } else {
+                        return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " password is not valid";
+                    }
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+
             } else {
                 return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " username is not valid";
             }
-        }
-        return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
-    }
-
-    protected String AuthenticationState(String command, String[] parameters) {
-        if(command.equals("PASS")) {
-            if(parameters.length < 1) {
-                return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " parameter missing.";
-            }
-            String password = parameters[0];
-
-            if(this.checkPass(password)) {
-                if(this.isFree(m_current.getM_adresseEmail())) {
-                    this.lock(m_current.getM_adresseEmail());
-                    this.loadMails(m_current);
-                    this.setEmailsUndeleted(m_current);
-                    m_etat = POP3_ETAT_TRANSACTION;
-                    try {
-                        return ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready"  + generateTimbre(m_current.getM_adresseEmail());
-                    }  catch (NoSuchMethodException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
-                }
-            }
-        } else if(command.equals("QUIT")) {
-            return this.quit();
         }
         return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
