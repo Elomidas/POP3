@@ -31,6 +31,21 @@ Il n'était pas nécessaire de permettre à celui-ci d'envoyer des nouveaux mess
 
 ## III - La partie Serveur
 
+La partie Serveur a été faite en deux étapes. Dans un premier temps, nous avons géré la connexion
+de l'utilisateur par le protocole TCP, puis la communication entre le client et le serveur grâce aux
+commandes POP3.
 
+### 1 - Connexion TCP
+Avant qu'un utilisateur n'essaye de se connecter, on lance le serveur sur un port choisi. Pour 
+cela, on instancie la classe SocketServer. Cet objet prendra en charge la transimission des données.
+Nous avons défini une boucle sans fin pour que le serveur puisse accepter toutes les connexions
+tant que celles-ci se font sur le bon port.
+
+Lorsqu'un client se connecte sur le bon port, la méthode accept() de la classe SocketServer va
+retourner un objet Socket représentant la connexion du client. Pour pouvoir traiter plusieurs
+connexion à la fois, un thread va être créé à partir de cet objet. Le serveur et le client pourront par la suite s'échanger des données 
+grâce aux méthodes receive() et send() qui utilisent respectivement des objets BufferedInputStream et PrintStream.
+
+### 2 - POP3
 
 
