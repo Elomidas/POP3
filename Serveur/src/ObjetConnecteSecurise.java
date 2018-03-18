@@ -362,26 +362,16 @@ public class ObjetConnecteSecurise {
      */
 
     private boolean checkUser(String username) {
-        for(Utilisateur u : m_listeUtilisateurs) {
-            out.println("'" + u.getM_adresseEmail() + "' - " + u.getM_mdp());
-        }
-        out.println("Check 1");
+
         Utilisateur u = getUtilisateurParNom(username);
         if(u == null) {
             u = getUtilisateurParEmail(username);
         }
-        out.println("Check 2");
         if (u != null) {
             m_current = u;
-            out.println("Check 3");
             return true;
         }
-        out.println("Check 4");
         return false;
-    }
-
-    private boolean checkPass(String password) {
-        return m_current.checkPassword(password);
     }
 
     /*  Check if a mail repository is free or locked
