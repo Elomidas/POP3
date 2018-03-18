@@ -162,7 +162,7 @@ public class ObjetConnecteSecurise {
 
     protected String AuthorisationState(String command, String[] parameters) {
         if (command.equals("APOP")) {
-            if(parameters.length < 1) {
+            if(parameters.length <= 1) {
                 return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
             String username = parameters[0];
