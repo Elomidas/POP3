@@ -12,6 +12,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import Model.MyLogger.MyLogger;
+
+import java.util.logging.Logger;
 
 /**
  * Controlleur associé à la fenêtre de connexion
@@ -80,6 +83,8 @@ public class Controller_Connexion {
     public void close(){
         try {
             _mailBox.Close();
+            Logger logs = _main.getLogs();
+            logs.info("test");
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
             //todo

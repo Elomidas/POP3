@@ -1,6 +1,7 @@
 package Main;
 
 import Controller.Controller_Connexion;
+import Model.MyLogger.MyLogger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -34,10 +35,27 @@ public class Main_Connexion extends Application {
     private Main_Client _mainClient;
 
     /**
+     * Logs utilisé pour notre application
+     */
+    protected MyLogger logs;
+
+    /**
      * Constructeur par défaut
      */
     public Main_Connexion(){
+        logs = new MyLogger();
+    }
 
+    public Main_Connexion(MyLogger logs){
+        this.logs = logs;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public MyLogger getLogs() {
+        return logs;
     }
 
     /**
@@ -122,7 +140,7 @@ public class Main_Connexion extends Application {
      * Lance la fenetre du client lors d'une connexion réussie
      */
     public void lancerClient(){
-        _mainClient = new Main_Client(_controllerConnexion.getMailbox());
+        _mainClient = new Main_Client(_controllerConnexion.getMailbox(), logs);
         _mainClient.start(primaryStage);
     }
 

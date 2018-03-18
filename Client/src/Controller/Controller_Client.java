@@ -321,6 +321,8 @@ public class Controller_Client {
      * Met à jour notre pagination en cas d'appui sur le bouton actualiser
      */
     private void UpdatePagination(){
+        //Non fonctionnel !!!
+        //TODO
         int pageActuelle = _pagination.getCurrentPageIndex();
         //ATTENTIOn indice
         for (int i=pageActuelle; i<_pagination.getMaxPageIndicatorCount()+1;i++){
@@ -353,7 +355,7 @@ public class Controller_Client {
                     mail.setStyle("-fx-text-fill : red;");
                 }
 
-            } catch (/*MailException e*/Exception e) {
+            } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
                 //todo
                 //affichage message erreur à l'utilisateur

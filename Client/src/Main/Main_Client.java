@@ -3,6 +3,7 @@ package Main;
 import java.io.IOException;
 
 import Model.MailBox.Mailbox;
+import Model.MyLogger.MyLogger;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -38,7 +39,8 @@ public class Main_Client extends Main_Connexion {
      * Constructeur surchargé
      * @param mailbox
      */
-    public Main_Client(Mailbox mailbox){
+    public Main_Client(Mailbox mailbox, MyLogger logs){
+        super(logs);
         _mailbox = mailbox;
     }
 
