@@ -13,43 +13,97 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-
+/**
+ * Controlleur associé à la fenêtre de connexion
+ */
 public class Controller_Connexion {
 
+    /**
+     * champ correspondant à l'adresse mail
+     */
     @FXML
     private TextField _tfAdresseMail;
 
+    /**
+     * champ correspondant au mot de passe
+     */
     @FXML
     private TextField _tfMotDePasse;
 
+    /**
+     * champ correspondant à l'adresse IP
+     */
     @FXML
     private TextField _tfAdresseIP;
 
+    /**
+     * Champ correspondant au port
+     */
     @FXML
     private TextField _tfPort;
 
+    /**
+     * Bouton utilisé pour se connecter à une boite mail
+     */
     @FXML
     private Button _btnConnexion;
 
-
+    /**
+     * Mail utilisé
+     */
     private Main_Connexion _main;
 
+    /**
+     * Objet mailBox correspondant à la messagerie ou on se connecte
+     */
     private Mailbox _mailBox;
 
+    /**
+     * Constructeur
+     */
     public Controller_Connexion(){
         _mailBox = new Mailbox();
 
     }
 
+    /**
+     *
+     * @return mailBox à laquelle on est connecté
+     */
     public Mailbox getMailbox(){
         return _mailBox;
     }
 
+    /**
+     * Fonction appelée par le main lors d'un clic sur la croix rouge
+     */
+    public void close(){
+        try {
+            _mailBox.Close();
+        } catch (MailException e) {
+            //gestion erreur de connexion dans les logs
+            //todo
+            //affichage message erreur à l'utilisateur
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Une erreur est survenue.");
+            alert.setContentText(e.getMessage());
+            alert.show();
+        }
+    }
+
+    /**
+     * Redéfinition de la fonction initialisation
+     * Par défaut, le bouton est désactivé
+     */
     @FXML
     private void initialize(){
         _btnConnexion.setDisable(true);
     }
 
+    /**
+     * Fonction utilisée pour se connecter lorsque l'on active le bouton de connection
+     * En cas d'erreur, une fenêtre affiche une erreur avec le problème rencontré
+     */
     private void connexion(){
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
@@ -89,6 +143,10 @@ public class Controller_Connexion {
         });
     }
 
+    /**
+     * Gestion de l'activation du bouton
+     * Le bouton sort de l'état désactivé si tous les champs ont été correctement remplis
+     */
     private void gestionBtnConnexion(){
         if((_tfPort.getText().matches("[0-9]+")) &&
                 TestRegex.CheckMail(_tfAdresseMail.getText()) &&
@@ -99,6 +157,10 @@ public class Controller_Connexion {
         }
     }
 
+    /**
+     * Déifnit le main à utiliser
+     * @param main Main_Connexion que l'on utilise
+     */
     public void setMain(Main_Connexion main) {
         this._main = main;
         _btnConnexion.setOnMouseClicked(MouseEvent -> connexion());

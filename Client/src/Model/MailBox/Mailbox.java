@@ -69,7 +69,7 @@ public class Mailbox {
     protected void saveStorage() {
         try {
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(m_user.getAddress() + ".pop"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
 
             Set<String> keys = m_mails.keySet();
             for(String key : keys) {
@@ -192,24 +192,29 @@ public class Mailbox {
         if(size > length) {
             size = length;
         }
-        Mail[] array = new Mail[size];
-        for(int i = 0; i < size; i++) {
-            String UUID = m_UUIDs[first+i];
-            //If we didn't retrieve this mail before, we retrieve it now
-            if(m_mails.containsKey(UUID) == false) {
-                String message;
-                try {
-                    message = m_pop.getMail(UUID);
-                } catch(POP3Exception e) {
-                    throw new MailException("Unable to create mail with UUID " + UUID, e);
+        Mail[] array = new Mail[0];
+        if(size > 0) {
+            array = new Mail[size];
+            int fromLast = m_UUIDs.length - first - 1;
+            for (int i = 0; i < size; i++) {
+                String UUID = m_UUIDs[fromLast - i];
+                //If we didn't retrieve this mail before, we retrieve it now
+                if (m_mails.containsKey(UUID) == false) {
+                    String message;
+                    try {
+                        message = m_pop.getMail(UUID);
+                    } catch (POP3Exception e) {
+                        throw new MailException("Unable to create mail with UUID " + UUID, e);
+                    }
+                    System.out.println(message);
+                    String[] parts = message.split(" - ", 2);
+                    Mail m = new Mail(parts[1], parts[0]);
+                    m_mails.put(UUID, m);
                 }
-                System.out.println(message);
-                String[] parts = message.split("\\n", 2);
-                Mail m = new Mail(parts[1], parts[0]);
-                m_mails.put(UUID, m);
+                array[i] = m_mails.get(UUID);
             }
-            array[i] = m_mails.get(UUID);
         }
+        this.saveStorage();
         return array;
     }
 
@@ -256,6 +261,7 @@ public class Mailbox {
     public void DeleteMail(String id) throws MailException {
         this.assertUsable();
         try {
+            m_mails.get(id).Delete();
             m_pop.Delete(id);
         } catch(POP3Exception e) {
             throw new MailException("Unable to delete mail " + id + ".", e);

@@ -31,19 +31,17 @@ public class POP3 {
      *  ###
      */
 
-    /*  Check if client is connected to server through Model.Protocols.TCP
-     *  Parameters :
-     *      None
-     *  Return :
-     *      boolean
-     *      - true if client is connected to server
-     *      - false if not
+    /**
+     * Check if client is connected to TCP server
+     * @return true if client is connected, false else
      */
     public boolean CheckConnected() {
         return (m_tcp.Status() == TCP._CONNECTED);
     }
 
-    /* Get a String describing the last error encountered.
+    /**
+     * Get a string describing the last encountered error
+     * @return String describing the last error
      */
     public String getError() {
         return m_error;
@@ -54,13 +52,9 @@ public class POP3 {
      *  ###
      */
 
-    /*  Check if client is connected and authenticated to server.
-     *  Parameters :
-     *      None.
-     *  Return :
-     *      Model.Protocols.POP3._DISCONNECTED if client isn't connected to server through Model.Protocols.TCP
-     *      Model.Protocols.POP3._CONNECTED if client is connected to server through Model.Protocols.TCP but user isn't authenticated.
-     *      Model.Protocols.POP3._AUTHENTICATED if client is connected to server through Model.Protocols.TCP and user is authenticated.
+    /**
+     * Check if client is connected and authenticated to server
+     * @return POP3._DISCONNECT if client isn't connected, POP3._CONNECTED if client is connected but not authenticated or POP3._AUTHENTICATED if client is connected and authenticated.
      */
     public int Status() {
         if(this.CheckConnected() == false) {
@@ -77,27 +71,61 @@ public class POP3 {
      *  ###
      */
 
-    /*  Send a message and wait the response
-     *  Parameters :
-     *      msg :   String containing the message to be sent
-     *  Return :
-     *      String containing the server's response
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Send a message through TCP connection an wait for a response
+     * @param msg String containing the message to send
+     * @return String containing the response
+     * @throws POP3Exception Error while sending or receiving messages
      */
     protected String dialog(String msg) throws POP3Exception {
         this.Message(msg);
         return this.Response();
     }
 
-    /*  Try to connect client to server through Model.Protocols.TCP.
-     *  Parameters :
-     *      String containing the server address (can be an IP address as an URL).
-     *      Integer containing the port to target on the server.
-     *  Return :
-     *      Nothing.
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Check a POP3 response validity
+     * @param response String containing the POP3 response
+     * @return true if response is correct, false if it carries an error
+     */
+    protected boolean checkResponse(String response) {
+        if(TestRegex.CheckPOP(response) == false) {
+            m_error = "Server respond to with :\n  " + response;
+            System.out.println(m_error);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Send a message and wait for response. Check if response is positive
+     * @param message Message to ben send
+     * @return true if response doesn't carry any error, false else
+     * @throws POP3Exception Error while sending or receiving messages
+     */
+    protected boolean checkedDialog(String message) throws POP3Exception {
+        String response = this.dialog(message);
+        return this.checkResponse(response);
+    }
+
+    /**
+     * Send a message and wait for response. Return response only if it is positive
+     * @param message Message to send
+     * @return Response from client if there isn't any error
+     * @throws POP3Exception Error while sending or receiving messages
+     */
+    protected String getDialogResponseIfValid(String message) throws POP3Exception {
+        String response = this.dialog(message);
+        if(this.checkResponse(response)) {
+            return response;
+        }
+        return "";
+    }
+
+    /**
+     * Try to connect client to server through TCP
+     * @param address   Server's address (IP or URL)
+     * @param port      Server's port
+     * @throws POP3Exception Error while trying to connect
      */
     public void Connect(String address, int port) throws POP3Exception {
         try {
@@ -109,17 +137,13 @@ public class POP3 {
         }
     }
 
-    /*  Try to authenticate the user on the server
-     *  Parameters :
-     *      login :     String containing the username
-     *      password :  String containing the password for the given username
-     *  Return :
-     *      true :  Successfully authenticated
-     *      false : Error in login and/or password
-     *  Throw :
-     *      POP3Exception in case of other error.
+    /**
+     * Try to authenticate user on server
+     * @param login     User's login
+     * @param password  User's password
+     * @return true if user has been connected, false else
+     * @throws POP3Exception Error while authenticating
      */
-
     public boolean Authentication(String login, String password) throws POP3Exception {
         System.out.println(login+":"+password);
         if(this.CheckConnected() == false) {
@@ -129,18 +153,19 @@ public class POP3 {
             throw new POP3Exception("Already authenticate.");
         }
         if(checkUser(login)) {
-            return checkPassword(password);
+            if(checkPassword(password)) {
+                m_authenticated = true;
+                return true;
+            }
         }
         return false;
     }
 
-    /*  Function that checks an username validity.
-     *  Parameters :
-     *      user :  String containing the username to check
-     *  Return :
-     *      boolean corresponding to the validity of the given username.
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Check username validity
+     * @param user Username to be checked
+     * @return true if username is valid, false else
+     * @throws POP3Exception Error while checking username
      */
     protected boolean checkUser(String user) throws POP3Exception {
         String response;
@@ -198,7 +223,7 @@ public class POP3 {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
-            this.Message("QUIT");
+            this.dialog("QUIT");
             m_authenticated = false;
         }
         try {
@@ -284,8 +309,9 @@ public class POP3 {
     protected String retrieveMailString(String response) throws POP3Exception {
         StringBuilder sBuilder = new StringBuilder();
         String[] lines = response.split("\\n");
-
-        for(int i = 1; i < lines.length; i++) {
+        sBuilder.append(lines[1])
+                .append(" - ");
+        for(int i = 2; i < lines.length; i++) {
             sBuilder.append(lines[i])
                     .append("\\n");
         }
