@@ -11,6 +11,7 @@
 * [Version POP3 stable](https://github.com/Elomidas/POP3/releases/tag/POP3-OK)
 
 ## I - Introduction
+[utilities]: https://github.com/Elomidas/POP3/tree/master/Client/src/Utilities
 [POP3]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/POP3/POP3.java
 [POP3S]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/POP3/POP3S.java
 [TCP]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/TCP/TCP.java
@@ -18,9 +19,11 @@
 
 L'objectif de ce TP était dans un premier temps de réaliser un client et un serveur POP3 respectant la norme [RFC 1939][RFC1939].
 
-Pour mener à bien ce projet, nous avons commencé par réfléchir aux schémas des automates découlant de cette norme, avant de nous lancer dans le développement des deux parties du projet en java.
+Pour mener à bien ce projet, nous avons commencé par réfléchir aux schémas des automates découlant de cette norme, avant de nous lancer dans le développement des deux 
+parties du projet en java.
 
-Une fois notre couple Client - Serveur fonctionnel avec le protocole POP3, nous l'avons modifié afin qu'il utilise le protocole POP3S, en remplaçant les commandes *USER* et *PASS* par une unique commande *APOP* et l'utilisation d'un timbre à date.
+Une fois notre couple Client - Serveur fonctionnel avec le protocole POP3, nous l'avons modifié afin qu'il utilise le protocole POP3S, en remplaçant les commandes *USER* 
+et *PASS* par une unique commande *APOP* et l'utilisation d'un timbre à date.
 ## II - Notice d'utilisation
 
 Afin de pouvoir utiliser la messagerie correctement, l'utilisateur doit tout d'abord passer par une phase d'authentification. Lors de cette authentification, il doit notamment spécifier l'adresse IP et le port du serveur, mais aussi son adresse mail et son mot de passe. 
@@ -137,12 +140,29 @@ class POP3 {
 }
 ```
 
-On notera que dans la fonction ci-dessus, les codes d'actualisation des informations visibles par l'utilisateur ne sont pas détaillés étant données qu'ils sont totalement différents selon le style d'affichage utilisé (invité de commandes ou interface graphique). De plus ils n'apporteraient pas forcement d'informations utiles pour comprendre le fonctionnement du protocole.
+On notera que dans la fonction ci-dessus, les codes d'actualisation des informations visibles par l'utilisateur ne sont pas détaillés étant données qu'ils sont totalement 
+différents selon le style d'affichage utilisé (invité de commandes ou interface graphique). De plus ils n'apporteraient pas forcement d'informations utiles pour comprendre 
+le fonctionnement du protocole.
 
 ### 2 - Développement
-Dans la phase de développement, nous avons fait le choix de créer une classe gérant le protocole TCP afin d'effectuer la connexion avec le serveur. Cette [classe TCP][TCP] est elle même utilisée par notre [classe POP3][POP3], ainsi lorsque la fonction de connexion de POP3 est appelée, la classe fait elle même appel à TCP.
+Dans la phase de développement, nous avons fait le choix de créer une classe gérant le protocole TCP afin d'effectuer la connexion avec le serveur. Cette [classe TCP][TCP] 
+est elle même utilisée par notre [classe POP3][POP3], ainsi lorsque la fonction de connexion de POP3 est appelée, la classe fait elle même appel à TCP.
 
-En ce qui concerne la transition du client de POP3 vers POP3S, elle a été extrêmement facile à opérer. En effet nous avons juste eu à créer une [classe POP3S][POP3S] héritant de la [classe POP3][POP3] et redifinissant la fonction d'authentification. Ainsi nous avons eu un client POP3S fonctionnel en récupérant la quasi totalité du code déjà mis en place précédemment.
+De même, pour l'envoi de commane, le client POP3 utilise la fonction *send* définie dans la [classe TCP][TCP] et la fonction *receive* pour récupérer les réponses envoyées par 
+le serveur.
+
+D'autres fonctions définies dans la [classe POP3][POP3] permettent d'envoyer une commande au serveur et d'attendre la réponse, voire même de tester si celle-ci est positive 
+avant de la retourner.
+
+Pour effectuer divers vérifications, nous avons créé un [package utilities][utilities] contenant une classe définissant diverses méthodes statiques permettant de faire des tests 
+via des expressions régulères, telles que vérifier qu'une réponse du serveur commance bien par *+OK* ou encore découper la chaine de caractères qui représente le mail afin de ne 
+récupérer que les informations qui nous intéressent (*expéditeur*, *objet*, *message*, etc...).
+
+En ce qui concerne la transition du client de POP3 vers POP3S, elle a été extrêmement facile à opérer. En effet nous avons juste eu à créer une [classe POP3S][POP3S] héritant 
+de la [classe POP3][POP3] et redifinissant la fonction d'authentification. Ainsi nous avons eu un client POP3S fonctionnel en récupérant la quasi totalité du code déjà mis en 
+place précédemment, les seules modifications à apporter étant la récupération d'un timbre à date (extrait de la réponse du serveur grâce à une des fonctions du 
+[package utilities][utilities] évoqué ci-dessus) et l'envoi d'une commande *APOP*, encryptée en MD5 grâce au timbre à date récupéré pécédemment, à la place des commandes *USER* et 
+*PASS* utilisées par le protocole POP3 classique.
 
 ### 3 - Partie Graphique
 
