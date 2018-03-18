@@ -164,6 +164,9 @@ place précédemment, les seules modifications à apporter étant la récupérat
 [package utilities][utilities] évoqué ci-dessus) et l'envoi d'une commande *APOP*, encryptée en MD5 grâce au timbre à date récupéré pécédemment, à la place des commandes *USER* et 
 *PASS* utilisées par le protocole POP3 classique.
 
+De plus les classes [TCP][TCP], [POP3][POP3] et [POP3S][POP3S] ont été codées de sorte à emettre des exceptions avec un message d'explication en cas d'erreur et à propager ces 
+dernières jusqu'à ce qu'elles puissent être affichées. A chaque propagation, un message supplémentaire est ajouté à l'exception si cela est jugé nécessaire.
+
 ### 3 - Partie Graphique
 
 
