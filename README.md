@@ -174,11 +174,25 @@ Avant qu'un utilisateur n'essaye de se connecter, on lance le serveur sur un por
 cela, on instancie la classe SocketServer. Cet objet prendra en charge la transimission des données.
 Nous avons défini une boucle sans fin pour que le serveur puisse accepter toutes les connexions
 tant que celles-ci se font sur le bon port.
+```java
+        try{
+            ServerSocket serverSocket = new ServerSocket(port);
+            System.out.println("Lancement du serveur sur le port " + port);
+            while (true){
+                Socket socketClient = serverSocket.accept();
+                Tcp t = new Tcp(socketClient);
+                t.start();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+```
 
 Lorsqu'un client se connecte sur le bon port, la méthode accept() de la classe SocketServer va
 retourner un objet Socket représentant la connexion du client. Pour pouvoir traiter plusieurs
-connexion à la fois, un thread va être créé à partir de cet objet. Le serveur et le client pourront par la suite s'échanger des données 
-grâce aux méthodes receive() et send() qui utilisent respectivement des objets BufferedInputStream et PrintStream.
+connexion à la fois, un thread va être créé à partir de cet objet. Lorsque le thread est lancé, 
+la méthode run() de la classe Tcp s'éxécute. Dans cette méthode on instancie la classe ObjetConnecte
+qui va par la suite communiquer avec l'utilisateur en utilisant les méthodes receive() et send().
 
 ### 2 - POP3
 
