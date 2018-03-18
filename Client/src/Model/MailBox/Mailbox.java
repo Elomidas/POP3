@@ -2,6 +2,7 @@ package Model.MailBox;
 
 import Model.Protocols.POP3.POP3;
 import Model.Protocols.POP3.POP3Exception;
+import Model.Protocols.POP3.POP3S;
 import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 
 import java.io.*;
@@ -87,7 +88,7 @@ public class Mailbox {
 
     //Step 1 : join the server (check address an port, return bool)
     public boolean joinServer(String address, int port) throws MailException {
-        m_pop = new POP3();
+        m_pop = new POP3S();
         try {
             m_pop.Connect(address, port);
         } catch(POP3Exception e) {

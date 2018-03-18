@@ -13,20 +13,45 @@ import java.io.IOException;
 
 public class Main_Connexion extends Application {
 
+    /**
+     * Primary Stage utilisé
+     */
     protected Stage primaryStage;
+
+    /**
+     * BorderPane utilisé
+     */
     protected BorderPane rootLayout;
+
+    /**
+     * Controlleur associé à la connexion
+     */
     private Controller_Connexion _controllerConnexion;
 
+    /**
+     * Main utilisé par le client après connexion
+     */
     private Main_Client _mainClient;
 
+    /**
+     * Constructeur par défaut
+     */
     public Main_Connexion(){
 
     }
 
+    /**
+     *
+     * @return Controlleur associé
+     */
     public Controller_Connexion getController(){
         return _controllerConnexion;
     }
 
+    /**
+     * Redéfinition de la fonction Start
+     * @param primaryStage
+     */
     @Override
     public void start(Stage primaryStage)
     {
@@ -38,9 +63,12 @@ public class Main_Connexion extends Application {
         afficherConnexion(rootLayout, this);
     }
 
+    /**
+     * Initialise notre fenêtre avec le BorderPane
+     * correspondant au fond de notre affichage
+     */
     protected void initRootLayout(){
         try {
-            // Load root layout from fxml file.
             FXMLLoader loader = new FXMLLoader();
 
             loader.setLocation(Main_Connexion.class.getResource("../View/Root.fxml"));
@@ -56,14 +84,25 @@ public class Main_Connexion extends Application {
         }
     }
 
+    /**
+     * Affiche le contenu de la fenêtre
+     * @param rootLayout
+     * @param main
+     */
     private void afficherConnexion(BorderPane rootLayout, Main_Connexion main){
         afficherConnexion(rootLayout, main, "../View/Connexion.fxml");
     }
 
+    /**
+     * Affiche le contenu de la fenetre
+     * Initialise le controlleur
+     * @param rootLayout
+     * @param main
+     * @param root
+     */
     private void afficherConnexion(BorderPane rootLayout, Main_Connexion main, String root){
         try
         {
-            // Charge l'affichage du client.
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main_Connexion.class.getResource(root));
             AnchorPane connexion = (AnchorPane) loader.load();
@@ -79,23 +118,28 @@ public class Main_Connexion extends Application {
         }
     }
 
+    /**
+     * Lance la fenetre du client lors d'une connexion réussie
+     */
     public void lancerClient(){
         _mainClient = new Main_Client(_controllerConnexion.getMailbox());
         _mainClient.start(primaryStage);
     }
 
-
+    /**
+     * Redéfintion de la fonction stop appelée lors du clic sur la croix rouge
+     */
     @Override
     public void stop(){
-        //On pense bien à fermer la connexion...etc.
-        //a modifier
-        //TODO
         _controllerConnexion.close();
     }
 
+    /**
+     * Fonction main appelée pour lancer l'application
+     * @param args
+     */
     public static void main(String[] args)
     {
         launch(args);
-
     }
 }
