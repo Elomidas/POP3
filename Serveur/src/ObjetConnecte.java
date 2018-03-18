@@ -12,11 +12,11 @@ import java.util.*;
  * Created by tardy on 13/02/2018.
  */
 public class ObjetConnecte {
-    private static final String POP3_ETAT_AUTORISATION = "Autorisation";
-    private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
-    private static final String POP3_ETAT_TRANSACTION = "Transaction";
-    private static final String POP3_REPONSE_NEGATIVE = "-ERR";
-    private static final String POP3_REPONSE_POSITIVE = "+OK";
+    protected static final String POP3_ETAT_AUTORISATION = "Autorisation";
+    protected static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
+    protected static final String POP3_ETAT_TRANSACTION = "Transaction";
+    protected static final String POP3_REPONSE_NEGATIVE = "-ERR";
+    protected static final String POP3_REPONSE_POSITIVE = "+OK";
     protected static HashMap<String, Boolean> m_locked;
     protected static ArrayList<Utilisateur> m_listeUtilisateurs;
 
@@ -27,7 +27,7 @@ public class ObjetConnecte {
     }
 
     protected boolean m_continuer;
-    private String m_etat;
+    protected String m_etat;
     private ArrayList<Email> m_listeEmails;
     protected Utilisateur m_current;
     protected boolean m_lock;
@@ -35,7 +35,7 @@ public class ObjetConnecte {
     protected int m_blankCount;
 
     public ObjetConnecte(Tcp tcp) {
-        m_tcp = tcp;
+        this.m_tcp = tcp;
     }
 
     protected void initialize() {
@@ -316,7 +316,7 @@ public class ObjetConnecte {
      *  ###
      */
 
-    private boolean checkUser(String username) {
+    protected boolean checkUser(String username) {
         for(Utilisateur u : m_listeUtilisateurs) {
             System.out.println("'" + u.getM_adresseEmail() + "' - " + u.getM_mdp());
         }
@@ -540,7 +540,7 @@ public class ObjetConnecte {
         return i;
     }
     
-    private void setEmailsUndeleted(Utilisateur utilisateur) {
+    protected void setEmailsUndeleted(Utilisateur utilisateur) {
 
         List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
 
