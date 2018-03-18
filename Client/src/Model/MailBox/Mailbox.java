@@ -2,6 +2,7 @@ package Model.MailBox;
 
 import Model.Protocols.POP3.POP3;
 import Model.Protocols.POP3.POP3Exception;
+import Model.Protocols.POP3.POP3S;
 import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 
 import java.io.*;
@@ -67,25 +68,27 @@ public class Mailbox {
     }
 
     protected void saveStorage() {
-        try {
+        if(m_user != null) {
+            try {
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
+                BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
 
-            Set<String> keys = m_mails.keySet();
-            for(String key : keys) {
-                writer.write(key + "\n");
-                writer.write(m_mails.get(key).getEncoded());
+                Set<String> keys = m_mails.keySet();
+                for (String key : keys) {
+                    writer.write(key + "\n");
+                    writer.write(m_mails.get(key).getEncoded());
+                }
+
+                writer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            writer.close();
-        } catch(Exception e) {
-            e.printStackTrace();
         }
     }
 
     //Step 1 : join the server (check address an port, return bool)
     public boolean joinServer(String address, int port) throws MailException {
-        m_pop = new POP3();
+        m_pop = new POP3S();
         try {
             m_pop.Connect(address, port);
         } catch(POP3Exception e) {
