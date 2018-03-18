@@ -58,7 +58,6 @@ public class POP3S extends POP3 {
      */
     @Override
     public boolean Authentication(String login, String password) throws POP3Exception {
-        System.out.println(login+":"+password);
         if(this.CheckConnected() == false) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
@@ -103,14 +102,18 @@ public class POP3S extends POP3 {
      * @throws POP3Exception If secure key is not set
      */
     protected String encrypt(String clear) throws POP3Exception {
-        if(this.checkKey()) {
+        if(this.checkKey() == false) {
             throw new POP3Exception("Secure Key not set");
         }
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append(m_secureKey)
                 .append(clear);
         byte[] digestedBytes = m_digest.digest(sBuilder.toString().getBytes());
-        return String.format("%02x", digestedBytes);
+        StringBuilder returnBuilder = new StringBuilder();
+        for(int i = 0; i < digestedBytes.length; i++) {
+            returnBuilder.append(String.format("%02X", digestedBytes[i]));
+        }
+        return returnBuilder.toString();
     }
 
     /**
