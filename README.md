@@ -8,22 +8,15 @@
 
 **Projet GIT**
 * [Lien GitHub](https://github.com/Elomidas/POP3)
-* [Version POP3 stable](https://github.com/Elomidas/POP3/releases/tag/POP3-OK)
 
 ## I - Introduction
-[utilities]: https://github.com/Elomidas/POP3/tree/master/Client/src/Utilities
-[POP3]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/POP3/POP3.java
-[POP3S]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/POP3/POP3S.java
-[TCP]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/TCP/TCP.java
-[RFC1939]: https://www.ietf.org/rfc/rfc1939.txt
 
-L'objectif de ce TP était dans un premier temps de réaliser un client et un serveur POP3 respectant la norme [RFC 1939][RFC1939].
+L'objectif de ce TP était dans un premier temps de réaliser un client et un serveur POP3 respectant la norme [RFC 1939](https://www.ietf.org/rfc/rfc1939.txt).
 
-Pour mener à bien ce projet, nous avons commencé par réfléchir aux schémas des automates découlant de cette norme, avant de nous lancer dans le développement des deux 
-parties du projet en java.
+Pour mener à bien ce projet, nous avons commencé par réfléchir aux schémas des automates découlant de cette norme, avant de nous lancer dans le développement des deux parties du projet en java.
 
-Une fois notre couple Client - Serveur fonctionnel avec le protocole POP3, nous l'avons modifié afin qu'il utilise le protocole POP3S, en remplaçant les commandes *USER* 
-et *PASS* par une unique commande *APOP* et l'utilisation d'un timbre à date.
+Une fois notre couple Client - Serveur fonctionnel avec le protocole POP3, nous l'avons modifié afin qu'il utilise le protocole POP3S, en remplaçant les commandes *USER* et *PASS* par une unique commande *APOP* et l'utilisation d'un timbre à date.
+
 ## II - Notice d'utilisation
 
 Afin de pouvoir utiliser la messagerie correctement, l'utilisateur doit tout d'abord passer par une phase d'authentification. Lors de cette authentification, il doit notamment spécifier l'adresse IP et le port du serveur, mais aussi son adresse mail et son mot de passe. 
@@ -52,123 +45,21 @@ Il est important de noter que la partie envoi de message n'est pas présentée d
 Le client POP3 avait pour but de permettre à un utilisateur de se connecter au serveur POP3 (en renseignant l'adresse de ce dernier et le port sur lequel il voulait se connecter), de relever ses mails et de pouvoir les afficher.
 Il n'était pas nécessaire de permettre à celui-ci d'envoyer des nouveaux messages ou de lui laisser la possibilité de supprimer ses messages.
 
-### 1 - Algorithme
-
-Ci-dessous le code Java basique d'un main de client POP3
-
-```java
-public static void main(String[] args) {
-  //Création d'un objet client POP3
-  POP3 client = new POP3();
-  boolean connected = false;
-  while(connected == false) {
-    //Connexion du client au serveur, via son adresse IP et le numéro de port souhaité
-    client.joinServer("192.168.43.18", 1210);
-    //Authentification de l'utilisateur
-    connected = client.authenticate("vremond@email.com", "Else");
-  }
-  //Passage à la boucle principale du client POP3
-  client.transactions();
-  //Fermeture du client
-  client.close();
-  //Fin de l'execution
-}
-```
-
-Ainsi que le code Java basique de la gestion des transactions par le client
-
-```java
-class POP3 {
-  public POP3() {
-    /*  Initialisation du client
-     */
-  }
-  
-  protected String getFromUser() {
-    /*  Récupère la commande à executer via l'interface utilisateur
-     *  Varie selon l'interface homme-machine utilisée.
-     */
-     return command;
-  }
-  
-  /* Autres fonctions */
-  
-  public transactions() {
-    String command;
-    boolean quit = false;
-    while(quit == false) {
-      command = this.getFromUser();
-      //Récupération de chaque mot de la commande individuellement
-      String[] splitCommand = command.split(" ");
-      //Analyse du premier mot, forcé en minuscule pour ignorer la casse
-      switch(splitCommand[0]) {
-        case "quit":
-          this.quit();
-          quit = true;
-          break;
-        case "stat":
-          this.stat();
-          break;
-        case "list":
-          this.list();
-          break;
-        case "dele":
-          //On n'execute la commande que si un argument a été passé en paramètre en entrée.
-          //La validité de cet argument sera quant à elle vérifiée dans la fonction.
-          if(splitCommand.length > 1) {
-            this.dele(splitCommand[1]);
-          }
-          break;
-        case "retr":
-          //On n'execute la commande que si un argument a été passé en paramètre en entrée.
-          //La validité de cet argument sera quant à elle vérifiée dans la fonction.
-          if(splitCommand.length > 1) {
-            this.retr(splitCommand[1]);
-          }
-          break;
-        case "noop":
-          this.noop();
-          break;
-        case "rset" :
-          this.rset();
-          break;
-        default:
-          break;
-      }
-    }
-  }
-}
-```
-
-On notera que dans la fonction ci-dessus, les codes d'actualisation des informations visibles par l'utilisateur ne sont pas détaillés étant données qu'ils sont totalement 
-différents selon le style d'affichage utilisé (invité de commandes ou interface graphique). De plus ils n'apporteraient pas forcement d'informations utiles pour comprendre 
-le fonctionnement du protocole.
+### 1 - Automate
 
 ### 2 - Développement
-Dans la phase de développement, nous avons fait le choix de créer une classe gérant le protocole TCP afin d'effectuer la connexion avec le serveur. Cette [classe TCP][TCP] 
-est elle même utilisée par notre [classe POP3][POP3], ainsi lorsque la fonction de connexion de POP3 est appelée, la classe fait elle même appel à TCP.
-
-De même, pour l'envoi de commane, le client POP3 utilise la fonction *send* définie dans la [classe TCP][TCP] et la fonction *receive* pour récupérer les réponses envoyées par 
-le serveur.
-
-D'autres fonctions définies dans la [classe POP3][POP3] permettent d'envoyer une commande au serveur et d'attendre la réponse, voire même de tester si celle-ci est positive 
-avant de la retourner.
-
-Pour effectuer divers vérifications, nous avons créé un [package utilities][utilities] contenant une classe définissant diverses méthodes statiques permettant de faire des tests 
-via des expressions régulères, telles que vérifier qu'une réponse du serveur commance bien par *+OK* ou encore découper la chaine de caractères qui représente le mail afin de ne 
-récupérer que les informations qui nous intéressent (*expéditeur*, *objet*, *message*, etc...).
-
-En ce qui concerne la transition du client de POP3 vers POP3S, elle a été extrêmement facile à opérer. En effet nous avons juste eu à créer une [classe POP3S][POP3S] héritant 
-de la [classe POP3][POP3] et redifinissant la fonction d'authentification. Ainsi nous avons eu un client POP3S fonctionnel en récupérant la quasi totalité du code déjà mis en 
-place précédemment, les seules modifications à apporter étant la récupération d'un timbre à date (extrait de la réponse du serveur grâce à une des fonctions du 
-[package utilities][utilities] évoqué ci-dessus) et l'envoi d'une commande *APOP*, encryptée en MD5 grâce au timbre à date récupéré pécédemment, à la place des commandes *USER* et 
-*PASS* utilisées par le protocole POP3 classique.
 
 De plus les classes [TCP][TCP], [POP3][POP3] et [POP3S][POP3S] ont été codées de sorte à emettre des exceptions avec un message d'explication en cas d'erreur et à propager ces 
 dernières jusqu'à ce qu'elles puissent être affichées. A chaque propagation, un message supplémentaire est ajouté à l'exception si cela est jugé nécessaire.
 
 ### 3 - Partie Graphique
 
+L'interface graphique du client à été réalisé grâce à la bibliothèque graphique JavaFX. Les différents composants de chacune des fenêtres ont été créés grâce à SceneBuilder et sont stockées dans les fichiers FXML correspondants. 
+
+Les vérifications sont effectuées à la fois côté client et côté serveur, dans la mesure du possible. Par exemple, l'utilisateur ne peut accéder au bouton de connexion que si les différents champs ont été correctement remplis. Pour cela, nous utilisons différentes Regex pour vérifier si une adresse mail ou une adresse IP est correcte. Il s'agit des vérifications effectuées côté client. De l'autre côté nous traitons les réponses renvoyés par le serveur pour faire remonter les erreurs sous forme d'exceptions. Lorsqu'une exception est levée, une alertbox est affichée à l'écran de l'utilisateur pour lui indiquer l'erreur qui a eu lieu. 
+D'autres alertbox peuvent également suivenir pour demander confirmartion à l'utilisateur, par exemple lors de la suppression d'un message. 
+
+Tout ceci va donc rendre plus agréable l'utilisation du logiciel par l'utilisateur. 
 
 ## III - La partie Serveur
 
