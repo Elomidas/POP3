@@ -65,36 +65,23 @@ public class ObjetConnecte {
                     parameters = explodedCommand[1].split(" ");
                 }
                 String response;
-                if(command.equals("")) {
-                    m_blankCount++;
-                } else {
-                    m_blankCount = 0;
+
+                switch (m_etat) {
+                    case ObjetConnecte.POP3_ETAT_AUTORISATION:
+                        response = this.AuthorisationState(command, parameters);
+                        break;
+                    case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
+                        response = this.AuthenticationState(command, parameters);
+                        break;
+                    case ObjetConnecte.POP3_ETAT_TRANSACTION:
+                        response = this.TransactionState(command, parameters);
+                        break;
+                    default:
+                        System.out.println("What is that (state/command) : " + m_etat + "/" + command);
+                        response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
+                        break;
                 }
-                if(m_blankCount == 9) {
-                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
-                } else if(m_blankCount >= 10) {
-                    if(m_lock) {
-                        this.unlock(m_current.getM_adresseEmail());
-                    }
-                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
-                    m_continuer = false;
-                } else {
-                    switch (m_etat) {
-                        case ObjetConnecte.POP3_ETAT_AUTORISATION:
-                            response = this.AuthorisationState(command, parameters);
-                            break;
-                        case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
-                            response = this.AuthenticationState(command, parameters);
-                            break;
-                        case ObjetConnecte.POP3_ETAT_TRANSACTION:
-                            response = this.TransactionState(command, parameters);
-                            break;
-                        default:
-                            System.out.println("What is that (state/command) : " + m_etat + "/" + command);
-                            response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
-                            break;
-                    }
-                }
+
                 System.out.println("Response : " + response);
                 m_tcp.Send(response);
             } catch (IOException e) {
