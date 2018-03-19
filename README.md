@@ -214,54 +214,40 @@ public ObjetConnecte(Tcp tcp) {
 
  public void Launch() {
     //Initialisation du serveur à l'état AUTHORISATION
-    m_etat = POP3_ETAT_AUTORISATION;
-    String input;
+    m_etat = etatAutorisation;
 
     //reponse apres connexion tcp
-    m_tcp.Send(ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready");
+    m_tcp.Send("+OK" + " POP3 server ready");
 
     //boucle principale
     while (m_continuer) {
-        try {
+    
+        //Attente de la reception d'un message venant d'un client
+        String input = m_tcp.Receive();
 
-            //Attente de la reception d'un message venant d'un client
-            System.out.println("Wait...");
-            input = m_tcp.Receive();
-            System.out.println(input + " received");
-
-            //Récupération de la commande, vérifications et traitement
-            String[] explodedCommand = input.split(" ", 2);
-            String command = explodedCommand[0].toUpperCase();
-            String[] parameters = new String[0];
-            if(explodedCommand.length > 1) {
-                parameters = explodedCommand[1].split(" ");
-            }
-            String response;
-            
-            //En fonction de l'etat actuel du serveur
-            switch (m_etat) {
-                case ObjetConnecte.POP3_ETAT_AUTORISATION:
-                    response = this.AuthorisationState(command, parameters);
-                    break;
-                case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
-                    response = this.AuthenticationState(command, parameters);
-                    break;
-                case ObjetConnecte.POP3_ETAT_TRANSACTION:
-                    response = this.TransactionState(command, parameters);
-                    break;
-                default: //etat non reconnu
-                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
-                    break;
-            }
-            //reponse au Client
-            System.out.println("Response : " + response);
-            m_tcp.Send(response);
-        } catch (IOException e) {
-            e.printStackTrace();
+        //Récupération de la commande, vérifications et traitement
+        // séparation de la commande et des parametres dans deux tableaux
+        
+        //En fonction de l'etat actuel du serveur
+        switch (m_etat) {
+            case etatAutorisation:
+                response = this.AuthorisationState(command, parameters);
+                break;
+            case etatAuthentification:
+                response = this.AuthenticationState(command, parameters);
+                break;
+            case etatTransaction:
+                response = this.TransactionState(command, parameters);
+                break;
+            default: //etat non reconnu
+                response = "-ERR";
+                break;
         }
+        //reponse au Client
+        m_tcp.Send(response);
     }
     // on est sorti de la boucle m_continuer on ferme le serveur
-    System.out.println("End of POP3");
+    affiche("Fin de POP3");
 }
 ```
   
@@ -272,58 +258,56 @@ public ObjetConnecte(Tcp tcp) {
 protected String AuthorisationState(String command, String[] parameters) {
    //reception de la commande USER
     if (command.equals("USER")) {
-        //Verification que le nom d'utilisateur passé en paramètre est bien dans nos données
+        
         if(parameters.length < 1) {
             //si il manque des parametres on retourne un message d'erreur
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            return "-ERR" + " manque parametre.";
         }
+        //Verification que le nom d'utilisateur passé en paramètre est bien dans nos données
         if(this.checkUser(username)) {
             //on passe dans l'état authentification
-            m_etat = POP3_ETAT_AUTHENTIFICATION;
-            return ObjetConnecte.POP3_REPONSE_POSITIVE;
+            m_etat = etatAuthentification;
+            return "+OK";
         } else {
             //si l'utilisateur n'est pas correct on retourne un message d'erreur
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
+            return "-ERR" + " username is not valid";
         }
     }
     //Sinon retourne erreur de commande
-    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" 
-        + command + "\" doesn't seem valid";
+    return "-ERR commande non valide";
 }
 
 //Etat authentification
 protected String AuthenticationState(String command, String[] parameters) {
    //reception de la commande PASS
     if(command.equals("PASS")) {
-        //verification que le mot de passe correspond au mot de passe de l'utilisateur qui vient d'etre rentré
+        
         if(parameters.length < 1) {
             // si il manque des paramètres on retourne un message d'erreur
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            return "-ERR manque parametre.";
         }
-
+        //verification que le mot de passe correspond au mot de passe de l'utilisateur qui vient d'etre rentré
         if(this.checkPass(password)) {
                 //on recupere les emails de l'utilisateur on passe dans l'etat transaction
-                m_etat = POP3_ETAT_TRANSACTION;
+                m_etat = etatTransaction;
                 //retour message positif
-                return ObjetConnecte.POP3_REPONSE_POSITIVE;
+                return "+OK";
         }
     } else if(command.equals("QUIT")) {
         return this.quit();
     }
     //sinon commande non valide
-    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" 
-        + command + "\" doesn't seem valid";
+    return "-ERR commande non valide";
 }
 
 //etat transaction
 protected String TransactionState(String command, String[] parameters) {
    //reception des differentes commandes POP3 et appel des fonctions correspondantes
     if(command.equals("QUIT")) {
-        this.quitTransaction();
         return this.quit();
     } else if(command.equals("RETR")) {
         if(parameters.length < 1) {
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            return "-ERR  manque parametre.";
         }
         return retr(parameters[0]);
     } else if(command.equals("NOOP")) {
@@ -332,9 +316,10 @@ protected String TransactionState(String command, String[] parameters) {
         return rset();
     } else if(command.equals("DELE")) {
         if(parameters.length < 1) {
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            return "-ERR manque parametre.";
         }
-        return dele(Integer.parseInt(parameters[0]));
+        int indice = parameters[0];
+        return dele(indice));
     } else if(command.equals("LIST")) {
         return list();
     } else if(command.equals("UIDL")) {
@@ -342,9 +327,7 @@ protected String TransactionState(String command, String[] parameters) {
     } else if(command.equals("STAT")) {
         return stat();
     } else {
-        //sinon commande non valide
-        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" 
-            + command + "'.";
+        //sinon retourne commande non valide
     }
 }
 ```
@@ -365,7 +348,7 @@ Le serveur va de son coté de générer une somme de controle à partir du timbr
 Par exemple on envoit le timbre date lorsque la connextion est effectuée avec le client.
 ```java
 try {
-    this.m_tcp.Send(ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
+    this.m_tcp.Send("+OK" + " POP3 server ready "  + generateTimbre());
 } catch (Exception e) {
     e.printStackTrace();
 }
@@ -380,7 +363,7 @@ protected String AuthorisationState(String command, String[] parameters) {
     if (command.equals("APOP")) {
         // Si il n'y a pas deux parametres ( nom d'utilisateur et mot de passe encrypté) on retourne une erreur.
         if(parameters.length <= 1) {
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            return "-ERR" + " manque parametre.";
         }
         String username = parameters[0];
         String password = parameters[1];
@@ -393,19 +376,19 @@ protected String AuthorisationState(String command, String[] parameters) {
                 if(this.decrypteTimbre(password)) {
                     //on recupere les emails de l'utilisateur
                     //on passe à l'etat transaction
-                    m_etat = POP3_ETAT_TRANSACTION;
-                    return ObjetConnecte.POP3_REPONSE_POSITIVE;
+                    m_etat = etatTransaction;
+                    return "+OK";
                 } else {
-                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " password is not valid";
+                    return "-ERR" + " password is not valid";
                 }
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
         } else {
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
+            return "-ERR" + " username is not valid";
         }
     }
     //Sinon on retourne que la commande n'est pas valide
-    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+    return "-ERR" + " command \"" + command + "\" doesn't seem valid";
 }
 ```
