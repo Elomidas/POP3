@@ -194,6 +194,16 @@ qui va par la suite communiquer avec l'utilisateur en utilisant les méthodes re
 
 #### 1 - Développement
 
+Pour la création du serveur POP3 nous avons suivi l'automate créé lors de la première séance, c'est à dire la gestion des états et des commandes en fonction de ces états.
+
+Pour chaque état certaines commandes sont utilisables. On retrouve dans l'état autorisation la commande USER et QUIT, dans l'état authentification la commande PASS et QUIT, pour finir dans l'état transaction les commandes QUIT,RSET, DELE, STAT, LIST, NOOP, UIDL. Chaque commande correspond à une action sur le serveur.    
+Comme expliqué précédemment la classe ObjetConnecte contient une instance de la classe Tcp qui permet d'échanger les messages avec le client.
+
+Lorsque la connexion tcp est effectuée la fonction ```Launch``` de ObjetConnecte est appelée. Elle préviendra le client que la connexion est bien effective puis attendra les commandes demandées par le client.
+Lors de la réception d'une commande le Serveur rentre dans la fonction correspondante à l'état actuel du serveur stocké dans la variable m_etat. Dans chaque fonction d'état nous appelons la fonction correspondante à la commande si l'état le permet sinon nous répondons un message indiquant que la commande n'est pas valide.
+
+
+
 #### 2 - Algorithme
 
 ```java
