@@ -196,4 +196,386 @@ qui va par la suite communiquer avec l'utilisateur en utilisant les méthodes re
 
 ### 2 - POP3
 
+#### 1 - Développement
 
+#### 2 - Algorithme
+
+```java
+public class ObjetConnecte {
+    
+    //Définition des constantes des 3 etats différents de notre serveur
+    protected static final String POP3_ETAT_AUTORISATION = "Autorisation";
+    protected static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
+    protected static final String POP3_ETAT_TRANSACTION = "Transaction";
+    //Définition des constantes de type de réponses envoyées par le serveur.
+    protected static final String POP3_REPONSE_NEGATIVE = "-ERR";
+    protected static final String POP3_REPONSE_POSITIVE = "+OK";
+    
+    //Attributs
+    protected static HashMap<String, Boolean> m_locked;
+    protected static ArrayList<Utilisateur> m_listeUtilisateurs;
+    protected boolean m_continuer;
+    protected String m_etat;
+    private ArrayList<Email> m_listeEmails;
+    protected Utilisateur m_current;
+    protected boolean m_lock;
+    protected Tcp m_tcp;
+    protected int m_blankCount;
+        
+    
+    public ObjetConnecte(Tcp tcp) {
+        //Initialisation du tcp et des autres variables
+    }
+        
+/**
+* Fonction principale du serveur
+*/
+ public void Launch() {
+    //Initialisation du serveur à l'état AUTHORISATION
+    m_etat = POP3_ETAT_AUTORISATION;
+    String input;
+    
+    //reponse apres connexion tcp
+    m_tcp.Send(ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready");
+    
+    //boucle principale
+    while (m_continuer) {
+        try {
+            
+            //Attente de la reception d'un message venant d'un client
+            System.out.println("Wait...");
+            input = m_tcp.Receive();
+            System.out.println(input + " received");
+    
+            //Récupération de la commande, vérifications et traitement
+            String[] explodedCommand = input.split(" ", 2);
+            String command = explodedCommand[0].toUpperCase();
+            String[] parameters = new String[0];
+            if(explodedCommand.length > 1) {
+                parameters = explodedCommand[1].split(" ");
+            }
+            String response;
+            //Au bout de 9 commandes vides on éteint le serveur
+            if(command.equals("")) {
+                m_blankCount++;
+            } else {
+                m_blankCount = 0;
+            }
+            if(m_blankCount == 9) {
+                response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
+            } else if(m_blankCount >= 10) {
+                if(m_lock) {
+                    this.unlock(m_current.getM_adresseEmail());
+                }
+                response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
+                m_continuer = false;
+            } else {
+                //Sinon en fonction de l'etat actuel du serveur
+                switch (m_etat) {
+                    case ObjetConnecte.POP3_ETAT_AUTORISATION:
+                        response = this.AuthorisationState(command, parameters);
+                        break;
+                    case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
+                        response = this.AuthenticationState(command, parameters);
+                        break;
+                    case ObjetConnecte.POP3_ETAT_TRANSACTION:
+                        response = this.TransactionState(command, parameters);
+                        break;
+                    default: //etat non reconnu
+                        response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
+                        break;
+                }
+            }
+            //reponse au Client
+            System.out.println("Response : " + response);
+            m_tcp.Send(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // on est sorti de la boucle m_continuer on ferme le serveur
+    System.out.println("End of POP3");
+    }
+    
+    /**
+    * fonctions de gestion d'etats
+    */
+    //Etat autorisation
+   protected String AuthorisationState(String command, String[] parameters) {
+       //reception de la commande USER
+        if (command.equals("USER")) {
+            //Verification que le nom d'utilisateur passé en paramètre est bien dans nos donnees
+            if(parameters.length < 1) {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            }
+            String username = parameters[0];
+            System.out.println("username : " + username);
+            if(this.checkUser(username)) {
+                m_etat = POP3_ETAT_AUTHENTIFICATION;
+                return ObjetConnecte.POP3_REPONSE_POSITIVE;
+            } else {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
+            }
+        }
+        //Sinon retourne erreur de commande
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+    }
+    
+    //Etat authentificatiob
+    protected String AuthenticationState(String command, String[] parameters) {
+       //reception de la commande PASS
+        if(command.equals("PASS")) {
+            //verification que le mot de passe correspond au mot de passe de l'utilisateur qui vient d'etre rentré
+            if(parameters.length < 1) {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            }
+            String password = parameters[0];
+
+            if(this.checkPass(password)) {
+                if(this.isFree(m_current.getM_adresseEmail())) {
+                    this.lock(m_current.getM_adresseEmail());
+                    this.loadMails(m_current);
+                    this.setEmailsUndeleted(m_current);
+                    m_etat = POP3_ETAT_TRANSACTION;
+                    return ObjetConnecte.POP3_REPONSE_POSITIVE;
+                } else {
+                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
+                }
+            }
+        } else if(command.equals("QUIT")) {
+            return this.quit();
+        }
+        //sinon commande non valide
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+    }
+    
+    //etat transaction
+    protected String TransactionState(String command, String[] parameters) {
+       //reception des differentes commandes POP3 et appel des fonctions correspondantes
+        if(command.equals("QUIT")) {
+            this.quitTransaction();
+            return this.quit();
+        } else if(command.equals("RETR")) {
+            if(parameters.length < 1) {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            }
+            return retr(parameters[0]);
+        } else if(command.equals("NOOP")) {
+            return noop();
+        } else if(command.equals("RSET")) {
+            return rset();
+        } else if(command.equals("DELE")) {
+            if(parameters.length < 1) {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            }
+            return dele(Integer.parseInt(parameters[0]));
+        } else if(command.equals("LIST")) {
+            return list();
+        } else if(command.equals("UIDL")) {
+            return uidl();
+        } else if(command.equals("STAT")) {
+            return stat();
+        } else {
+            //sinon commande non valide
+            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
+        }
+    }
+    
+    /**
+    * Fonctions des commandes
+    */
+    
+    //LIST
+    private String list() {
+        //affiche les messages et renvoie la chane de caractère correspondante à la liste de tout les messsages de l'utilisateur
+        StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
+                .append(" ")
+                .append(m_listeEmails.size())
+                .append(" message(s) :\n");
+        for(int i = 0; i < m_listeEmails.size(); i++) {
+            sBuilder.append(i+1)
+                    .append(" ")
+                    .append(m_listeEmails.get(i).Size())
+                    .append("\n");
+        }
+        return sBuilder.toString();
+    }
+    
+    //QUIT
+    private String quitTransaction() {
+        //on arrete la boucle de reception de message du serveur
+        m_continuer = false;
+        if(m_lock) {
+            this.unlock(m_current.getM_adresseEmail());
+        }
+        //on recupere les emails a supprimer
+        List<Email> listEmailsToRemove = new ArrayList<>();
+        List<Email> listEmailsOfUser = recupereEmails(m_current);
+        for (Email email: listEmailsOfUser) {
+            if (!email.getM_etat()) {
+                m_listeEmails.remove(email);
+                listEmailsToRemove.add(email);
+            }
+        }
+
+        //on les supprime
+        this.removeMails(m_current, listEmailsToRemove);
+        //on renvoie un message positif au client
+        return POP3_REPONSE_POSITIVE;
+    }
+    
+    //RETR
+    private String retr(String id) {
+        Email m = getEmail(id);
+        //recupere l'email
+        if(m == null) {
+            return POP3_REPONSE_NEGATIVE + " unable to find this message.";
+        }
+        //si non trouvé on retourn message erreur sinon on retourne l'email
+        return POP3_REPONSE_POSITIVE + " \n" + m.encode();
+    }
+    
+    //STAT
+    private String stat() {
+        int size = 0;
+        int number = 0;
+        //Compte le nombre d'email et la taille totale en octets
+        for(Email m : m_listeEmails) {
+            size += m.Size();
+            number++;
+        }
+        //retourne la reponse au client
+        return POP3_REPONSE_POSITIVE + " " + number + " " + size;
+    }
+        
+    private String quit() {
+        m_continuer = false;
+        //on deverouille l'adresse email
+        if(m_lock) {
+            this.unlock(m_current.getM_adresseEmail());
+        }
+        return POP3_REPONSE_POSITIVE;
+    }
+ }
+ 
+ 
+```
+
+
+POP3S est définit par la classe ObjetConnecteSecurise et est une classse qui va hériter de ObjetConnecte.
+
+On retrouve donc les mêmes attributs et quelques changements de fonctions. En effet nous avons enlevé l'etat authentification et remplacé les commandes PASS et USER par APOP.
+APOP prend en paramètre le nom d'utilisateur ainsi que le mot de passe encrypté.
+
+Par exemple on envoit le timbre date lorsque la connextion est effectuée avec le client.
+```java
+try {
+    this.m_tcp.Send(ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
+} catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
+    e.printStackTrace();
+}
+```
+
+Pour cela nous avons créé des fonctions pour former ce timbre date:
+
+```java
+
+//recuperation de l'identifiant du processus
+public int getProcessId() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
+    java.lang.management.RuntimeMXBean runtime =
+            java.lang.management.ManagementFactory.getRuntimeMXBean();
+    java.lang.reflect.Field jvm = runtime.getClass().getDeclaredField("jvm");
+    jvm.setAccessible(true);
+    sun.management.VMManagement mgmt =
+            (sun.management.VMManagement) jvm.get(runtime);
+    java.lang.reflect.Method pid_method =
+            mgmt.getClass().getDeclaredMethod("getProcessId");
+    pid_method.setAccessible(true);
+
+    this.processId = (Integer) pid_method.invoke(mgmt);
+    return processId;
+}
+
+//recuperation du timestamp
+public Long getTimestamp(){
+    this.timeConnexion = new Timestamp(System.currentTimeMillis());
+    return  timeConnexion.getTime();
+
+}
+
+//retourner le timbre date c'est a dire < id du processus . timestamp @localhost>
+public String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+    return "<"+getProcessId()+"."+getTimestamp()+"@localhost>";
+}
+
+
+//decryptage 
+public boolean decrypteTimbre(String encryptPwd) throws NoSuchAlgorithmException {
+    StringBuilder decrypt = new StringBuilder();
+
+//on encrypte le mot de passe que l'on recupere de nos données
+    MessageDigest md = MessageDigest.getInstance("MD5");
+    decrypt.append("<")
+            .append(this.processId)
+            .append(".")
+            .append(this.timeConnexion.getTime())
+            .append("@localhost>")
+            .append(this.m_current.getM_mdp());
+    byte[] digestedBytes = md.digest(decrypt.toString().getBytes());
+    StringBuilder returnBuilder = new StringBuilder();
+    for(int i = 0; i < digestedBytes.length; i++) {
+        returnBuilder.append(String.format("%02X", digestedBytes[i]));
+    }
+    //On le compare avec le mot de passe encrypté envoyé par le client
+    if(returnBuilder.toString().equals(encryptPwd))
+        return true;
+    return false;
+}
+
+    /*  ###
+     *  # Automate
+     *  ###
+     */
+//Etat autorisation
+protected String AuthorisationState(String command, String[] parameters) {
+    //on recupere la commande APOP
+    if (command.equals("APOP")) {
+        //si il n'y a pas deux parametres ( nom d'utilisateur et mot de passe encrypté) on retourne une erreur
+        if(parameters.length <= 1) {
+            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+        }
+        String username = parameters[0];
+        String password = parameters[1];
+        out.println("username : " + username);
+
+    //on verifie si l'utilisateur existe 
+        if(this.checkUser(username)) {
+            try {
+                //on verifie si le mot de passe existe
+                if(this.decrypteTimbre(password)) {
+                    if (this.isFree(m_current.getM_adresseEmail())) {
+                        //on recupere les emails de l'utilisateur
+                        this.lock(m_current.getM_adresseEmail());
+                        this.loadMails(m_current);
+                        setEmailsUndeleted(m_current);
+                        //on passe à l'etat transaction
+                        m_etat = POP3_ETAT_TRANSACTION;
+                        return ObjetConnecte.POP3_REPONSE_POSITIVE;
+                    } else {
+                        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
+                    }
+                } else {
+                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " password is not valid";
+                }
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        } else {
+            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
+        }
+    }
+    //Sinon on retourne que la commande n'est pas valide
+    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+}
+```
