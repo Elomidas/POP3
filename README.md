@@ -7,8 +7,8 @@
 *  TARDY Martial
 
 **Projet GIT**
-*  Lien GitHub : https://github.com/Elomidas/POP3
-*  Téléchargement version stable POP3 : https://github.com/Elomidas/POP3/releases/tag/POP3-OK
+*  Lien [dépôt GitHub](https://github.com/Elomidas/POP3)
+*  Téléchargement [version stable POP3](https://github.com/Elomidas/POP3/releases/tag/POP3-OK)
 
 ## I - Introduction
 
@@ -43,29 +43,35 @@ Il est important de noter que la partie envoi de message n'est pas présentée d
 
 ## II - La partie Client
 
+[utilities]: https://github.com/Elomidas/POP3/tree/master/Client/src/Utilities
+[POP3]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/POP3/POP3.java
+[POP3S]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/POP3/POP3S.java
+[TCP]: https://github.com/Elomidas/POP3/blob/master/Client/src/Model/Protocols/TCP/TCP.java
+[RFC1939]: https://www.ietf.org/rfc/rfc1939.txt
+
 Le client POP3 avait pour but de permettre à un utilisateur de se connecter au serveur POP3 (en renseignant l'adresse de ce dernier et le port sur lequel il voulait se connecter), de relever ses mails et de pouvoir les afficher.
 Il n'était pas nécessaire de permettre à celui-ci d'envoyer des nouveaux messages ou de lui laisser la possibilité de supprimer ses messages.
 
 ### 1 - Algorithme
- 
+
 Ci-dessous le code Java basique d'un main de client POP3
- 
+
 ```java
 public static void main(String[] args) {
-  //Création d'un objet client POP3
-  POP3 client = new POP3();
-  boolean connected = false;
-  while(connected == false) {
-    //Connexion du client au serveur, via son adresse IP et le numéro de port souhaité
-    client.joinServer("192.168.43.18", 1210);
-    //Authentification de l'utilisateur
-    connected = client.authenticate("vremond@email.com", "Else");
-  }
-  //Passage à la boucle principale du client POP3
-  client.transactions();
-  //Fermeture du client
-  client.close();
-  //Fin de l'execution
+	//Création d'un objet client POP3
+	POP3 client = new POP3();
+	boolean connected = false;
+	while(connected == false) {
+		//Connexion du client au serveur, via son adresse IP et le numéro de port souhaité
+		client.joinServer("192.168.43.18", 1210);
+		//Authentification de l'utilisateur
+		connected = client.authenticate("vremond@email.com", "Else");
+	}
+	//Passage à la boucle principale du client POP3
+	client.transactions();
+	//Fermeture du client
+	client.close();
+	//Fin de l'execution
 }
 ```
 
@@ -73,82 +79,97 @@ Ainsi que le code Java basique de la gestion des transactions par le client
 
 ```java
 class POP3 {
-  public POP3() {
-    /*  Initialisation du client
-     */
-  }
-  
-  protected String getFromUser() {
-    /*  Récupère la commande à executer via l'interface utilisateur
-     *  Varie selon l'interface homme-machine utilisée.
-     */
-     return command;
-  }
-  
-  /* Autres fonctions */
-  
-  public transactions() {
-    String command;
-    boolean quit = false;
-    while(quit == false) {
-      command = this.getFromUser();
-      //Récupération de chaque mot de la commande individuellement
-      String[] splitCommand = command.split(" ");
-      //Analyse du premier mot, forcé en minuscule pour ignorer la casse
-      switch(splitCommand[0]) {
-        case "quit":
-          this.quit();
-          quit = true;
-          break;
-        case "stat":
-          this.stat();
-          break;
-        case "list":
-          this.list();
-          break;
-        case "dele":
-          //On n'execute la commande que si un argument a été passé en paramètre en entrée.
-          //La validité de cet argument sera quant à elle vérifiée dans la fonction.
-          if(splitCommand.length > 1) {
-            this.dele(splitCommand[1]);
-          }
-          break;
-        case "retr":
-          //On n'execute la commande que si un argument a été passé en paramètre en entrée.
-          //La validité de cet argument sera quant à elle vérifiée dans la fonction.
-          if(splitCommand.length > 1) {
-            this.retr(splitCommand[1]);
-          }
-          break;
-        case "noop":
-          this.noop();
-          break;
-        case "rset" :
-          this.rset();
-          break;
-        default:
-          break;
-      }
-    }
-  }
+	public POP3() {
+		/*  Initialisation du client
+		 */
+	}
+
+	protected String getFromUser() {
+		/*  Récupère la commande à executer via l'interface utilisateur
+		 *  Varie selon l'interface homme-machine utilisée.
+		 */
+		return command;
+	}
+
+	/* Autres fonctions */
+
+	public transactions() {
+		String command;
+		boolean quit = false;
+		while(quit == false) {
+			command = this.getFromUser();
+			//Récupération de chaque mot de la commande individuellement
+			String[] splitCommand = command.split(" ");
+			//Analyse du premier mot, forcé en minuscule pour ignorer la casse
+			switch(splitCommand[0]) {
+				case "quit":
+					this.quit();
+					quit = true;
+					break;
+				case "stat":
+					this.stat();
+					break;
+				case "list":
+					this.list();
+					break;
+				case "dele":
+					/* On n'execute la commande que si un argument a été passé en 
+					 * paramètre en entrée.
+					 */
+					/* La validité de cet argument sera quant à elle vérifiée dans 
+					 * la fonction.
+					 */
+					if(splitCommand.length > 1) {
+						this.dele(splitCommand[1]);
+					}
+					break;
+				case "retr":
+					/* On n'execute la commande que si un argument a été passé en 
+					 * paramètre en entrée.
+					 */
+					/* La validité de cet argument sera quant à elle vérifiée dans 
+					 * la fonction.
+					 */
+					if(splitCommand.length > 1) {
+						this.retr(splitCommand[1]);
+					}
+					break;
+				case "noop":
+					this.noop();
+					break;
+				case "rset" :
+					this.rset();
+					break;
+				default:
+					break;
+			}
+		}
+	}
 }
 ```
- 
-On notera que dans la fonction ci-dessus, les codes d'actualisation des informations visibles par l'utilisateur ne sont pas détaillés étant données qu'ils sont totalement différents selon le style d'affichage utilisé (invité de commandes ou interface graphique). De plus ils n'apporteraient pas forcement d'informations utiles pour comprendre le fonctionnement du protocole.
+
+On notera que dans la fonction ci-dessus, les codes d'actualisation des informations visibles par l'utilisateur ne sont pas détaillés étant données qu'ils sont totalement différents selon le style d'affichage utilisé 
+(invité de commandes ou interface graphique). De plus ils n'apporteraient pas forcement d'informations utiles pour comprendre le fonctionnement du protocole.
 
 ### 2 - Développement
 
-Dans la phase de développement, nous avons fait le choix de créer une classe gérant le protocole TCP afin d'effectuer la connexion avec le serveur. Cette classe TCP est elle même utilisée par notre classe POP3, ainsi lorsque la fonction de connexion de POP3 est appelée, la classe fait elle même appel à TCP.
+Dans la phase de développement, nous avons fait le choix de créer une classe gérant le protocole TCP afin d'effectuer la connexion avec le serveur. Cette [classe TCP][TCP] est elle même utilisée par notre [classe POP3][POP3], ainsi 
+lorsque la fonction de connexion de POP3 est appelée, la classe fait elle même appel à TCP.
 
-De même, pour l'envoi de commane, le client POP3 utilise la fonction *send* définie dans la classe TCP et la fonction *receive* pour récupérer les réponses envoyées par le serveur.
+De même, pour l'envoi de commane, le client POP3 utilise la fonction *send* définie dans la [classe TCP][TCP] et la fonction *receive* pour récupérer les réponses envoyées par le serveur.
 
-D'autres fonctions définies dans la classe POP3 permettent d'envoyer une commande au serveur et d'attendre la réponse, voire même de tester si celle-ci est positive avant de la retourner.
+D'autres fonctions définies dans la [classe POP3][POP3] permettent d'envoyer une commande au serveur et d'attendre la réponse, voire même de tester si celle-ci est positive avant de la retourner.
 
-Pour effectuer divers vérifications, nous avons créé un package utilities contenant une classe définissant diverses méthodes statiques permettant de faire des tests via des expressions régulères, telles que vérifier qu'une réponse du serveur commance bien par *+OK* ou encore découper la chaine de caractères qui représente le mail afin de ne récupérer que les informations qui nous intéressent (*expéditeur*, *objet*, *message*, etc...).
+Pour effectuer divers vérifications, nous avons créé un [package utilities][utilities] contenant une classe définissant diverses méthodes statiques permettant de faire des tests via des expressions régulères, telles que vérifier 
+qu'une réponse du serveur commance bien par *+OK* ou encore découper la chaine de caractères qui représente le mail afin de ne récupérer que les informations qui nous intéressent (*expéditeur*, *objet*, *message*, etc...).
 
-En ce qui concerne la transition du client de POP3 vers POP3S, elle a été extrêmement facile à opérer. En effet nous avons juste eu à créer une classe POP3S héritant de la classe POP3 et redifinissant la fonction d'authentification. Ainsi nous avons eu un client POP3S fonctionnel en récupérant la quasi totalité du code déjà mis en place précédemment, les seules modifications à apporter étant la récupération d'un timbre à date (extrait de la réponse du serveur grâce à une des fonctions du package utilities évoqué ci-dessus) et l'envoi d'une commande *APOP*, encryptée en MD5 grâce au timbre à date récupéré pécédemment, à la place des commandes *USER* et *PASS* utilisées par le protocole POP3 classique.
+En ce qui concerne la transition du client de [POP3][POP3] vers POP3S, elle a été extrêmement facile à opérer. En effet nous avons juste eu à créer une [classe POP3S][POP3S] héritant de la [classe POP3][POP3] et redifinissant la fonction 
+d'authentification. Ainsi nous avons eu un client POP3S fonctionnel en récupérant la quasi totalité du code déjà mis en place précédemment, les seules modifications à apporter étant la récupération d'un timbre à date 
+(extrait de la réponse du serveur grâce à une des fonctions du package utilities évoqué ci-dessus) et l'envoi d'une commande *APOP*, encryptée en MD5 grâce au timbre à date récupéré pécédemment, à la place des commandes 
+*USER* et *PASS* utilisées par le protocole POP3 classique.
 
-De plus les classes TCP, POP3 et POP3S ont été codées de sorte à emettre des exceptions avec un message d'explication en cas d'erreur et à propager ces dernières jusqu'à ce qu'elles puissent être affichées. A chaque propagation, un message supplémentaire est ajouté à l'exception si cela est jugé nécessaire.
+De plus les classes TCP, POP3 et POP3S ont été codées de sorte à emettre des exceptions avec un message d'explication en cas d'erreur et à propager ces dernières jusqu'à ce qu'elles puissent être affichées. A chaque 
+propagation, un message supplémentaire est ajouté à l'exception si cela est jugé nécessaire.
 
 ### 3 - Partie Graphique
 
@@ -198,7 +219,7 @@ qui va par la suite communiquer avec l'utilisateur en utilisant les méthodes re
 
 ```java
 public class ObjetConnecte {
-    
+
     //Définition des constantes des 3 etats différents de notre serveur
     protected static final String POP3_ETAT_AUTORISATION = "Autorisation";
     protected static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
@@ -206,7 +227,7 @@ public class ObjetConnecte {
     //Définition des constantes de type de réponses envoyées par le serveur.
     protected static final String POP3_REPONSE_NEGATIVE = "-ERR";
     protected static final String POP3_REPONSE_POSITIVE = "+OK";
-    
+
     //Attributs
     protected static HashMap<String, Boolean> m_locked;
     protected static ArrayList<Utilisateur> m_listeUtilisateurs;
@@ -217,12 +238,11 @@ public class ObjetConnecte {
     protected boolean m_lock;
     protected Tcp m_tcp;
     protected int m_blankCount;
-        
-    
+
     public ObjetConnecte(Tcp tcp) {
         //Initialisation du tcp et des autres variables
     }
-        
+
 /**
 * Fonction principale du serveur
 */
@@ -230,19 +250,19 @@ public class ObjetConnecte {
     //Initialisation du serveur à l'état AUTHORISATION
     m_etat = POP3_ETAT_AUTORISATION;
     String input;
-    
+
     //reponse apres connexion tcp
     m_tcp.Send(ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready");
-    
+
     //boucle principale
     while (m_continuer) {
         try {
-            
+
             //Attente de la reception d'un message venant d'un client
             System.out.println("Wait...");
             input = m_tcp.Receive();
             System.out.println(input + " received");
-    
+
             //Récupération de la commande, vérifications et traitement
             String[] explodedCommand = input.split(" ", 2);
             String command = explodedCommand[0].toUpperCase();
@@ -292,7 +312,7 @@ public class ObjetConnecte {
     // on est sorti de la boucle m_continuer on ferme le serveur
     System.out.println("End of POP3");
     }
-    
+
     /**
     * fonctions de gestion d'etats
     */
@@ -316,7 +336,7 @@ public class ObjetConnecte {
         //Sinon retourne erreur de commande
         return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
-    
+
     //Etat authentificatiob
     protected String AuthenticationState(String command, String[] parameters) {
        //reception de la commande PASS
@@ -344,7 +364,7 @@ public class ObjetConnecte {
         //sinon commande non valide
         return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
-    
+
     //etat transaction
     protected String TransactionState(String command, String[] parameters) {
        //reception des differentes commandes POP3 et appel des fonctions correspondantes
@@ -376,11 +396,11 @@ public class ObjetConnecte {
             return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
         }
     }
-    
+
     /**
     * Fonctions des commandes
     */
-    
+
     //LIST
     private String list() {
         //affiche les messages et renvoie la chane de caractère correspondante à la liste de tout les messsages de l'utilisateur
@@ -397,7 +417,7 @@ public class ObjetConnecte {
         }
         return sBuilder.toString();
     }
-    
+
     //QUIT
     private String quitTransaction() {
         //on arrete la boucle de reception de message du serveur
@@ -420,7 +440,7 @@ public class ObjetConnecte {
         //on renvoie un message positif au client
         return POP3_REPONSE_POSITIVE;
     }
-    
+
     //RETR
     private String retr(String id) {
         Email m = getEmail(id);
@@ -431,7 +451,7 @@ public class ObjetConnecte {
         //si non trouvé on retourn message erreur sinon on retourne l'email
         return POP3_REPONSE_POSITIVE + " \n" + m.encode();
     }
-    
+
     //STAT
     private String stat() {
         int size = 0;
@@ -444,7 +464,7 @@ public class ObjetConnecte {
         //retourne la reponse au client
         return POP3_REPONSE_POSITIVE + " " + number + " " + size;
     }
-        
+
     private String quit() {
         m_continuer = false;
         //on deverouille l'adresse email
@@ -454,10 +474,8 @@ public class ObjetConnecte {
         return POP3_REPONSE_POSITIVE;
     }
  }
- 
- 
-```
 
+```
 
 POP3S est définit par la classe ObjetConnecteSecurise et est une classse qui va hériter de ObjetConnecte.
 
@@ -504,7 +522,6 @@ public Long getTimestamp(){
 public String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
     return "<"+getProcessId()+"."+getTimestamp()+"@localhost>";
 }
-
 
 //decryptage 
 public boolean decrypteTimbre(String encryptPwd) throws NoSuchAlgorithmException {
