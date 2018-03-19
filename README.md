@@ -210,9 +210,10 @@ Lors de la réception d'une commande le Serveur rentre dans la fonction correspo
 On retrouve tout d'abord la fonction principale de ```ObjetConnecte``` ainsi que son constructeur:
 
 ```java    
+
 public ObjetConnecte(Tcp tcp) {
     //Initialisation du tcp et des autres variables
-    }
+}
      
  public void Launch() {
     //Initialisation du serveur à l'état AUTHORISATION
@@ -264,9 +265,8 @@ public ObjetConnecte(Tcp tcp) {
     }
     // on est sorti de la boucle m_continuer on ferme le serveur
     System.out.println("End of POP3");
-    }
-  }
-  ```
+}
+```
   
   Puis les fonctions de chaque état:
   
@@ -308,11 +308,9 @@ protected String AuthenticationState(String command, String[] parameters) {
 
         if(this.checkPass(password)) {
                 //on recupere les emails de l'utilisateur
-                this.lock(m_current.getM_adresseEmail());
-                this.loadMails(m_current);
-                this.setEmailsUndeleted(m_current);
                 //on passe dans l'etat transaction
                 m_etat = POP3_ETAT_TRANSACTION;
+                //retour message positif
                 return ObjetConnecte.POP3_REPONSE_POSITIVE;
         }
     } else if(command.equals("QUIT")) {
@@ -436,12 +434,6 @@ Pour cela nous avons créé des fonctions pour former ce timbre date:
 
 ```java
 
-
-
-    /*  ###
-     *  # Automate
-     *  ###
-     */
 //Etat autorisation
 protected String AuthorisationState(String command, String[] parameters) {
     //on recupere la commande APOP
@@ -459,17 +451,13 @@ protected String AuthorisationState(String command, String[] parameters) {
             try {
                 //on verifie si le mot de passe existe
                 if(this.decrypteTimbre(password)) {
-                    if (this.isFree(m_current.getM_adresseEmail())) {
-                        //on recupere les emails de l'utilisateur
-                        this.lock(m_current.getM_adresseEmail());
-                        this.loadMails(m_current);
-                        setEmailsUndeleted(m_current);
-                        //on passe à l'etat transaction
-                        m_etat = POP3_ETAT_TRANSACTION;
-                        return ObjetConnecte.POP3_REPONSE_POSITIVE;
-                    } else {
-                        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
-                    }
+                    //on recupere les emails de l'utilisateur
+                    this.lock(m_current.getM_adresseEmail());
+                    this.loadMails(m_current);
+                    setEmailsUndeleted(m_current);
+                    //on passe à l'etat transaction
+                    m_etat = POP3_ETAT_TRANSACTION;
+                    return ObjetConnecte.POP3_REPONSE_POSITIVE;
                 } else {
                     return ObjetConnecte.POP3_REPONSE_NEGATIVE + " password is not valid";
                 }
