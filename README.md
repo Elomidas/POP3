@@ -354,53 +354,6 @@ protected String TransactionState(String command, String[] parameters) {
     }
 }
 ```
-    
-Pour finir les fonctions correspondantes aux commandes:
-    
-```java
-//LIST
-private String list() {
-    //affiche les messages 
-    // et renvoie la chane de caractère correspondante 
-    // à la liste de tout les messsages de l'utilisateur
-}
-
-//QUIT
-private String quitTransaction() {
-    //on arrete la boucle de reception de message du serveur
-
-    //on recupere les emails a supprimer
-  
-    //on les supprime
-  
-    //on renvoie un message positif au client
-    return POP3_REPONSE_POSITIVE;
-}
-
-//RETR
-private String retr(String id) {
-    //recupere l'email
-    //si non trouvé on retourne message erreur sinon on retourne l'email
-    return POP3_REPONSE_POSITIVE + " \n" + m.encode();
-}
-
-//STAT
-private String stat() {
-    
-    //Compte le nombre d'email et la taille totale en octets
-    //retourne la reponse au client
-    return POP3_REPONSE_POSITIVE + " " + number + " " + size;
-}
-    
-private String quit() {
-    //on arrete la boucle du serveur
-    //on retourne reponse positive
-    return POP3_REPONSE_POSITIVE;
-}
- 
- 
- 
-```
 
 #### 3 - Développement et algorithme POP3S
 
