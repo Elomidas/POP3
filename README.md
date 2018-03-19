@@ -363,32 +363,25 @@ protected String AuthorisationState(String command, String[] parameters) {
     if (command.equals("APOP")) {
         // Si il n'y a pas deux parametres ( nom d'utilisateur et mot de passe encrypté) on retourne une erreur.
         if(parameters.length <= 1) {
-            return "-ERR" + " manque parametre.";
+            return "-ERR manque parametre.";
         }
-        String username = parameters[0];
-        String password = parameters[1];
-        out.println("username : " + username);
-
-    //on verifie si l'utilisateur existe 
+        //password et username prennent les infos de parameters
+        //on verifie si l'utilisateur existe 
         if(this.checkUser(username)) {
-            try {
-                //on verifie si le mot de passe existe
-                if(this.decrypteTimbre(password)) {
-                    //on recupere les emails de l'utilisateur
-                    //on passe à l'etat transaction
-                    m_etat = etatTransaction;
-                    return "+OK";
-                } else {
-                    return "-ERR" + " password is not valid";
-                }
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+            //on verifie si le mot de passe existe
+            if(this.decrypteTimbre(password)) {
+                //on recupere les emails de l'utilisateur
+                //on passe à l'etat transaction
+                m_etat = etatTransaction;
+                return "+OK";
+            } else {
+                return "-ERR mot de passe non valide";
             }
         } else {
-            return "-ERR" + " username is not valid";
+            return "-ERR nom utilisateur non valide";
         }
     }
     //Sinon on retourne que la commande n'est pas valide
-    return "-ERR" + " command \"" + command + "\" doesn't seem valid";
+    return "-ERR commande non valide";
 }
 ```
