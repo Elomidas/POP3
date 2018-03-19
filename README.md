@@ -452,9 +452,6 @@ protected String AuthorisationState(String command, String[] parameters) {
                 //on verifie si le mot de passe existe
                 if(this.decrypteTimbre(password)) {
                     //on recupere les emails de l'utilisateur
-                    this.lock(m_current.getM_adresseEmail());
-                    this.loadMails(m_current);
-                    setEmailsUndeleted(m_current);
                     //on passe à l'etat transaction
                     m_etat = POP3_ETAT_TRANSACTION;
                     return ObjetConnecte.POP3_REPONSE_POSITIVE;
