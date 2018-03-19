@@ -462,8 +462,20 @@ public class ObjetConnecte {
 
 POP3S est définit par la classe ObjetConnecteSecurise et est une classse qui va hériter de ObjetConnecte.
 
-On retrouve donc les mêmes attributs et quelques changements de fonctions. En effet nous avons enlevé l'etat authentification et remplacé les commandes PASS et USER par APOP.
-APOP prend en paramètre le nom d'utilisateur ainsi que le mot de passe encrypté.
+On retrouve donc les mêmes attributs et quelques changements de fonctions. En effet nous avons enlevé l'etat authentification 
+et remplacé les commandes PASS et USER par APOP. Pour protéger l'authentification de l'utilisateur, le serveur va implémenter
+la commande APOP qui mettra un timbre-à-date dans son message de bienvenue. La syntaxe de ce timbre-à-date est la suivante:
+<identificateur-de-processus.heure@nom-de-l’hôte>.
+
+La méthode generateTimbre() se charge de générer ce timbre-à-date et l'envoie à l'utilisateur. L'utilisateur va encrypter cette chaine de caractère en appliquant 
+l'algorithme MD5 sur le timbre-à-date, suivi du "secret partagé". Le secret partagé est une chaine de caractère connu uniquement 
+par le serveur et le client; dans notre le cas, le secret partagé sera le mot de passe du client. 
+APOP prend en paramètre le nom d'utilisateur ainsi que le mot de passe encrypté. Cette somme de contrôle sera
+renvoyé au serveur. 
+
+Le serveur va de son coté de générer une somme de controle à partir du timbre-à-date précemment envoyé à l'utilisateur
+et du mot de passe de l'utilisateur stocké dans la base de donnée. Il va ensuite comparer sa somme de contrôle à celle
+renvoyé par l'utilisateur. Si les deux chaines de caractères sont égales, alors l'utilisateur pourra passer à l'état suivant.
 
 Par exemple on envoit le timbre date lorsque la connextion est effectuée avec le client.
 ```java
@@ -478,57 +490,7 @@ Pour cela nous avons créé des fonctions pour former ce timbre date:
 
 ```java
 
-//recuperation de l'identifiant du processus
-public int getProcessId() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
-    java.lang.management.RuntimeMXBean runtime =
-            java.lang.management.ManagementFactory.getRuntimeMXBean();
-    java.lang.reflect.Field jvm = runtime.getClass().getDeclaredField("jvm");
-    jvm.setAccessible(true);
-    sun.management.VMManagement mgmt =
-            (sun.management.VMManagement) jvm.get(runtime);
-    java.lang.reflect.Method pid_method =
-            mgmt.getClass().getDeclaredMethod("getProcessId");
-    pid_method.setAccessible(true);
 
-    this.processId = (Integer) pid_method.invoke(mgmt);
-    return processId;
-}
-
-//recuperation du timestamp
-public Long getTimestamp(){
-    this.timeConnexion = new Timestamp(System.currentTimeMillis());
-    return  timeConnexion.getTime();
-
-}
-
-//retourner le timbre date c'est a dire < id du processus . timestamp @localhost>
-public String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
-    return "<"+getProcessId()+"."+getTimestamp()+"@localhost>";
-}
-
-
-//decryptage 
-public boolean decrypteTimbre(String encryptPwd) throws NoSuchAlgorithmException {
-    StringBuilder decrypt = new StringBuilder();
-
-    //on encrypte le mot de passe que l'on recupere de nos données
-    MessageDigest md = MessageDigest.getInstance("MD5");
-    decrypt.append("<")
-            .append(this.processId)
-            .append(".")
-            .append(this.timeConnexion.getTime())
-            .append("@localhost>")
-            .append(this.m_current.getM_mdp());
-    byte[] digestedBytes = md.digest(decrypt.toString().getBytes());
-    StringBuilder returnBuilder = new StringBuilder();
-    for(int i = 0; i < digestedBytes.length; i++) {
-        returnBuilder.append(String.format("%02X", digestedBytes[i]));
-    }
-    //On le compare avec le mot de passe encrypté envoyé par le client
-    if(returnBuilder.toString().equals(encryptPwd))
-        return true;
-    return false;
-}
 
     /*  ###
      *  # Automate
