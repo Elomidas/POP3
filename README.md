@@ -458,6 +458,7 @@ public class ObjetConnecte {
  
 ```
 
+#### 3 - Développement et algorithme POP3S
 
 POP3S est définit par la classe ObjetConnecteSecurise et est une classse qui va hériter de ObjetConnecte.
 
@@ -510,7 +511,7 @@ public String generateTimbre() throws InvocationTargetException, NoSuchMethodExc
 public boolean decrypteTimbre(String encryptPwd) throws NoSuchAlgorithmException {
     StringBuilder decrypt = new StringBuilder();
 
-//on encrypte le mot de passe que l'on recupere de nos données
+    //on encrypte le mot de passe que l'on recupere de nos données
     MessageDigest md = MessageDigest.getInstance("MD5");
     decrypt.append("<")
             .append(this.processId)
