@@ -374,51 +374,6 @@ protected String TransactionState(String command, String[] parameters) {
     }
 }
 ```
-    
-Pour finir les fonctions correspondantes aux commandes:
-    
-```java
-//LIST
-private String list() {
-    //affiche les messages 
-    // et renvoie la chane de caractère correspondante 
-    // à la liste de tout les messsages de l'utilisateur
-}
-
-//QUIT
-private String quitTransaction() {
-    //on arrete la boucle de reception de message du serveur
-
-    //on recupere les emails a supprimer
-  
-    //on les supprime
-  
-    //on renvoie un message positif au client
-    return POP3_REPONSE_POSITIVE;
-}
-
-//RETR
-private String retr(String id) {
-    //recupere l'email
-    //si non trouvé on retourne message erreur sinon on retourne l'email
-    return POP3_REPONSE_POSITIVE + " \n" + m.encode();
-}
-
-//STAT
-private String stat() {
-    
-    //Compte le nombre d'email et la taille totale en octets
-    //retourne la reponse au client
-    return POP3_REPONSE_POSITIVE + " " + number + " " + size;
-}
-    
-private String quit() {
-    //on arrete la boucle du serveur
-    //on retourne reponse positive
-    return POP3_REPONSE_POSITIVE;
-}
- 
-```
 
 
 #### 3 - Développement et algorithme POP3S
@@ -444,7 +399,7 @@ Par exemple on envoit le timbre date lorsque la connextion est effectuée avec l
 ```java
 try {
     this.m_tcp.Send(ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
-} catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
+} catch (Exception e) {
     e.printStackTrace();
 }
 ```
@@ -456,7 +411,9 @@ Pour cela nous avons créé des fonctions pour former ce timbre date:
 protected String AuthorisationState(String command, String[] parameters) {
     //on recupere la commande APOP
     if (command.equals("APOP")) {
-        //si il n'y a pas deux parametres ( nom d'utilisateur et mot de passe encrypté) on retourne une erreur
+        /* Si il n'y a pas deux parametres ( nom d'utilisateur et mot de passe encrypté) on 
+         * retourne une erreur.
+         */
         if(parameters.length <= 1) {
             return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
         }
@@ -470,9 +427,6 @@ protected String AuthorisationState(String command, String[] parameters) {
                 //on verifie si le mot de passe existe
                 if(this.decrypteTimbre(password)) {
                     //on recupere les emails de l'utilisateur
-                    this.lock(m_current.getM_adresseEmail());
-                    this.loadMails(m_current);
-                    setEmailsUndeleted(m_current);
                     //on passe à l'etat transaction
                     m_etat = POP3_ETAT_TRANSACTION;
                     return ObjetConnecte.POP3_REPONSE_POSITIVE;
