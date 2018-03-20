@@ -1,3 +1,5 @@
+package POP3;
+
 /**
  * Created by tardy on 26/02/2018.
  */

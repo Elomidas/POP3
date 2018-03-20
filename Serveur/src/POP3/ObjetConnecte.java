@@ -1,28 +1,19 @@
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+package POP3;
 
-import static java.lang.System.*;
+import java.io.*;
+import java.util.*;
 
 /**
- * Created by tardy on 12/03/2018.
+ * Created by tardy on 13/02/2018.
  */
-public class ObjetConnecteSecurise {
+public class ObjetConnecte {
     private static final String POP3_ETAT_AUTORISATION = "Autorisation";
+    private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
     private static final String POP3_ETAT_TRANSACTION = "Transaction";
     private static final String POP3_REPONSE_NEGATIVE = "-ERR";
     private static final String POP3_REPONSE_POSITIVE = "+OK";
     protected static HashMap<String, Boolean> m_locked;
     protected static ArrayList<Utilisateur> m_listeUtilisateurs;
-    private Timestamp timeConnexion;
-    private int processId;
 
     static {
         m_locked = new HashMap<>();
@@ -38,7 +29,7 @@ public class ObjetConnecteSecurise {
     protected Tcp m_tcp;
     protected int m_blankCount;
 
-    public ObjetConnecteSecurise(Tcp tcp) {
+    public ObjetConnecte(Tcp tcp) {
         m_tcp = tcp;
     }
 
@@ -56,16 +47,11 @@ public class ObjetConnecteSecurise {
 
         m_etat = POP3_ETAT_AUTORISATION;
         String input;
-        try {
-            m_tcp.Send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
-        } catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
         while (m_continuer) {
             try {
-                out.println("Wait...");
+                System.out.println("Wait...");
                 input = m_tcp.Receive();
-                out.println(input + " received");
+                System.out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
                 String command = explodedCommand[0].toUpperCase();
@@ -80,79 +66,37 @@ public class ObjetConnecteSecurise {
                     m_blankCount = 0;
                 }
                 if(m_blankCount == 9) {
-                    response = ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
+                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
                 } else if(m_blankCount >= 10) {
                     if(m_lock) {
                         this.unlock(m_current.getM_adresseEmail());
                     }
-                    response = ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
+                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
                     m_continuer = false;
                 } else {
                     switch (m_etat) {
-                        case ObjetConnecteSecurise.POP3_ETAT_AUTORISATION:
+                        case ObjetConnecte.POP3_ETAT_AUTORISATION:
                             response = this.AuthorisationState(command, parameters);
                             break;
-                        case ObjetConnecteSecurise.POP3_ETAT_TRANSACTION:
+                        case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
+                            response = this.AuthenticationState(command, parameters);
+                            break;
+                        case ObjetConnecte.POP3_ETAT_TRANSACTION:
                             response = this.TransactionState(command, parameters);
                             break;
                         default:
-                            out.println("What is that (state/command) : " + m_etat + "/" + command);
-                            response = ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE;
+                            System.out.println("What is that (state/command) : " + m_etat + "/" + command);
+                            response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
                             break;
                     }
                 }
-                out.println("Response : " + response);
+                System.out.println("Response : " + response);
                 m_tcp.Send(response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        out.println("End of POP3");
-    }
-
-    public int getProcessId() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
-        java.lang.management.RuntimeMXBean runtime =
-                java.lang.management.ManagementFactory.getRuntimeMXBean();
-        java.lang.reflect.Field jvm = runtime.getClass().getDeclaredField("jvm");
-        jvm.setAccessible(true);
-        sun.management.VMManagement mgmt =
-                (sun.management.VMManagement) jvm.get(runtime);
-        java.lang.reflect.Method pid_method =
-                mgmt.getClass().getDeclaredMethod("getProcessId");
-        pid_method.setAccessible(true);
-
-        this.processId = (Integer) pid_method.invoke(mgmt);
-        return processId;
-    }
-
-    public Long getTimestamp(){
-        this.timeConnexion = new Timestamp(System.currentTimeMillis());
-        return  timeConnexion.getTime();
-
-    }
-
-    public String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
-        return "<"+getProcessId()+"."+getTimestamp()+"@localhost>";
-    }
-
-    public boolean decrypteTimbre(String encryptUser) throws NoSuchAlgorithmException {
-        StringBuilder decrypt = new StringBuilder();
-
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        decrypt.append(timeConnexion)
-                .append(m_current.getM_mdp())
-                .append(processId);
-        md.update(decrypt.toString().getBytes());
-
-        byte byteData[] = md.digest();
-        StringBuffer sb = new StringBuffer();
-        for(int i = 0; i < byteData.length; i++){
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-        }
-
-        if(sb.equals(encryptUser))
-            return true;
-        return false;
+        System.out.println("End of POP3");
     }
 
     /*  ###
@@ -161,38 +105,44 @@ public class ObjetConnecteSecurise {
      */
 
     protected String AuthorisationState(String command, String[] parameters) {
-        if (command.equals("APOP")) {
+        if (command.equals("USER")) {
             if(parameters.length < 1) {
-                return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " parameter missing.";
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
             String username = parameters[0];
-            String password = parameters[1];
-            out.println("username : " + username);
-
+            System.out.println("username : " + username);
             if(this.checkUser(username)) {
-                try {
-                    if(this.decrypteTimbre(password)) {
-                        if (this.isFree(m_current.getM_adresseEmail())) {
-                            this.lock(m_current.getM_adresseEmail());
-                            this.loadMails(m_current);
-                            this.setEmailsUndeleted(m_current);
-                            m_etat = POP3_ETAT_TRANSACTION;
-                            return ObjetConnecteSecurise.POP3_REPONSE_POSITIVE;
-                        } else {
-                            return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
-                        }
-                    } else {
-                        return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " password is not valid";
-                    }
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
+                m_etat = POP3_ETAT_AUTHENTIFICATION;
+                return ObjetConnecte.POP3_REPONSE_POSITIVE;
             } else {
-                return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " username is not valid";
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
             }
         }
-        return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
+    }
+
+    protected String AuthenticationState(String command, String[] parameters) {
+        if(command.equals("PASS")) {
+            if(parameters.length < 1) {
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+            }
+            String password = parameters[0];
+
+            if(this.checkPass(password)) {
+                if(this.isFree(m_current.getM_adresseEmail())) {
+                    this.lock(m_current.getM_adresseEmail());
+                    this.loadMails(m_current);
+                    this.setEmailsUndeleted(m_current);
+                    m_etat = POP3_ETAT_TRANSACTION;
+                    return ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready";
+                } else {
+                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
+                }
+            }
+        } else if(command.equals("QUIT")) {
+            return this.quit();
+        }
+        return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
 
     protected String TransactionState(String command, String[] parameters) {
@@ -201,7 +151,7 @@ public class ObjetConnecteSecurise {
             return this.quit();
         } else if(command.equals("RETR")) {
             if(parameters.length < 1) {
-                return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " parameter missing.";
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
             return retr(parameters[0]);
         } else if(command.equals("NOOP")) {
@@ -212,7 +162,7 @@ public class ObjetConnecteSecurise {
         } else if(command.equals("DELE")) {
             //To be tested
             if(parameters.length < 1) {
-                return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " parameter missing.";
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
             return dele(Integer.parseInt(parameters[0]));
         } else if(command.equals("LIST")) {
@@ -223,7 +173,7 @@ public class ObjetConnecteSecurise {
             return stat();
         } else {
             //fermetureAutreQueQuit();
-            return ObjetConnecteSecurise.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
+            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
         }
     }
 
@@ -234,7 +184,7 @@ public class ObjetConnecteSecurise {
 
     private String list() {
         StringBuilder sBuilder = new StringBuilder();
-        sBuilder.append(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE)
+        sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
                 .append(" ")
                 .append(m_listeEmails.size())
                 .append(" message(s) :\n");
@@ -249,7 +199,7 @@ public class ObjetConnecteSecurise {
 
     private String uidl() {
         StringBuilder sBuilder = new StringBuilder();
-        sBuilder.append(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE)
+        sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
                 .append(" ")
                 .append(m_listeEmails.size())
                 .append(" message(s) :\n");
@@ -329,12 +279,12 @@ public class ObjetConnecteSecurise {
         Email email = getEmail(stringBuilder.append(idMessage).toString());
         int index = m_listeEmails.indexOf(email);
         for (Email email2: m_listeEmails
-                ) {
-            out.println("Email:");
-            out.println(email2.getM_id());
-            out.println(email2.getM_destinataire());
-            out.println(email2.getM_emetteur());
-            out.println(email2.getM_etat());
+             ) {
+            System.out.println("POP3.Email:");
+            System.out.println(email2.getM_id());
+            System.out.println(email2.getM_destinataire());
+            System.out.println(email2.getM_emetteur());
+            System.out.println(email2.getM_etat());
         }
         if (email.getM_etat()) {
             email.setM_etat(false);
@@ -363,20 +313,20 @@ public class ObjetConnecteSecurise {
 
     private boolean checkUser(String username) {
         for(Utilisateur u : m_listeUtilisateurs) {
-            out.println("'" + u.getM_adresseEmail() + "' - " + u.getM_mdp());
+            System.out.println("'" + u.getM_adresseEmail() + "' - " + u.getM_mdp());
         }
-        out.println("Check 1");
+        System.out.println("Check 1");
         Utilisateur u = getUtilisateurParNom(username);
         if(u == null) {
             u = getUtilisateurParEmail(username);
         }
-        out.println("Check 2");
+        System.out.println("Check 2");
         if (u != null) {
             m_current = u;
-            out.println("Check 3");
+            System.out.println("Check 3");
             return true;
         }
-        out.println("Check 4");
+        System.out.println("Check 4");
         return false;
     }
 
@@ -404,7 +354,7 @@ public class ObjetConnecteSecurise {
         }
         return null;
     }
-
+    
     public Utilisateur getUtilisateurParNom(String nomUtilisateur) {
         for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
             Utilisateur utilisateur = m_listeUtilisateurs.get(i);
@@ -427,10 +377,10 @@ public class ObjetConnecteSecurise {
                 line = br.readLine();
                 i++;
             }
-            out.println(i + " users added.");
+            System.out.println(i + " users added.");
             br.close();
         } catch(FileNotFoundException e) {
-            out.println("Unable to open users.pop");
+            System.out.println("Unable to open users.pop");
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -469,7 +419,7 @@ public class ObjetConnecteSecurise {
         List<Email> listEmails = new ArrayList<Email>();
         for (Email email: m_listeEmails) {
             if (email.getM_emetteur().equals(utilisateur)
-                    || email.getM_destinataire().equals(utilisateur)) {
+                || email.getM_destinataire().equals(utilisateur)) {
                 listEmails.add(email);
             }
         }
@@ -483,10 +433,10 @@ public class ObjetConnecteSecurise {
 
             for(Email m : m_listeEmails) {
                 if(m.getM_destinataire().getM_adresseEmail().equals(u.getM_adresseEmail())) {
-                    out.println(m.getM_destinataire().getM_adresseEmail() + " == " + u.getM_adresseEmail());
+                    System.out.println(m.getM_destinataire().getM_adresseEmail() + " == " + u.getM_adresseEmail());
                     writer.write(m.encode());
                 } else {
-                    out.println(m.getM_destinataire().getM_adresseEmail() + " != " + u.getM_adresseEmail());
+                    System.out.println(m.getM_destinataire().getM_adresseEmail() + " != " + u.getM_adresseEmail());
                 }
             }
 
@@ -504,7 +454,7 @@ public class ObjetConnecteSecurise {
                 while (this.readMail(br, u)) {
                     i++;
                 }
-                out.println(i + " message(s) loaded.");
+                System.out.println(i + " message(s) loaded.");
                 br.close();
             } catch(FileNotFoundException e) {
                 //Do nothing
@@ -561,11 +511,11 @@ public class ObjetConnecteSecurise {
                         if (idMail != null) {
                             email = getEmail(idMail);
                             if (email != null) {
-                                out.println("Email est contenu dans la liste" + idMail);
+                                System.out.println("POP3.Email est contenu dans la liste" + idMail);
 
                                 bw.write(email.encode());
                             } else {
-                                out.println("Email pas dans la liste" + idMail);
+                                System.out.println("POP3.Email pas dans la liste" + idMail);
                             }
                         }
                     }
@@ -584,7 +534,7 @@ public class ObjetConnecteSecurise {
         }
         return i;
     }
-
+    
     private void setEmailsUndeleted(Utilisateur utilisateur) {
 
         List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
@@ -595,4 +545,5 @@ public class ObjetConnecteSecurise {
             m_listeEmails.set(m_listeEmails.indexOf(email), email);
         }
     }
+
 }

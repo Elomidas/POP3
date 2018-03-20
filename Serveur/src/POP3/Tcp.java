@@ -1,3 +1,5 @@
+package POP3;
+
 import java.io.*;
 import java.net.Socket;
 
