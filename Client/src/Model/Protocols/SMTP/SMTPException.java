@@ -1,14 +1,14 @@
 package Model.Protocols.SMTP;
 
-public class SMTPException extends Exception {
+import Model.Protocols.ProtocolUnderTCPException;
+
+public class SMTPException extends ProtocolUnderTCPException {
 
     public SMTPException() {
         super();
     }
 
-    public SMTPException(String message) {
-        super(message);
-    }
+    public SMTPException(String message) { super(message); }
 
     public SMTPException(String message, Throwable cause) {
         super(message, cause);
