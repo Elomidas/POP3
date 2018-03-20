@@ -20,8 +20,8 @@ public class Smtp extends Thread {
 
     public void run() {
         try {
-            System.out.println("Début de connexion");
-
+            System.out.println("Connexion d'un nouveau client: "+socket.getInetAddress().getHostAddress());
+            send(ReponseServeur.SMTP_SERVER_READY);
             m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             m_output = new PrintStream(socket.getOutputStream());
 
@@ -33,5 +33,10 @@ public class Smtp extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void send(String message) {
+        m_output.println(message + "\r");
+        m_output.flush();
     }
 }
