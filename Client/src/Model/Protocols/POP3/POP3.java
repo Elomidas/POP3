@@ -8,7 +8,6 @@ public class POP3 {
     public static final int _DISCONNECTED = 0;
     public static final int _CONNECTED = 1;
     public static final int _AUTHENTICATED = 2;
-    protected static final String _EOM = ".";
 
     //Variables
     protected TCP m_tcp;
@@ -37,14 +36,6 @@ public class POP3 {
      */
     public boolean CheckConnected() {
         return (m_tcp.Status() == TCP._CONNECTED);
-    }
-
-    /**
-     * Get a string describing the last encountered error
-     * @return String describing the last error
-     */
-    public String getError() {
-        return m_error;
     }
 
     /*  ###
