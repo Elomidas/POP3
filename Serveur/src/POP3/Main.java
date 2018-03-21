@@ -1,5 +1,7 @@
 package POP3;
 
+import Commun.Tcp;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 

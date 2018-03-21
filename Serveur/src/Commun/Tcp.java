@@ -1,4 +1,6 @@
-package POP3;
+package Commun;
+
+import POP3.ObjetConnecteSecurise;
 
 import java.io.*;
 import java.net.Socket;

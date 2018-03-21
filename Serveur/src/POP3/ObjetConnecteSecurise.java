@@ -1,5 +1,9 @@
 package POP3;
 
+import Commun.Email;
+import Commun.Tcp;
+import Commun.Utilisateur;
+
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
@@ -330,7 +334,7 @@ public class ObjetConnecteSecurise {
         int index = m_listeEmails.indexOf(email);
         for (Email email2: m_listeEmails
                 ) {
-            out.println("POP3.Email:");
+            out.println("Email:");
             out.println(email2.getM_id());
             out.println(email2.getM_destinataire());
             out.println(email2.getM_emetteur());
@@ -362,21 +366,14 @@ public class ObjetConnecteSecurise {
      */
 
     private boolean checkUser(String username) {
-        for(Utilisateur u : m_listeUtilisateurs) {
-            out.println("'" + u.getM_adresseEmail() + "' - " + u.getM_mdp());
-        }
-        out.println("Check 1");
         Utilisateur u = getUtilisateurParNom(username);
         if(u == null) {
             u = getUtilisateurParEmail(username);
         }
-        out.println("Check 2");
         if (u != null) {
             m_current = u;
-            out.println("Check 3");
             return true;
         }
-        out.println("Check 4");
         return false;
     }
 
@@ -561,11 +558,11 @@ public class ObjetConnecteSecurise {
                         if (idMail != null) {
                             email = getEmail(idMail);
                             if (email != null) {
-                                out.println("POP3.Email est contenu dans la liste" + idMail);
+                                out.println("Email est contenu dans la liste" + idMail);
 
                                 bw.write(email.encode());
                             } else {
-                                out.println("POP3.Email pas dans la liste" + idMail);
+                                out.println("Email pas dans la liste" + idMail);
                             }
                         }
                     }

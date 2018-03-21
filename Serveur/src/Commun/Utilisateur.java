@@ -1,4 +1,4 @@
-package POP3;
+package Commun;
 
 /**
  * Created by tardy on 26/02/2018.

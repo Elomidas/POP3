@@ -1,4 +1,4 @@
-package POP3;
+package Commun;
 
 import java.util.ArrayList;
 import java.util.regex.*;

@@ -1,4 +1,4 @@
-package POP3;
+package Commun;
 
 import java.io.IOException;
 import java.util.ArrayList;
