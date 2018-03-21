@@ -1,16 +1,17 @@
 package Model.Protocols.POP3;
 
+import Model.Protocols.ProtocolUnderTCP;
+import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.*;
 import Utilities.TestRegex;
 
-public class POP3 {
+public class POP3 extends ProtocolUnderTCP{
     //Constants
     public static final int _DISCONNECTED = 0;
     public static final int _CONNECTED = 1;
     public static final int _AUTHENTICATED = 2;
 
     //Variables
-    protected TCP m_tcp;
     protected boolean m_authenticated;
     protected String m_error;
 
@@ -20,7 +21,7 @@ public class POP3 {
      */
 
     public POP3() {
-        m_tcp = new TCP();
+        super("POP3");
         m_authenticated = false;
         m_error = "";
     }
@@ -34,9 +35,10 @@ public class POP3 {
      * Check if client is connected to TCP server
      * @return true if client is connected, false else
      */
+    /*
     public boolean CheckConnected() {
         return (m_tcp.Status() == TCP._CONNECTED);
-    }
+    }*/
 
     /*  ###
      *  # ACCESSORS
@@ -68,10 +70,11 @@ public class POP3 {
      * @return String containing the response
      * @throws POP3Exception Error while sending or receiving messages
      */
+    /*
     protected String dialog(String msg) throws POP3Exception {
         this.Message(msg);
         return this.Response();
-    }
+    }*/
 
     /**
      * Check a POP3 response validity
@@ -93,8 +96,8 @@ public class POP3 {
      * @return true if response doesn't carry any error, false else
      * @throws POP3Exception Error while sending or receiving messages
      */
-    protected boolean checkedDialog(String message) throws POP3Exception {
-        String response = this.dialog(message);
+    protected boolean checkedDialog(String message) throws ProtocolUnderTCPException {
+        String response = dialog(message);
         return this.checkResponse(response);
     }
 
@@ -104,8 +107,8 @@ public class POP3 {
      * @return Response from client if there isn't any error
      * @throws POP3Exception Error while sending or receiving messages
      */
-    protected String getDialogResponseIfValid(String message) throws POP3Exception {
-        String response = this.dialog(message);
+    protected String getDialogResponseIfValid(String message) throws ProtocolUnderTCPException {
+        String response = dialog(message);
         if(this.checkResponse(response)) {
             return response;
         }
@@ -118,6 +121,7 @@ public class POP3 {
      * @param port      Server's port
      * @throws POP3Exception Error while trying to connect
      */
+    /*
     public void Connect(String address, int port) throws POP3Exception {
         try {
             m_tcp.setServerAddress(address);
@@ -126,7 +130,7 @@ public class POP3 {
         } catch(TCPException e) {
             throw new POP3Exception("Unable to connect POP3.", e);
         }
-    }
+    }*/
 
     /**
      * Try to authenticate user on server
@@ -162,8 +166,8 @@ public class POP3 {
         String response;
         String cmd = "USER " + user;
         try {
-            response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+            response = dialog(cmd);
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to check username validity.", e);
         }
         if(TestRegex.CheckPOP(response)) {
@@ -186,7 +190,7 @@ public class POP3 {
         String response;
         try {
             response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to check password validity.", e);
         }
         if(TestRegex.CheckPOP(response)) {
@@ -207,11 +211,15 @@ public class POP3 {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
-            this.dialog("QUIT");
+            try {
+                dialog("QUIT");
+            } catch (ProtocolUnderTCPException e) {
+                throw new POP3Exception("Unable to disconnect.", e);
+            }
             m_authenticated = false;
         }
         try {
-            m_tcp.Close();
+            super.getTcp().Close();
         } catch(TCPException e) {
             throw new POP3Exception("Unable to disconnect.", e);
         }
@@ -222,6 +230,7 @@ public class POP3 {
      * @return Response received from server
      * @throws POP3Exception Error while receiving response
      */
+    /*
     private String Response() throws POP3Exception {
         String result;
         if(!this.CheckConnected()) {
@@ -233,13 +242,14 @@ public class POP3 {
             throw new POP3Exception("Unable to receive message.", e);
         }
         return result;
-    }
+    }*/
 
     /**
      * Send a message through TCP
      * @param message message to send to server
      * @throws POP3Exception Error while sending message.
      */
+    /*
     private void Message(String message) throws POP3Exception {
         if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to send message, client not connected to server.");
@@ -249,7 +259,7 @@ public class POP3 {
         } catch(TCPException e) {
             throw new POP3Exception("Unable to send message.", e);
         }
-    }
+    }*/
 
     /**
      * Retrieve a mail from its ID
@@ -261,8 +271,8 @@ public class POP3 {
         String cmd = "RETR " + id;
         String response;
         try {
-            response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+            response = dialog(cmd);
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to retrieve mail " + id + ".", e);
         }
         if(!TestRegex.CheckPOP(response)) {
@@ -298,8 +308,8 @@ public class POP3 {
         String cmd = "UIDL";
         String response;
         try {
-            response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+            response = dialog(cmd);
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to retrieve UUID list.", e);
         }
         if(!TestRegex.CheckPOP(response)) {
@@ -328,7 +338,12 @@ public class POP3 {
      */
     public void Delete(String UUID) throws POP3Exception {
         String cmd = "DELE " + UUID;
-        String response = this.dialog(cmd);
+        String response = null;
+        try {
+            response = dialog(cmd);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to delete message.", e);
+        }
         if(!TestRegex.CheckPOP(response)) {
             m_error = response;
             throw new POP3Exception("Unable to delete message " + UUID + ".\nServer response :\n  " + response);
@@ -341,7 +356,12 @@ public class POP3 {
      */
     public void Reset() throws POP3Exception {
         String cmd = "RSET";
-        String response = this.dialog(cmd);
+        String response = null;
+        try {
+            response = dialog(cmd);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to reset.", e);
+        }
         if(!TestRegex.CheckPOP(response)) {
             m_error = response;
             throw new POP3Exception("Unable to reset.\nServer response :\n  " + response);
@@ -355,7 +375,12 @@ public class POP3 {
      */
     public int getMailNumber() throws POP3Exception {
         String cmd = "STAT";
-        String response = this.dialog(cmd);
+        String response = null;
+        try {
+            response = dialog(cmd);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to stat.", e);
+        }
         if(!TestRegex.CheckPOP(response)) {
             m_error = response;
             throw new POP3Exception("Unable to stat.\nServer response :\n  " + response);

@@ -1,5 +1,6 @@
 package Model.Protocols.POP3;
 
+import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCPException;
 import Utilities.TestRegex;
 
@@ -31,10 +32,14 @@ public class POP3S extends POP3 {
      */
     @Override
     public void Connect(String address, int port) throws POP3Exception {
-        super.Connect(address, port);
+        try {
+            super.Connect(address, port);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to connect.", e);
+        }
         if(this.CheckConnected()) {
             try {
-                String response = m_tcp.Receive();
+                String response = super.getTcp().Receive();
                 if (TestRegex.CheckPOP(response)) {
                     String[] matches = TestRegex.Submatches("\\+OK[^<]+(<.*>)", response);
                     if (matches.length != 1) {
@@ -86,7 +91,12 @@ public class POP3S extends POP3 {
                     .append(login)
                     .append(" ")
                     .append(digestedPassword);
-            String response = dialog(sBuilder.toString());
+            String response = null;
+            try {
+                response = dialog(sBuilder.toString());
+            } catch (ProtocolUnderTCPException e) {
+                throw new POP3Exception("APOP failed.", e);
+            }
             if(TestRegex.CheckPOP(response)) {
                 return true;
             } else {

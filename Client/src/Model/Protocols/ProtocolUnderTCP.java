@@ -73,4 +73,39 @@ public abstract class ProtocolUnderTCP {
     public boolean CheckConnected() {
         return (tcp.Status() == TCP._CONNECTED);
     }
+
+    /**
+     *
+     * @param msg
+     * @return
+     * @throws ProtocolUnderTCPException
+     */
+    protected String dialog(String msg) throws ProtocolUnderTCPException {
+        this.Message(msg);
+        return this.Response();
+    }
+
+    private String Response() throws ProtocolUnderTCPException {
+        String result;
+        if(!this.CheckConnected()) {
+            throw new ProtocolUnderTCPException("Unable to receive message, client not connected to server.");
+        }
+        try {
+            result = tcp.Receive();
+        } catch(TCPException e) {
+            throw new ProtocolUnderTCPException("Unable to receive message.", e);
+        }
+        return result;
+    }
+
+    private void Message(String message) throws ProtocolUnderTCPException {
+        if(!this.CheckConnected()) {
+            throw new ProtocolUnderTCPException("Unable to send message, client not connected to server.");
+        }
+        try {
+            tcp.Send(message);
+        } catch(TCPException e) {
+            throw new ProtocolUnderTCPException("Unable to send message.", e);
+        }
+    }
 }

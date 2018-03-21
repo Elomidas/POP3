@@ -112,6 +112,7 @@ public class Main_Client extends Main_Connexion {
      */
     @Override
     public void stop(){
+        System.out.println("Dans le main client!!!");
         _controllerClient.FinSession();
     }
 

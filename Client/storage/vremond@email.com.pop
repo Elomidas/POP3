@@ -1,34 +1,3 @@
-11
-Date: null
-From: mtardy@email.comSubject: objet12
-MIME-Version: 1.0
-Content-Type: text/plain; charset: UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Another again 12
-
-.
-12
-Date: null
-From: mtardy@email.comSubject: objet13
-MIME-Version: 1.0
-Content-Type: text/plain; charset: UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Another again 13
-
-.
-13
-
-Date: null
-From: mtardy@email.comSubject: objet14
-MIME-Version: 1.0
-Content-Type: text/plain; charset: UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Another again 14
-
-.
 0
 Date: null
 From: mtardy@email.comSubject: objet1
@@ -47,6 +16,16 @@ Content-Type: text/plain; charset: UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 This is another message
+
+.
+13
+Date: null
+From: mtardy@email.comSubject: objet14
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Another again 14
 
 .
 2
@@ -117,25 +96,5 @@ Content-Type: text/plain; charset: UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 Another again 9
-
-.
-9
-Date: null
-From: mtardy@email.comSubject: objet10
-MIME-Version: 1.0
-Content-Type: text/plain; charset: UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Another again 10
-
-.
-10
-Date: null
-From: mtardy@email.comSubject: objet11
-MIME-Version: 1.0
-Content-Type: text/plain; charset: UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Another again 11
 
 .

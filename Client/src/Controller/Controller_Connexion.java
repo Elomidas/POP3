@@ -83,8 +83,8 @@ public class Controller_Connexion {
     public void close(){
         try {
             _mailBox.Close();
-            Logger logs = _main.getLogs();
-            logs.info("test");
+            //Logger logs = _main.getLogs();
+            //logs.info("test");
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
             //todo

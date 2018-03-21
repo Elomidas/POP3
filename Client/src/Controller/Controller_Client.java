@@ -398,8 +398,8 @@ public class Controller_Client {
         Optional<ButtonType> resultat = alert.showAndWait();
 
         if(resultat.get() == btnOui) {
-            _mainClient.RetourConnexion();
             FinSession();
+            _mainClient.RetourConnexion();
         }
         else
             alert.close();

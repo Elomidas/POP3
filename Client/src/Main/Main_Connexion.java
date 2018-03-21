@@ -149,6 +149,7 @@ public class Main_Connexion extends Application {
      */
     @Override
     public void stop(){
+        System.out.println("Dans le main connexion!!!");
         _controllerConnexion.close();
     }
 
