@@ -12,10 +12,10 @@ import java.util.Set;
 import java.util.logging.FileHandler;
 
 public class Mailbox {
-    protected HashMap<String, Mail> m_mails;
-    protected String[] m_UUIDs;
-    protected MailAddress m_user;
-    protected POP3 m_pop;
+    private HashMap<String, Mail> m_mails;
+    private String[] m_UUIDs;
+    private MailAddress m_user;
+    private POP3 m_pop;
 
     //Constructor
     public Mailbox() {
@@ -25,7 +25,10 @@ public class Mailbox {
         m_UUIDs = new String[0];
     }
 
-    protected void openStorage() {
+    /**
+     * Open the user's file and lock it.
+     */
+    private void openStorage() {
         if(m_user != null) {
             try {
                 BufferedReader br = new BufferedReader(new FileReader(m_user.getAddress() + ".pop"));
@@ -43,7 +46,12 @@ public class Mailbox {
         }
     }
 
-    protected boolean readMail(BufferedReader br) {
+    /**
+     * Read a mail from file.
+     * @param br BufferReader initialized with the file to read.
+     * @return false if the en of the file has been reached.
+     */
+    private boolean readMail(BufferedReader br) {
         try {
             StringBuilder sBuilder = new StringBuilder();
             String UUID = br.readLine();
@@ -56,10 +64,8 @@ public class Mailbox {
                     sBuilder.append(".\n");
                     m_mails.put(UUID, new Mail(sBuilder.toString()));
                     return true;
-                } else if(line == null) {
-                    return false;
                 } else {
-                    sBuilder.append(line + "\n");
+                    sBuilder.append(line).append("\n");
                 }
             }
         } catch(Exception e) {
@@ -68,7 +74,10 @@ public class Mailbox {
         return false;
     }
 
-    protected void saveStorage() {
+    /**
+     * Save current mails in user's storage
+     */
+    private void saveStorage() {
         if(m_user != null) {
             try {
 
@@ -87,7 +96,13 @@ public class Mailbox {
         }
     }
 
-    //Step 1 : join the server (check address an port, return bool)
+    /**
+     * Try to join the server. Useful to test validity of address:port
+     * @param address Address of the server to join (can be an IP or an URL)
+     * @param port Port on which joining the server.
+     * @return true if the server has been reached, false else.
+     * @throws MailException Error while joining the server.
+     */
     public boolean joinServer(String address, int port) throws MailException {
         m_pop = new POP3();
         try {
@@ -98,14 +113,23 @@ public class Mailbox {
         return this.ServerJoined();
     }
 
-    //Step 2 : set user (check mail validity, throw exception if not valid)
+    /**
+     * Set user's mail. Check it's validity.
+     * @param user User's mail
+     * @throws MailException Error if mail isn't valid.
+     */
     public void setUser(String user) throws MailException {
         m_user = MailAddress.createFromString(user);
     }
 
-    //Step 3 : try the password with previously set username
+    /**
+     * Try this password for the previous username.
+     * @param password user's password.
+     * @return true if authentication successfully end
+     * @throws MailException Error while authenticating
+     */
     public boolean Authenticate(String password) throws MailException {
-        if(this.ServerJoined() == false) {
+        if(!this.ServerJoined()) {
             throw new MailException("You should try to join the server before trying to authenticate yourself.");
         }
         try {

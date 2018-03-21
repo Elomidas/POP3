@@ -31,7 +31,7 @@ public class POP3 extends ProtocolUnderTCP{
      *  ###
      */
 
-    /**
+    /*
      * Check if client is connected to TCP server
      * @return true if client is connected, false else
      */
@@ -50,7 +50,7 @@ public class POP3 extends ProtocolUnderTCP{
      * @return POP3._DISCONNECT if client isn't connected, POP3._CONNECTED if client is connected but not authenticated or POP3._AUTHENTICATED if client is connected and authenticated.
      */
     public int Status() {
-        if(this.CheckConnected() == false) {
+        if(!this.CheckConnected()) {
             return POP3._DISCONNECTED;
         }
         if(m_authenticated) {
@@ -64,7 +64,7 @@ public class POP3 extends ProtocolUnderTCP{
      *  ###
      */
 
-    /**
+    /*
      * Send a message through TCP connection an wait for a response
      * @param msg String containing the message to send
      * @return String containing the response
@@ -76,11 +76,12 @@ public class POP3 extends ProtocolUnderTCP{
         return this.Response();
     }*/
 
-    /**
+    /*
      * Check a POP3 response validity
      * @param response String containing the POP3 response
      * @return true if response is correct, false if it carries an error
      */
+    /*
     protected boolean checkResponse(String response) {
         if(!TestRegex.CheckPOP(response)) {
             m_error = "Server respond to with :\n  " + response;
@@ -89,24 +90,28 @@ public class POP3 extends ProtocolUnderTCP{
         }
         return true;
     }
+    */
 
-    /**
+    /*
      * Send a message and wait for response. Check if response is positive
      * @param message Message to ben send
      * @return true if response doesn't carry any error, false else
      * @throws POP3Exception Error while sending or receiving messages
      */
+    /*
     protected boolean checkedDialog(String message) throws ProtocolUnderTCPException {
         String response = dialog(message);
         return this.checkResponse(response);
     }
+    */
 
-    /**
+    /*
      * Send a message and wait for response. Return response only if it is positive
      * @param message Message to send
      * @return Response from client if there isn't any error
      * @throws POP3Exception Error while sending or receiving messages
      */
+    /*
     protected String getDialogResponseIfValid(String message) throws ProtocolUnderTCPException {
         String response = dialog(message);
         if(this.checkResponse(response)) {
@@ -114,8 +119,9 @@ public class POP3 extends ProtocolUnderTCP{
         }
         return "";
     }
+    */
 
-    /**
+    /*
      * Try to connect client to server through TCP
      * @param address   Server's address (IP or URL)
      * @param port      Server's port
@@ -225,7 +231,7 @@ public class POP3 extends ProtocolUnderTCP{
         }
     }
 
-    /**
+    /*
      * Wait for a response from server
      * @return Response received from server
      * @throws POP3Exception Error while receiving response
@@ -244,7 +250,7 @@ public class POP3 extends ProtocolUnderTCP{
         return result;
     }*/
 
-    /**
+    /*
      * Send a message through TCP
      * @param message message to send to server
      * @throws POP3Exception Error while sending message.
@@ -338,7 +344,7 @@ public class POP3 extends ProtocolUnderTCP{
      */
     public void Delete(String UUID) throws POP3Exception {
         String cmd = "DELE " + UUID;
-        String response = null;
+        String response;
         try {
             response = dialog(cmd);
         } catch (ProtocolUnderTCPException e) {
@@ -356,7 +362,7 @@ public class POP3 extends ProtocolUnderTCP{
      */
     public void Reset() throws POP3Exception {
         String cmd = "RSET";
-        String response = null;
+        String response;
         try {
             response = dialog(cmd);
         } catch (ProtocolUnderTCPException e) {
@@ -375,7 +381,7 @@ public class POP3 extends ProtocolUnderTCP{
      */
     public int getMailNumber() throws POP3Exception {
         String cmd = "STAT";
-        String response = null;
+        String response;
         try {
             response = dialog(cmd);
         } catch (ProtocolUnderTCPException e) {
