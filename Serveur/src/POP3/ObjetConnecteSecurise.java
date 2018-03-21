@@ -142,18 +142,18 @@ public class ObjetConnecteSecurise {
         StringBuilder decrypt = new StringBuilder();
 
         MessageDigest md = MessageDigest.getInstance("MD5");
-        decrypt.append(timeConnexion)
-                .append(m_current.getM_mdp())
-                .append(processId);
-        md.update(decrypt.toString().getBytes());
-
-        byte byteData[] = md.digest();
-        StringBuffer sb = new StringBuffer();
-        for(int i = 0; i < byteData.length; i++){
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        decrypt.append("<")
+                .append(this.processId)
+                .append(".")
+                .append(this.timeConnexion.getTime())
+                .append("@localhost>")
+                .append(this.m_current.getM_mdp());
+        byte[] digestedBytes = md.digest(decrypt.toString().getBytes());
+        StringBuilder returnBuilder = new StringBuilder();
+        for(int i = 0; i < digestedBytes.length; i++) {
+            returnBuilder.append(String.format("%02X", digestedBytes[i]));
         }
-
-        if(sb.equals(encryptUser))
+        if(returnBuilder.toString().equals(encryptUser))
             return true;
         return false;
     }
