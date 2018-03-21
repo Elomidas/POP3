@@ -1,7 +1,6 @@
 package POP3;
 
 import Commun.Email;
-import Commun.Tcp;
 import Commun.Utilisateur;
 
 import java.io.*;
@@ -54,7 +53,7 @@ public class ObjetConnecte {
         while (m_continuer) {
             try {
                 System.out.println("Wait...");
-                input = m_tcp.Receive();
+                input = m_tcp.receive();
                 System.out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
@@ -95,7 +94,7 @@ public class ObjetConnecte {
                     }
                 }
                 System.out.println("Response : " + response);
-                m_tcp.Send(response);
+                m_tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
             }

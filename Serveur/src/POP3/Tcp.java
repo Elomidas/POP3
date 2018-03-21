@@ -1,29 +1,28 @@
-package SMTP;
+package POP3;
 
 import Commun.Connexion;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import POP3.ObjetConnecteSecurise;
+
+import java.io.*;
 import java.net.Socket;
 
-public class Smtp extends Connexion {
+public class Tcp extends Connexion {
 
-    protected Socket socket;
+    private Socket socket;
 
-    public Smtp(Socket socket){
+    public Tcp(Socket socket){
         super(socket);
         this.socket = socket;
     }
 
-    public void run() {
+    public void run(){
         try {
-            System.out.println("Connexion d'un nouveau client: "+socket.getInetAddress().getHostAddress());
-            send(ReponseServeur.SMTP_SERVER_READY);
+            System.out.println("Début de connexion");
+
             m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             m_output = new PrintStream(socket.getOutputStream());
 
-            ObjetSmtpConnecte object = new ObjetSmtpConnecte(this);
+            ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
             object.Launch();
 
             socket.close();

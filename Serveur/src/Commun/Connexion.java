@@ -1,46 +1,23 @@
 package Commun;
 
-import POP3.ObjetConnecteSecurise;
-
 import java.io.*;
 import java.net.Socket;
 
-public class Tcp extends Thread{
+public class Connexion extends Thread {
 
-    private Socket socket;
     protected BufferedReader m_input;
     protected PrintStream m_output;
+    private Socket socket;
 
-    public Tcp(Socket socket){
+    public Connexion (Socket socket){
         this.socket = socket;
     }
-
-    public void run(){
-        try {
-            System.out.println("Début de connexion");
-
-            m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            m_output = new PrintStream(socket.getOutputStream());
-
-            ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
-            object.Launch();
-
-            socket.close();
-
-            if(socket.isClosed()) {
-                System.out.println("Fin de Connexion");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void Send(String message) {
+    public void send(String message) {
         m_output.println(message + "\r");
         m_output.flush();
     }
 
-    public String Receive() throws IOException {
+    public String receive() throws IOException {
         StringBuilder messageReceived = new StringBuilder();
         try {
             char iChar;
@@ -73,5 +50,4 @@ public class Tcp extends Thread{
 
         return messageReceived.toString();
     }
-
 }

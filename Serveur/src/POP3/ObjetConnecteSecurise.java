@@ -1,7 +1,6 @@
 package POP3;
 
 import Commun.Email;
-import Commun.Tcp;
 import Commun.Utilisateur;
 
 import java.io.*;
@@ -61,14 +60,14 @@ public class ObjetConnecteSecurise {
         m_etat = POP3_ETAT_AUTORISATION;
         String input;
         try {
-            m_tcp.Send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
+            m_tcp.send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
         } catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
         while (m_continuer) {
             try {
                 out.println("Wait...");
-                input = m_tcp.Receive();
+                input = m_tcp.receive();
                 out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
@@ -106,7 +105,7 @@ public class ObjetConnecteSecurise {
                     }
                 }
                 out.println("Response : " + response);
-                m_tcp.Send(response);
+                m_tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
             }
