@@ -11,11 +11,11 @@ import java.util.*;
  * Created by tardy on 13/02/2018.
  */
 public class ObjetConnecte {
-    private static final String POP3_ETAT_AUTORISATION = "Autorisation";
-    private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
-    private static final String POP3_ETAT_TRANSACTION = "Transaction";
-    private static final String POP3_REPONSE_NEGATIVE = "-ERR";
-    private static final String POP3_REPONSE_POSITIVE = "+OK";
+    protected static final String POP3_ETAT_AUTORISATION = "Autorisation";
+    protected static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
+    protected static final String POP3_ETAT_TRANSACTION = "Transaction";
+    protected static final String POP3_REPONSE_NEGATIVE = "-ERR";
+    protected static final String POP3_REPONSE_POSITIVE = "+OK";
     protected static HashMap<String, Boolean> m_locked;
     protected static ArrayList<Utilisateur> m_listeUtilisateurs;
 
@@ -26,7 +26,7 @@ public class ObjetConnecte {
     }
 
     protected boolean m_continuer;
-    private String m_etat;
+    protected String m_etat;
     private ArrayList<Email> m_listeEmails;
     protected Utilisateur m_current;
     protected boolean m_lock;
@@ -34,7 +34,7 @@ public class ObjetConnecte {
     protected int m_blankCount;
 
     public ObjetConnecte(Tcp tcp) {
-        m_tcp = tcp;
+        this.m_tcp = tcp;
     }
 
     protected void initialize() {
@@ -64,36 +64,23 @@ public class ObjetConnecte {
                     parameters = explodedCommand[1].split(" ");
                 }
                 String response;
-                if(command.equals("")) {
-                    m_blankCount++;
-                } else {
-                    m_blankCount = 0;
+
+                switch (m_etat) {
+                    case ObjetConnecte.POP3_ETAT_AUTORISATION:
+                        response = this.AuthorisationState(command, parameters);
+                        break;
+                    case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
+                        response = this.AuthenticationState(command, parameters);
+                        break;
+                    case ObjetConnecte.POP3_ETAT_TRANSACTION:
+                        response = this.TransactionState(command, parameters);
+                        break;
+                    default:
+                        System.out.println("What is that (state/command) : " + m_etat + "/" + command);
+                        response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
+                        break;
                 }
-                if(m_blankCount == 9) {
-                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
-                } else if(m_blankCount >= 10) {
-                    if(m_lock) {
-                        this.unlock(m_current.getM_adresseEmail());
-                    }
-                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
-                    m_continuer = false;
-                } else {
-                    switch (m_etat) {
-                        case ObjetConnecte.POP3_ETAT_AUTORISATION:
-                            response = this.AuthorisationState(command, parameters);
-                            break;
-                        case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
-                            response = this.AuthenticationState(command, parameters);
-                            break;
-                        case ObjetConnecte.POP3_ETAT_TRANSACTION:
-                            response = this.TransactionState(command, parameters);
-                            break;
-                        default:
-                            System.out.println("What is that (state/command) : " + m_etat + "/" + command);
-                            response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
-                            break;
-                    }
-                }
+
                 System.out.println("Response : " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
@@ -532,7 +519,7 @@ public class ObjetConnecte {
         return i;
     }
     
-    private void setEmailsUndeleted(Utilisateur utilisateur) {
+    protected void setEmailsUndeleted(Utilisateur utilisateur) {
 
         List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
 
