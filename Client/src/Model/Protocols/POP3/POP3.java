@@ -225,7 +225,7 @@ public class POP3 extends ProtocolUnderTCP{
             m_authenticated = false;
         }
         try {
-            super.getTcp().Close();
+            tcp.Close();
         } catch(TCPException e) {
             throw new POP3Exception("Unable to disconnect.", e);
         }

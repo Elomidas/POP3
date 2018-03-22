@@ -3,6 +3,7 @@ package Model.Protocols.SMTP;
 import Model.Protocols.ProtocolUnderTCP;
 import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCP;
+import Utilities.TestRegex;
 
 public class SMTP extends ProtocolUnderTCP{
 
@@ -36,15 +37,6 @@ public class SMTP extends ProtocolUnderTCP{
      * @return
      */
     @Override
-    public TCP getTcp() {
-        return super.getTcp();
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
     public String getProtocolName() {
         return super.getProtocolName();
     }
@@ -53,15 +45,6 @@ public class SMTP extends ProtocolUnderTCP{
     /**
      * Mutators
      */
-
-    /**
-     *
-     * @param tcp
-     */
-    @Override
-    public void setTcp(TCP tcp) {
-        super.setTcp(tcp);
-    }
 
     /**
      *
@@ -90,5 +73,19 @@ public class SMTP extends ProtocolUnderTCP{
     @Override
     public boolean CheckConnected() {
         return super.CheckConnected();
+    }
+
+    /**
+     * Send a mail to one or more targets
+     * @param targets String containing targets, separated by ";" or "; "
+     * @param mail Mail to send
+     * @throws SMTPException Error while sending mail
+     */
+    public void SendMail(String targets, String mail) throws SMTPException {
+        String[] to = targets.split(";");
+        for(int i = 0; i < to.length; i++) {
+            to[i] = to[i].trim();
+        }
+        // TODO
     }
 }

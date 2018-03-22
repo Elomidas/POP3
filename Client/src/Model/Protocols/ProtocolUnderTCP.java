@@ -4,17 +4,12 @@ import Model.Protocols.TCP.*;
 
 public abstract class ProtocolUnderTCP {
 
-    private String protocolName;
-    private TCP tcp;
-
-    public ProtocolUnderTCP(){
-        this.protocolName = new String("");
-        this.tcp = new TCP();
-    }
+    protected String protocolName;
+    protected TCP tcp;
 
     public ProtocolUnderTCP(String protocolName){
-        this();
         this.protocolName = protocolName;
+        tcp = new TCP();
     }
 
     /*  ###
@@ -26,10 +21,6 @@ public abstract class ProtocolUnderTCP {
         return protocolName;
     }
 
-    public TCP getTcp() {
-        return tcp;
-    }
-
 
     /*  ###
      *  # MUTATORS
@@ -38,10 +29,6 @@ public abstract class ProtocolUnderTCP {
 
     public void setProtocolName(String protocolName) {
         this.protocolName = protocolName;
-    }
-
-    public void setTcp(TCP tcp) {
-        this.tcp = tcp;
     }
 
 
@@ -75,10 +62,10 @@ public abstract class ProtocolUnderTCP {
     }
 
     /**
-     *
-     * @param msg
-     * @return
-     * @throws ProtocolUnderTCPException
+     * Send a message and wait the response
+     * @param msg Message to send
+     * @return Respnse received
+     * @throws ProtocolUnderTCPException Error while sending message or receiving response.
      */
     protected String dialog(String msg) throws ProtocolUnderTCPException {
         this.Message(msg);
