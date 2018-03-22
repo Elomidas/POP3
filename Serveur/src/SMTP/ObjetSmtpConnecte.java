@@ -85,8 +85,6 @@ public class ObjetSmtpConnecte {
         switch (command){
             case "EHLO":
                 return commandeEhlo(parameters);
-            case "RSET":
-                return commandeRset();
             case "QUIT":
                 return commandeQuit();
             default :
@@ -122,8 +120,10 @@ public class ObjetSmtpConnecte {
         switch (command){
             case "RSET":
                 return commandeRset();
+            case "RCPT":
+                return commandeRcpt(parameters);
             case "DATA":
-                return commandeData(parameters);
+                return commandeData();
             default :
                 return SMTP_500_UNKNOWN_COMMAND;
         }
@@ -138,12 +138,15 @@ public class ObjetSmtpConnecte {
      */
     private String lecture(String command, String[] parameters) {
         switch (command){
-            case "CLRF":
-                return commandeClrf(parameters);
+            case SMTP_CRLF:
+                return commandeCrlf(parameters);
             default :
-                return SMTP_500_UNKNOWN_COMMAND;
+                writeEmail(parameters);
+                return SMTP_354_START_READING;
         }
     }
+
+
 
     /**
      * return answer of commands related to identification stat
@@ -156,6 +159,8 @@ public class ObjetSmtpConnecte {
         switch (command){
             case "MAIL":
                 return commandeMailFrom(parameters);
+            case "QUIT":
+                return commandeQuit();
             default :
                 return SMTP_500_UNKNOWN_COMMAND;
         }
@@ -250,12 +255,11 @@ public class ObjetSmtpConnecte {
 
     /**
      *
-     * @param parameters
      * @return
      */
-    private String commandeData(String[] parameters) {
-        //TODO
-        return null;
+    private String commandeData() {
+        etatServeur = SERVER_LECTURE;
+        return SMTP_354_START_READING;
     }
 
     /**
@@ -263,9 +267,12 @@ public class ObjetSmtpConnecte {
      * @param parameters
      * @return
      */
-    private String commandeClrf(String[] parameters) {
-        //TODO
-        return null;
+    private String commandeCrlf(String[] parameters) {
+
+        this.m_listeEmails.add(currentEmail);
+        this.saveMails();
+        etatServeur = SERVER_IDENTIFICATION;
+        return SMTP_250_OK;
     }
 
     /*
@@ -274,9 +281,8 @@ public class ObjetSmtpConnecte {
 
     /**
      * save Emails in files
-     * @param u
      */
-    protected void saveMails(Utilisateur u) {
+    protected void saveMails() {
         try {
             for(Email m : m_listeEmails) {
                 for (Utilisateur utilisateur: m.getM_destinataires()) {
@@ -288,6 +294,14 @@ public class ObjetSmtpConnecte {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     *
+     * @param line
+     */
+    private void writeEmail(String[] line) {
+
     }
 
 }
