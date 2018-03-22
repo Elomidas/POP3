@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 
 public class Main extends Application {
@@ -34,13 +35,13 @@ public class Main extends Application {
     /**
      * Logs utilisé pour notre application
      */
-    protected MyLogger logs;
+    protected Logger logs;
 
     /**
      * Constructeur par défaut
      */
     public Main(){
-        logs = new MyLogger();
+        logs = MyLogger.getLogger("./logs/MainTCP.log");
         controller = new Controller_Connexion();
     }
 
@@ -48,7 +49,7 @@ public class Main extends Application {
      *
      * @return
      */
-    public MyLogger getLogs() {
+    public Logger getLogs() {
         return logs;
     }
 

@@ -17,6 +17,7 @@ import javafx.util.Callback;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.logging.Level;
 
 /**
  * Controlleur lié à la fenetre du client
@@ -145,9 +146,10 @@ public class Controller_Client extends Controller{
         Mail[] mails = null;
         try {
             mails = mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
+            main.getLogs().info("Messages collected.");
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //TODO
+            main.getLogs().log(Level.SEVERE, "Unable to collect messages.", e);
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
@@ -237,6 +239,9 @@ public class Controller_Client extends Controller{
             }
             else
             {
+                //gestion erreur de connexion dans les logs
+                main.getLogs().log(Level.SEVERE, "Invalid target.");
+                //affichage message erreur à l'utilisateur
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Erreur destinataire !");
                 alert.setContentText("Veuillez renseigner une adresse mail valide.");
@@ -254,13 +259,14 @@ public class Controller_Client extends Controller{
     private void EnvoiMail(String destinataire,String objet,String contenu){
         try {
             mailbox.SendMail(destinataire, objet, contenu);
+            main.getLogs().info("Mail sent.");
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Envoi réussi !");
             alert.setContentText("Message envoyé avec succès.");
             alert.show();
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //todo
+            main.getLogs().log(Level.SEVERE, "Unable to send mail.", e);
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
@@ -341,9 +347,10 @@ public class Controller_Client extends Controller{
                 for(Node mail : m_ligne.get(ind).getChildren()){
                     mail.setStyle("-fx-text-fill : red;");
                 }
+                main.getLogs().info("Mail deleted.");
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
-                //todo
+                main.getLogs().log(Level.SEVERE, "Unable to delete mail.", e);
                 //affichage message erreur à l'utilisateur
                 alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Une erreur est survenue !");

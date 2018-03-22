@@ -5,6 +5,8 @@ import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
 import javafx.scene.control.Alert;
 
+import java.util.logging.Level;
+
 public abstract class Controller {
 
     /*  ###
@@ -33,11 +35,10 @@ public abstract class Controller {
     public void FinSession() {
         try {
             mailbox.Close();
-            //Logger logs = _main.getLogs();
-            //logs.info("test");
+            main.getLogs().info("Session ending.");
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //todo
+            main.getLogs().log(Level.SEVERE, "An error occurred while session ending", e);
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue.");

@@ -13,6 +13,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+import java.util.logging.Level;
+
 /**
  * Controlleur associé à la fenêtre de connexion
  */
@@ -77,9 +79,12 @@ public class Controller_Connexion extends Controller {
                     mailbox.setUser(_tfAdresseMail.getText());
                     if(mailbox.Authenticate(_tfMotDePasse.getText())){
                         main.lancerClient();
+                        main.getLogs().info("User authenticated, client started.");
                     }
                     else
                     {
+                        //gestion erreur de connexion dans les logs
+                        main.getLogs().log(Level.SEVERE, "Unable to authenticate.");
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Connexion impossible !");
                         alert.setContentText("Nous ne parvenons pas à vous identifier.");
@@ -88,6 +93,8 @@ public class Controller_Connexion extends Controller {
                 }
                 else
                 {
+                    //gestion erreur de connexion dans les logs
+                    main.getLogs().log(Level.SEVERE, "Unable to join server.");
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Impossible de joindre le serveur !");
                     alert.setContentText("Nous ne parvenons pas à joindre le serveur.");
@@ -96,7 +103,7 @@ public class Controller_Connexion extends Controller {
 
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
-                //todo
+                main.getLogs().log(Level.SEVERE, "An error occurred on mailbox.", e);
                 //affichage message erreur à l'utilisateur
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Une erreur est survenue !");
