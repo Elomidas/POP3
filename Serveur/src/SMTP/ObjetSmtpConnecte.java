@@ -19,9 +19,10 @@ public class ObjetSmtpConnecte {
     private String input;
     private String reponseServeur;
     private Email currentEmail;
-    protected RepertoireUtilisateur repertoireUtilisateur;
     protected ArrayList<Email> m_listeEmails;
     protected Utilisateur currentUser;
+    protected Mailbox mailbox;
+    protected String clientDomain;
 
     public ObjetSmtpConnecte(Tcp tcp){
         this.tcp = tcp;
@@ -29,8 +30,8 @@ public class ObjetSmtpConnecte {
         this.continuer = true;
         this.currentEmail = null;
         this.m_listeEmails = new ArrayList<>();
-        this.repertoireUtilisateur = new RepertoireUtilisateur();
-        loadMails();
+        this.mailbox = new Mailbox();
+        clientDomain = null;
     }
 
     public void Launch() throws IOException {
@@ -193,6 +194,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeEhlo(String[] parameters) {
+        this.clientDomain = parameters.length >= 1 ? parameters[0] : "";
         etatServeur = SERVER_IDENTIFICATION;
         return SMTP_250_SERVERDOMAIN ;
     }
@@ -229,7 +231,7 @@ public class ObjetSmtpConnecte {
 
         String emailAddress = parameters[1];
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
-            Utilisateur utilisateur = repertoireUtilisateur.getUtilisateurParEmail(emailAddress);
+            Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
@@ -254,7 +256,7 @@ public class ObjetSmtpConnecte {
         String emailAddress = parameters[1];
 
         if ((emailAddress  != null ) && TestRegex.CheckMail(emailAddress)) {
-            Utilisateur utilisateur = repertoireUtilisateur.getUtilisateurParEmail(emailAddress);
+            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
@@ -323,57 +325,6 @@ public class ObjetSmtpConnecte {
         }
     }
 
-    protected void loadMails() {
-        for (Utilisateur u: this.repertoireUtilisateur.getM_listeUtilisateurs()
-             ) {
-
-            if (u != null) {
-                try {
-                    BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
-                    int i = 0;
-                    while (this.readMail(br, u)) {
-                        i++;
-                    }
-                    System.out.println(i + " message(s) loaded.");
-                    br.close();
-                } catch (FileNotFoundException e) {
-                    //Do nothing
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    protected boolean readMail(BufferedReader br, Utilisateur u) {
-        ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
-        utilisateurArrayList.add(u);
-        try {
-            StringBuilder sBuilder = new StringBuilder();
-            String id = br.readLine();
-            if(id == null) {
-                return false;
-            }
-            while(true) {
-                String line = br.readLine();
-                if(line.equals(".")) {
-                    sBuilder.append(".\n");
-                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), this.repertoireUtilisateur.getM_listeUtilisateurs());
-                    m.setM_id(UUID.fromString(id));
-                    m_listeEmails.add(m);
-                    return true;
-                } else if(line == null) {
-                    return false;
-                } else {
-                    sBuilder.append(line)
-                        .append("\n");
-                }
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
     public void removeSavedFiles() {
         File directory = new File("data/");
