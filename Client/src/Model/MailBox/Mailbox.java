@@ -69,7 +69,7 @@ public class Mailbox {
     }
 
     protected void saveStorage() {
-        if(m_user != null) {
+        if((m_user != null) && (m_mails != null)) {
             try {
 
                 BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
