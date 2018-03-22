@@ -1,6 +1,7 @@
 package POP3;
 
 import Commun.Email;
+import Commun.Tcp;
 import Commun.Utilisateur;
 
 import java.io.*;

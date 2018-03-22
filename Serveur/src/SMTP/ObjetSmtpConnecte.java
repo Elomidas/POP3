@@ -1,28 +1,30 @@
 package SMTP;
 
+import Commun.Tcp;
+
 import java.io.IOException;
 
 public class ObjetSmtpConnecte {
 
-    protected Smtp smtp;
+    protected Tcp tcp;
     private String etatServeur;
     private boolean continuer;
     private String input;
     private String reponseServeur;
 
-    public ObjetSmtpConnecte(Smtp smtp){
-        this.smtp = smtp;
+    public ObjetSmtpConnecte(Tcp tcp){
+        this.tcp = tcp;
         this.etatServeur = ReponseServeur.SERVER_READY;
 
     }
 
     public void Launch() throws IOException {
         this.etatServeur = ReponseServeur.SERVER_CONNEXION;
-        smtp.send(ReponseServeur.SMTP_SERVER_READY);
+        tcp.send(ReponseServeur.SMTP_SERVER_READY);
 
         while(continuer){
             System.out.println("Wait...");
-            input = smtp.receive();
+            input = tcp.receive();
             System.out.println(input + " received");
 
             String[] explodedCommand = input.split(" ", 2);
@@ -52,7 +54,7 @@ public class ObjetSmtpConnecte {
                     reponseServeur = ReponseServeur.SMTP_500_UNKNOWN_COMMAND;
             }
             System.out.println("reponse: "+reponseServeur);
-            smtp.send(reponseServeur);
+            tcp.send(reponseServeur);
         }
         System.out.println("End of POP3");
     }

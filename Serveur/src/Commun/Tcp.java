@@ -1,7 +1,8 @@
-package POP3;
+package Commun;
 
 import Commun.Connexion;
 import POP3.ObjetConnecteSecurise;
+import SMTP.ObjetSmtpConnecte;
 
 import java.io.*;
 import java.net.Socket;
@@ -22,7 +23,7 @@ public class Tcp extends Connexion {
             m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             m_output = new PrintStream(socket.getOutputStream());
 
-            ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
+            ObjetSmtpConnecte object = new ObjetSmtpConnecte(this);
             object.Launch();
 
             socket.close();
