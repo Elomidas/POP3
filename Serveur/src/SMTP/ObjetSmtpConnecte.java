@@ -1,8 +1,12 @@
 package SMTP;
 
-import Commun.Tcp;
+import Commun.*;
 
+import javax.rmi.CORBA.Util;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import static SMTP.ReponseServeur.*;
 
 public class ObjetSmtpConnecte {
 
@@ -11,16 +15,19 @@ public class ObjetSmtpConnecte {
     private boolean continuer;
     private String input;
     private String reponseServeur;
+    private Email currentEmail;
+    protected static RepertoireUtilisateur repertoireUtilisateur;
 
     public ObjetSmtpConnecte(Tcp tcp){
         this.tcp = tcp;
-        this.etatServeur = ReponseServeur.SERVER_READY;
-
+        this.etatServeur = SERVER_READY;
+        this.continuer = true;
+        this.currentEmail = null;
     }
 
     public void Launch() throws IOException {
-        this.etatServeur = ReponseServeur.SERVER_CONNEXION;
-        tcp.send(ReponseServeur.SMTP_SERVER_READY);
+        this.etatServeur = SERVER_CONNEXION;
+        tcp.send(SMTP_SERVER_READY);
 
         while(continuer){
             System.out.println("Wait...");
@@ -35,23 +42,23 @@ public class ObjetSmtpConnecte {
             }
 
             switch (etatServeur) {
-                case ReponseServeur.SERVER_CONNEXION:
+                case SERVER_CONNEXION:
                     reponseServeur = this.connexion(command, parameters);
                     break;
-                case ReponseServeur.SERVER_IDENTIFICATION:
+                case SERVER_IDENTIFICATION:
                     reponseServeur = this.identification(command, parameters);
                     break;
-                case ReponseServeur.SERVER_TRANSACTION:
+                case SERVER_TRANSACTION:
                     reponseServeur = this.transaction(command, parameters);
                     break;
-                case ReponseServeur.SERVER_ENVOIE:
+                case SERVER_ENVOIE:
                     reponseServeur = this.envoie(command, parameters);
                     break;
-                case ReponseServeur.SERVER_LECTURE:
+                case SERVER_LECTURE:
                     reponseServeur = this.lecture(command, parameters);
                     break;
                 default:
-                    reponseServeur = ReponseServeur.SMTP_500_UNKNOWN_COMMAND;
+                    reponseServeur = SMTP_500_UNKNOWN_COMMAND;
             }
             System.out.println("reponse: "+reponseServeur);
             tcp.send(reponseServeur);
@@ -59,6 +66,12 @@ public class ObjetSmtpConnecte {
         System.out.println("End of POP3");
     }
 
+    /**
+     * return answer of command related to connexion stat
+     * @param command
+     * @param parameters
+     * @return answer
+     */
     private String connexion(String command, String[] parameters) {
         switch (command){
             case "EHLO":
@@ -68,35 +81,101 @@ public class ObjetSmtpConnecte {
             case "QUIT":
                 return commandeQuit();
             default :
-                return ReponseServeur.SMTP_500_UNKNOWN_COMMAND;
+                return SMTP_500_UNKNOWN_COMMAND;
         }
     }
 
-    private String commandeEhlo(String[] parameters) {
-        return "ehlo";
-    }
-
-    private String commandeRset() {
-        return "rset";
-    }
-
-    private String commandeQuit() {
-        return "quit";
-    }
-
-    private String identification(String command, String[] parameters) {
-        return "identification";
-    }
-
+    /**
+     * return answer of commands related to transaction stat
+     * @param command
+     * @param parameters
+     * @return
+     */
     private String transaction(String command, String[] parameters) {
         return "transaction";
     }
 
+    /**
+     * return answer of commands related to sending stat
+     * @param command
+     * @param parameters
+     * @return
+     */
     private String envoie(String command, String[] parameters) {
         return "envoie";
     }
 
+    /**
+     * return answer of commands related to reading stat
+     * @param command
+     * @param parameters
+     * @return
+     */
     private String lecture(String command, String[] parameters) {
         return "lecture";
     }
+
+    /**
+     * return answer of commands related to identification stat
+     * @param command
+     * @param parameters
+     * @return
+     */
+    private String identification(String command, String[] parameters) {
+        switch (command){
+            case "MAIL":
+                return commandeMailFrom(parameters);
+            default :
+                return SMTP_500_UNKNOWN_COMMAND;
+        }
+    }
+
+    /**
+     * handle and return answer of command EHLO
+     * @param parameters
+     * @return
+     */
+    private String commandeEhlo(String[] parameters) {
+        return SMTP_250_SERVERDOMAIN ;
+    }
+
+    /**
+     * handle and return answer of command RSET
+     * @return
+     */
+    private String commandeRset() {
+        this.currentEmail = null;
+        return SMTP_250_OK;
+    }
+
+    /**
+     * handle and return answer of command QUIT
+     * @return
+     */
+    private String commandeQuit() {
+        return SMTP_221_CLOSING;
+    }
+
+    /**
+     * handle and return answer of command MAIL FROM
+     * @param parameters
+     * @return
+     */
+    private String commandeMailFrom(String[] parameters) {
+
+        if (parameters.length < 1) {
+            return SMTP_500_UNKNOWN_COMMAND;
+        }
+
+        String emailAddress = parameters[1];
+        if (TestRegex.CheckMail(emailAddress)) {
+            Utilisateur utilisateur = repertoireUtilisateur.getUtilisateurParEmail(emailAddress);
+            if (utilisateur == null) {
+                return SMTP_550_UNKNOWN_USER;
+            }
+            this.currentEmail = new Email( utilisateur,"", new ArrayList<>());
+            return SMTP_250_OK;
+        }
+    }
+
 }
