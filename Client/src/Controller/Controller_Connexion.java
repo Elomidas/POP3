@@ -1,6 +1,6 @@
 package Controller;
 
-import Main.Main_Connexion;
+import Main.Main;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
 import Utilities.TestRegex;
@@ -12,14 +12,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import Model.MyLogger.MyLogger;
-
-import java.util.logging.Logger;
 
 /**
  * Controlleur associé à la fenêtre de connexion
  */
-public class Controller_Connexion {
+public class Controller_Connexion extends Controller {
 
     /**
      * champ correspondant à l'adresse mail
@@ -52,48 +49,10 @@ public class Controller_Connexion {
     private Button _btnConnexion;
 
     /**
-     * Mail utilisé
-     */
-    private Main_Connexion _main;
-
-    /**
-     * Objet mailBox correspondant à la messagerie ou on se connecte
-     */
-    private Mailbox _mailBox;
-
-    /**
      * Constructeur
      */
     public Controller_Connexion(){
-        _mailBox = new Mailbox();
-
-    }
-
-    /**
-     *
-     * @return mailBox à laquelle on est connecté
-     */
-    public Mailbox getMailbox(){
-        return _mailBox;
-    }
-
-    /**
-     * Fonction appelée par le main lors d'un clic sur la croix rouge
-     */
-    public void close(){
-        try {
-            _mailBox.Close();
-            //Logger logs = _main.getLogs();
-            //logs.info("test");
-        } catch (MailException e) {
-            //gestion erreur de connexion dans les logs
-            //todo
-            //affichage message erreur à l'utilisateur
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Une erreur est survenue.");
-            alert.setContentText(e.getMessage());
-            alert.show();
-        }
+        super.mailbox = new Mailbox();
     }
 
     /**
@@ -113,11 +72,11 @@ public class Controller_Connexion {
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
             try {
-                if(_mailBox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText())))
+                if(mailbox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText())))
                 {
-                    _mailBox.setUser(_tfAdresseMail.getText());
-                    if(_mailBox.Authenticate(_tfMotDePasse.getText())){
-                        _main.lancerClient();
+                    mailbox.setUser(_tfAdresseMail.getText());
+                    if(mailbox.Authenticate(_tfMotDePasse.getText())){
+                        main.lancerClient();
                     }
                     else
                     {
@@ -144,7 +103,6 @@ public class Controller_Connexion {
                 alert.setContentText(e.getMessage());
                 alert.show();
             }
-
         });
     }
 
@@ -164,10 +122,10 @@ public class Controller_Connexion {
 
     /**
      * Déifnit le main à utiliser
-     * @param main Main_Connexion que l'on utilise
+     * @param main Main que l'on utilise
      */
-    public void setMain(Main_Connexion main) {
-        this._main = main;
+    public void setMain(Main main, Mailbox mailbox) {
+        super.main = main;
         _btnConnexion.setOnMouseClicked(MouseEvent -> connexion());
         _btnConnexion.setOnKeyPressed((final KeyEvent ke) ->{
             if(ke.getCode() == KeyCode.ENTER)
@@ -176,7 +134,6 @@ public class Controller_Connexion {
         EventHandler<KeyEvent> eventHandlerTF = new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                //Playing the animation
                 gestionBtnConnexion();
             }
         };
@@ -184,19 +141,5 @@ public class Controller_Connexion {
         _tfAdresseIP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfMotDePasse.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfPort.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-    }
-
-    public void FinSession(){
-        try {
-            _mailBox.Close();
-        } catch (MailException e) {
-            //gestion erreur de connexion dans les logs
-            //todo
-            //affichage message erreur à l'utilisateur
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Une erreur est survenue lors de la fermeture de l'écran de connexion!");
-            alert.setContentText(e.getMessage());
-            alert.show();
-        }
     }
 }

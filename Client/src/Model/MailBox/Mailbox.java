@@ -89,7 +89,7 @@ public class Mailbox {
 
     //Step 1 : join the server (check address an port, return bool)
     public boolean joinServer(String address, int port) throws MailException {
-        m_pop = new POP3();
+        m_pop = new POP3S();
         try {
             m_pop.Connect(address, port);
         } catch(ProtocolUnderTCPException e) {

@@ -1,7 +1,8 @@
 package Main;
 
-import Controller.Controller_Client;
-import Controller.Controller_Connexion;
+import Controller.*;
+import Model.MailBox.Mail;
+import Model.MailBox.Mailbox;
 import Model.MyLogger.MyLogger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -13,38 +14,22 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 
-public class Main_Connexion extends Application {
+public class Main extends Application {
 
     /**
      * Primary Stage utilisé
      */
-    protected Stage primaryStage;
+    private Stage primaryStage;
 
     /**
      * BorderPane utilisé
      */
-    protected BorderPane rootLayout;
+    private BorderPane rootLayout;
 
     /**
      * Controlleur associé à la connexion
      */
-    private Controller_Connexion _controllerConnexion;
-
-    /**
-     * Controlleur utilisé poru le client
-     */
-    private Controller_Client _controllerClient;
-
-    /**
-     * Main utilisé par le client après connexion
-     */
-    //private Main_Client _mainClient;
-
-    /**
-     * Indique si l'on traite avec le controller connexion (=1)
-     * ou le controlleur client (=2)
-     */
-    private int _controllerUtilise;
+    private Controller controller;
 
     /**
      * Logs utilisé pour notre application
@@ -54,14 +39,9 @@ public class Main_Connexion extends Application {
     /**
      * Constructeur par défaut
      */
-    public Main_Connexion(){
+    public Main(){
         logs = new MyLogger();
-        _controllerUtilise =1;
-    }
-
-    public Main_Connexion(MyLogger logs){
-        _controllerUtilise =1;
-        this.logs = logs;
+        controller = new Controller_Connexion();
     }
 
     /**
@@ -70,14 +50,6 @@ public class Main_Connexion extends Application {
      */
     public MyLogger getLogs() {
         return logs;
-    }
-
-    /**
-     *
-     * @return Controlleur associé
-     */
-    public Controller_Connexion getController(){
-        return _controllerConnexion;
     }
 
     /**
@@ -99,11 +71,11 @@ public class Main_Connexion extends Application {
      * Initialise notre fenêtre avec le BorderPane
      * correspondant au fond de notre affichage
      */
-    protected void initRootLayout(){
+    private void initRootLayout(){
         try {
             FXMLLoader loader = new FXMLLoader();
 
-            loader.setLocation(Main_Connexion.class.getResource("../View/Root.fxml"));
+            loader.setLocation(Main.class.getResource("../View/Root.fxml"));
             rootLayout = (BorderPane) loader.load();
 
             Scene scene = new Scene(rootLayout);
@@ -117,12 +89,25 @@ public class Main_Connexion extends Application {
     }
 
     /**
-     * Affiche le contenu de la fenêtre
+     * Affiche le contenu de la fenêtre de connexion
      * @param rootLayout
      * @param main
      */
-    private void afficherConnexion(BorderPane rootLayout, Main_Connexion main){
-        afficherContenu(rootLayout, main, "../View/Connexion.fxml");
+    private void afficherConnexion(BorderPane rootLayout, Main main){
+        Mailbox mailbox = controller.getMailbox();
+        controller = new Controller_Connexion();
+        afficherContenu(rootLayout, main, "../View/Connexion.fxml", mailbox);
+    }
+
+    /**
+     *
+     * @param rootLayout
+     * @param main
+     */
+    private void afficherClient(BorderPane rootLayout, Main main){
+        Mailbox mailbox = controller.getMailbox();
+        controller = new Controller_Client();
+        afficherContenu(rootLayout, main, "../View/Client.fxml", mailbox);
     }
 
     /**
@@ -132,21 +117,15 @@ public class Main_Connexion extends Application {
      * @param main
      * @param root
      */
-    private void afficherContenu(BorderPane rootLayout, Main_Connexion main, String root){
+    private void afficherContenu(BorderPane rootLayout, Main main, String root, Mailbox mailbox){
         try
         {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(Main_Connexion.class.getResource(root));
+            loader.setLocation(Main.class.getResource(root));
             AnchorPane contenu = (AnchorPane) loader.load();
 
-            if(root.split("/")[2].equals("Connexion.fxml")){
-                _controllerConnexion = loader.getController();
-                _controllerConnexion.setMain(main);
-            }
-            else if(root.split("/")[2].equals("Client.fxml")){
-                _controllerClient = loader.getController();
-                _controllerClient.setMain(main, _controllerConnexion.getMailbox());
-            }
+            controller = loader.getController();
+            controller.setMain(main, mailbox);
 
             rootLayout.setCenter(contenu);
         }
@@ -160,25 +139,18 @@ public class Main_Connexion extends Application {
      * Lance la fenetre du client lors d'une connexion réussie
      */
     public void lancerClient(){
-        /*
-        _mainClient = new Main_Client(_controllerConnexion.getMailbox(), logs);
-        _mainClient.start(primaryStage);
-           */
-        this._controllerUtilise =2;
         this.primaryStage.setTitle("Client POP3");
 
-        afficherContenu(rootLayout, this, "../View/Client.fxml");
-
+        afficherClient(rootLayout, this);
     }
 
     /**
      * Gestion du retour au menu de connexion
      */
     public void RetourConnexion(){
-        this._controllerUtilise =1;
         this.primaryStage.setTitle("Fenêtre de connexion");
 
-        afficherContenu(rootLayout, this, "../View/Connexion.fxml");
+        afficherConnexion(rootLayout, this);
     }
 
     /**
@@ -186,18 +158,14 @@ public class Main_Connexion extends Application {
      */
     @Override
     public void stop(){
-        if(_controllerUtilise == 1)
-            _controllerConnexion.FinSession();
-        else if(_controllerUtilise ==2)
-            _controllerClient.FinSession();
+        controller.FinSession();
     }
 
     /**
      * Fonction main appelée pour lancer l'application
      * @param args
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args){
         launch(args);
     }
 }
