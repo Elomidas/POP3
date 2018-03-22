@@ -144,7 +144,7 @@ public class TCP {
         try {
             if(TestRegex.CheckIP(address)) {
                 //Here, address contains an IP address
-                m_server = InetAddress.getByAddress(address.getBytes());
+                m_server = InetAddress.getByName(address);
             } else {
                 //Here, address does not contain an IP address, so we handle it as a domain name
                 m_server = InetAddress.getByName(address);

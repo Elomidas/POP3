@@ -118,4 +118,18 @@ public class Controller_Connexion {
         _tfMotDePasse.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfPort.addEventHandler(KeyEvent.ANY, eventHandlerTF);
     }
+
+    public void FinSession(){
+        try {
+            _mailBox.Close();
+        } catch (MailException e) {
+            //gestion erreur de connexion dans les logs
+            //todo
+            //affichage message erreur à l'utilisateur
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Une erreur est survenue lors de la fermeture de l'écran de connexion!");
+            alert.setContentText(e.getMessage());
+            alert.show();
+        }
+    }
 }

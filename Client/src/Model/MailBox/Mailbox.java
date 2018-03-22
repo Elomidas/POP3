@@ -88,6 +88,7 @@ public class Mailbox {
         try {
             m_pop.Connect(address, port);
         } catch(POP3Exception e) {
+            e.printStackTrace();
             throw new MailException("Your configuration " + address + ":" + port + " seems invalid...", e);
         }
         return this.ServerJoined();

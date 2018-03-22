@@ -72,7 +72,7 @@ public class Main_Client extends Main_Connexion {
 
 
             _controllerClient = loader.getController();
-            _controllerClient.SetMain(this);
+            //_controllerClient.SetMain(this);
 
 
             // Set person overview into the center of root layout.

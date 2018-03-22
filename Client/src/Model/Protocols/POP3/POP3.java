@@ -143,7 +143,7 @@ public class POP3 {
      */
     protected boolean checkUser(String user) throws POP3Exception {
         String response;
-        String cmd = "USR " + user;
+        String cmd = "USER " + user;
         try {
             response = this.dialog(cmd);
         } catch(POP3Exception e) {

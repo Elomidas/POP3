@@ -1,6 +1,7 @@
 package Controller;
 
 import Main.Main_Client;
+import Main.Main_Connexion;
 import Model.MailBox.Mail;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
@@ -60,7 +61,7 @@ public class Controller_Client {
     private Button _btnActualiser;
 
 
-    private Main_Client _mainClient;
+    private Main_Connexion _main;
 
     private Mailbox _mailbox;
     
@@ -291,7 +292,7 @@ public class Controller_Client {
         Optional<ButtonType> resultat = alert.showAndWait();
 
         if(resultat.get() == btnOui) {
-            _mainClient.RetourConnexion();
+            _main.RetourConnexion();
             FinSession();
         }
         else
@@ -306,7 +307,7 @@ public class Controller_Client {
             //todo
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Une erreur est survenue !");
+            alert.setTitle("Une erreur est survenue lors de la fermeture du client !");
             alert.setContentText(e.getMessage());
             alert.show();
         }
@@ -315,10 +316,10 @@ public class Controller_Client {
     /*
     Synchronisation du main avec le controlleur
      */
-    public void SetMain(Main_Client mainClient)
+    public void setMain(Main_Connexion main, Mailbox mailbox)
     {
-        _mainClient = mainClient;
-        _mailbox = _mainClient.getMailbox();
+        _main= main;
+        _mailbox = mailbox;
         _txtMailEmetteur.setText(_mailbox.getUser());
 
         creationPagination();
