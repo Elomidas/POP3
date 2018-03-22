@@ -1,6 +1,5 @@
 package Controller;
 
-import Main.Main_Client;
 import Main.Main_Connexion;
 import Model.MailBox.Mail;
 import Model.MailBox.MailException;
