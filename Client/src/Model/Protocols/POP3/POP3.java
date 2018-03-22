@@ -1,17 +1,17 @@
 package Model.Protocols.POP3;
 
+import Model.Protocols.ProtocolUnderTCP;
+import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.*;
 import Utilities.TestRegex;
 
-public class POP3 {
+public class POP3 extends ProtocolUnderTCP{
     //Constants
     public static final int _DISCONNECTED = 0;
     public static final int _CONNECTED = 1;
     public static final int _AUTHENTICATED = 2;
-    protected static final String _EOM = ".";
 
     //Variables
-    protected TCP m_tcp;
     protected boolean m_authenticated;
     protected String m_error;
 
@@ -21,7 +21,7 @@ public class POP3 {
      */
 
     public POP3() {
-        m_tcp = new TCP();
+        super("POP3");
         m_authenticated = false;
         m_error = "";
     }
@@ -31,36 +31,23 @@ public class POP3 {
      *  ###
      */
 
-    /*  Check if client is connected to server through Model.Protocols.TCP
-     *  Parameters :
-     *      None
-     *  Return :
-     *      boolean
-     *      - true if client is connected to server
-     *      - false if not
+    /**
+     * Check if client is connected to TCP server
+     * @return true if client is connected, false else
      */
+    /*
     public boolean CheckConnected() {
         return (m_tcp.Status() == TCP._CONNECTED);
-    }
-
-    /* Get a String describing the last error encountered.
-     */
-    public String getError() {
-        return m_error;
-    }
+    }*/
 
     /*  ###
      *  # ACCESSORS
      *  ###
      */
 
-    /*  Check if client is connected and authenticated to server.
-     *  Parameters :
-     *      None.
-     *  Return :
-     *      Model.Protocols.POP3._DISCONNECTED if client isn't connected to server through Model.Protocols.TCP
-     *      Model.Protocols.POP3._CONNECTED if client is connected to server through Model.Protocols.TCP but user isn't authenticated.
-     *      Model.Protocols.POP3._AUTHENTICATED if client is connected to server through Model.Protocols.TCP and user is authenticated.
+    /**
+     * Check if client is connected and authenticated to server
+     * @return POP3._DISCONNECT if client isn't connected, POP3._CONNECTED if client is connected but not authenticated or POP3._AUTHENTICATED if client is connected and authenticated.
      */
     public int Status() {
         if(this.CheckConnected() == false) {
@@ -77,149 +64,176 @@ public class POP3 {
      *  ###
      */
 
-    /*  Send a message and wait the response
-     *  Parameters :
-     *      msg :   String containing the message to be sent
-     *  Return :
-     *      String containing the server's response
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Send a message through TCP connection an wait for a response
+     * @param msg String containing the message to send
+     * @return String containing the response
+     * @throws POP3Exception Error while sending or receiving messages
      */
+    /*
     protected String dialog(String msg) throws POP3Exception {
         this.Message(msg);
         return this.Response();
+    }*/
+
+    /**
+     * Check a POP3 response validity
+     * @param response String containing the POP3 response
+     * @return true if response is correct, false if it carries an error
+     */
+    protected boolean checkResponse(String response) {
+        if(!TestRegex.CheckPOP(response)) {
+            m_error = "Server respond to with :\n  " + response;
+            System.out.println(m_error);
+            return false;
+        }
+        return true;
     }
 
-    /*  Try to connect client to server through Model.Protocols.TCP.
-     *  Parameters :
-     *      String containing the server address (can be an IP address as an URL).
-     *      Integer containing the port to target on the server.
-     *  Return :
-     *      Nothing.
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Send a message and wait for response. Check if response is positive
+     * @param message Message to ben send
+     * @return true if response doesn't carry any error, false else
+     * @throws POP3Exception Error while sending or receiving messages
      */
+    protected boolean checkedDialog(String message) throws ProtocolUnderTCPException {
+        String response = dialog(message);
+        return this.checkResponse(response);
+    }
+
+    /**
+     * Send a message and wait for response. Return response only if it is positive
+     * @param message Message to send
+     * @return Response from client if there isn't any error
+     * @throws POP3Exception Error while sending or receiving messages
+     */
+    protected String getDialogResponseIfValid(String message) throws ProtocolUnderTCPException {
+        String response = dialog(message);
+        if(this.checkResponse(response)) {
+            return response;
+        }
+        return "";
+    }
+
+    /**
+     * Try to connect client to server through TCP
+     * @param address   Server's address (IP or URL)
+     * @param port      Server's port
+     * @throws POP3Exception Error while trying to connect
+     */
+    /*
     public void Connect(String address, int port) throws POP3Exception {
         try {
             m_tcp.setServerAddress(address);
             m_tcp.setServerPort(port);
             m_tcp.Connect();
         } catch(TCPException e) {
-            throw new POP3Exception("Unable to connect Model.Protocols.POP3.", e);
+            throw new POP3Exception("Unable to connect POP3.", e);
         }
-    }
+    }*/
 
-    /*  Try to authenticate the user on the server
-     *  Parameters :
-     *      login :     String containing the username
-     *      password :  String containing the password for the given username
-     *  Return :
-     *      true :  Successfully authenticated
-     *      false : Error in login and/or password
-     *  Throw :
-     *      POP3Exception in case of other error.
+    /**
+     * Try to authenticate user on server
+     * @param login     User's login
+     * @param password  User's password
+     * @return true if user has been connected, false else
+     * @throws POP3Exception Error while authenticating
      */
-
     public boolean Authentication(String login, String password) throws POP3Exception {
-        if(this.CheckConnected() == false) {
+        System.out.println(login+":"+password);
+        if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
         if(m_authenticated) {
             throw new POP3Exception("Already authenticate.");
         }
         if(checkUser(login)) {
-            return checkPassword(password);
+            if(checkPassword(password)) {
+                m_authenticated = true;
+                return true;
+            }
         }
         return false;
     }
 
-    /*  Function that checks an username validity.
-     *  Parameters :
-     *      user :  String containing the username to check
-     *  Return :
-     *      boolean corresponding to the validity of the given username.
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Check username validity
+     * @param user Username to be checked
+     * @return true if username is valid, false else
+     * @throws POP3Exception Error while checking username
      */
-    protected boolean checkUser(String user) throws POP3Exception {
+    private boolean checkUser(String user) throws POP3Exception {
         String response;
         String cmd = "USER " + user;
         try {
-            response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+            response = dialog(cmd);
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to check username validity.", e);
         }
-        switch (response) {
-            case "+OK":
-                return true;
-            default:
-                m_error = "Server respond to \"" + cmd + "\" with :\n  " + response;
-                break;
+        if(TestRegex.CheckPOP(response)) {
+            return true;
+        } else {
+            m_error = "Server respond to \"" + cmd + "\" with :\n  " + response;
+            System.out.println(m_error);
         }
         return false;
     }
 
-    /*  Function that checks a password validity with login previously sent.
-     *  Parameters :
-     *      password :  String containing the password to check
-     *  Return :
-     *      boolean corresponding to the validity of the given login-password and the server's ability
-     *        to open the repository.
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Check password validity
+     * @param password Password to be checked
+     * @return true if password is valid, false else
+     * @throws POP3Exception Error while checking username
      */
-    protected boolean checkPassword(String password) throws POP3Exception {
+    private boolean checkPassword(String password) throws POP3Exception {
         String cmd = "PASS " + password;
         String response;
         try {
             response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to check password validity.", e);
         }
-        switch(response) {
-            case "+OK" :
-                return true;
-            default :
-                m_error = "Server respond to \"" + cmd + "\" with :\n  " + response;
-                break;
+        if(TestRegex.CheckPOP(response)) {
+            return true;
+        } else {
+            m_error = "Server respond to \"" + cmd + "\" with :\n  " + response;
+            System.out.println(m_error);
         }
         return false;
     }
 
-    /*  Disconnect current user
-     *  Parameters :
-     *      None.
-     *  Return :
-     *      Nothing.
-     *  Throw :
-     *      POP3Exception in case of error
+    /**
+     * Disconnect user from server
+     * @throws POP3Exception Error while disconnecting
      */
     public void Disconnect() throws POP3Exception {
-        if(this.CheckConnected() == false) {
+        if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to disconnect, client not connected to server.");
         }
         if(m_authenticated) {
-            this.Message("QUIT");
+            try {
+                dialog("QUIT");
+            } catch (ProtocolUnderTCPException e) {
+                throw new POP3Exception("Unable to disconnect.", e);
+            }
             m_authenticated = false;
         }
         try {
-            m_tcp.Close();
+            super.getTcp().Close();
         } catch(TCPException e) {
             throw new POP3Exception("Unable to disconnect.", e);
         }
     }
 
-    /*  Wait TCP Server to send a response
-     *  Parameters :
-     *      None
-     *  Return :
-     *      String received through TCP connection
-     *  Throw :
-     *      POP3Exception in case of error
+    /**
+     * Wait for a response from server
+     * @return Response received from server
+     * @throws POP3Exception Error while receiving response
      */
-    protected String Response() throws POP3Exception {
+    /*
+    private String Response() throws POP3Exception {
         String result;
-        if(this.CheckConnected() == false) {
+        if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to receive message, client not connected to server.");
         }
         try {
@@ -228,19 +242,16 @@ public class POP3 {
             throw new POP3Exception("Unable to receive message.", e);
         }
         return result;
-    }
+    }*/
 
-    /*  Send TCP Server a message
-     *  Parameters :
-     *      String containing message to send
-     *  Return :
-     *      Nothing
-     *  Throw :
-     *      POP3Exception in case of error
+    /**
+     * Send a message through TCP
+     * @param message message to send to server
+     * @throws POP3Exception Error while sending message.
      */
-    protected void Message(String message) throws POP3Exception {
-        String result;
-        if(this.CheckConnected() == false) {
+    /*
+    private void Message(String message) throws POP3Exception {
+        if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to send message, client not connected to server.");
         }
         try {
@@ -248,147 +259,134 @@ public class POP3 {
         } catch(TCPException e) {
             throw new POP3Exception("Unable to send message.", e);
         }
-    }
+    }*/
 
-    /*  Retrieve a mail from its UUID
-     *  Parameters :
-     *      id :    String containing mail's UUID
-     *  Return :
-     *      String representing the mail
-     *  Throw :
-     *      POP3Exception in case of error
+    /**
+     * Retrieve a mail from its ID
+     * @param id Mail's ID
+     * @return String containing the mail
+     * @throws POP3Exception Error while retrieving message
      */
     public String getMail(String id) throws POP3Exception {
         String cmd = "RETR " + id;
         String response;
         try {
-            response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+            response = dialog(cmd);
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to retrieve mail " + id + ".", e);
         }
-        if(TestRegex.Match("+OK .*", response) == false) {
-            m_error = response.substring(4);
+        if(!TestRegex.CheckPOP(response)) {
+            m_error = response;
             throw new POP3Exception("Unable to retrieve mail" + id + ".\nServer response :\n" + response);
         }
-        return this.retrieveMailString();
+        return this.retrieveMailString(response);
     }
 
-    /*  Retrieve the message and the headers.
-     *  Must be called just after reading "+OK ..." from input stream.
-     *  Parameters :
-     *      None
-     *  Return :
-     *      String representing the message
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Parse the received response to get the message with its header
+     * @param response String to be parsed
+     * @return Message with its header
      */
-    protected String retrieveMailString() throws POP3Exception {
+    private String retrieveMailString(String response) {
         StringBuilder sBuilder = new StringBuilder();
-        boolean end = false;
-        while(end != true) {
-            String res = this.Response();
-            end = res.equals(this._EOM);
-            sBuilder.append(res)
-                    .append("\n");
+        String[] lines = response.split("\\n");
+        sBuilder.append(lines[1])
+                .append(" - ");
+        for(int i = 2; i < lines.length; i++) {
+            sBuilder.append(lines[i])
+                    .append("\\n");
         }
         return sBuilder.toString();
     }
 
-    /*  Retrieve the current UUID list
-     *  Parameters :
-     *      None.
-     *  Return :
-     *      ArrayList containing all the messages' UUID
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Get messages'ID list
+     * @return Messages'ID list
+     * @throws POP3Exception Error while retrieving ID list
      */
     public String[] getUUIDList() throws POP3Exception {
-        String cmd = "LIST";
+        String cmd = "UIDL";
         String response;
         try {
-            response = this.dialog(cmd);
-        } catch(POP3Exception e) {
+            response = dialog(cmd);
+        } catch(ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to retrieve UUID list.", e);
         }
-        if(TestRegex.Match("+OK .*", response) == false) {
+        if(!TestRegex.CheckPOP(response)) {
             throw new POP3Exception("Unable to retrieve UUID list.\nServer response :\n" + response);
         }
         int size = Integer.parseInt(response.split(" ")[1]);
         String[] array = new String[size];
-        StringBuilder errors = new StringBuilder();
-        for(int index = 0; index < size; index++) {
-            try {
-                response = this.Response();
-            } catch(POP3Exception e) {
-                throw new POP3Exception("Error while executing LIST command, unable to retrieve row " + index + ".", e);
+        System.out.println("resp : " + response);
+        String part2 = response.split(":")[1];
+        System.out.println("part2 : " + part2);
+        String[] parts = part2.split("\n", 15);
+        for(int index = 0; index < parts.length; index++) {
+            System.out.println("part " + index + " : " + parts[index]);
+            if(!parts[index].equals("")) {
+                String[] res = parts[index].split(" ");
+                array[index-1] = res[1];
             }
-            String[] res = response.split(" ");
-            int i = Integer.parseInt(res[0]);
-            if(i != (index+1)) {
-                errors.append("\n  Error while executing LIST, information about message ")
-                        .append(i)
-                        .append(" received, ")
-                        .append(index + 1)
-                        .append(" expected.");
-            }
-            array[index] = response.split(" ")[1];
-        }
-        String err = errors.toString();
-        if(err != "") {
-            throw new POP3Exception("Error(s) while executing LIST." + err);
         }
         return array;
     }
 
-    /*  Delete a mail
-     *  Parameters :
-     *      UUID :  String containing the UUID of the message
-     *  Return :
-     *      Nothing.
-     *  Throw :
-     *      POP3Exception inc ase of error
+    /**
+     * Delete a message thanks to its ID
+     * @param UUID ID of the message to delete
+     * @throws POP3Exception Error while deleting
      */
     public void Delete(String UUID) throws POP3Exception {
         String cmd = "DELE " + UUID;
-        String response = this.dialog(cmd);
-        if(TestRegex.Match("+OK .*", response) == false) {
-            m_error = response.substring(4);
+        String response = null;
+        try {
+            response = dialog(cmd);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to delete message.", e);
+        }
+        if(!TestRegex.CheckPOP(response)) {
+            m_error = response;
             throw new POP3Exception("Unable to delete message " + UUID + ".\nServer response :\n  " + response);
         }
     }
 
-    /*  Reset repository
-     *  Parameters :
-     *      None.
-     *  Return :
-     *      Nothing.
-     *  Throw :
-     *      POP3Exception in case of error.
+    /**
+     * Reset repository on server
+     * @throws POP3Exception Error while resetting
      */
     public void Reset() throws POP3Exception {
         String cmd = "RSET";
-        String response = this.dialog(cmd);
-        if(TestRegex.Match("+OK .*", response) == false) {
-            m_error = response.substring(4);
+        String response = null;
+        try {
+            response = dialog(cmd);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to reset.", e);
+        }
+        if(!TestRegex.CheckPOP(response)) {
+            m_error = response;
             throw new POP3Exception("Unable to reset.\nServer response :\n  " + response);
         }
     }
 
-    /*  Get the number of mails on the server
-     *  Parameters :
-     *      None.
-     *  Return :
-     *      Int representing the number of mails on the server.
-     *  Throw :
-     *      POP3Exception in case of error
+    /**
+     * Get the number of mails on the server
+     * @return Number of mails on the server
+     * @throws POP3Exception Error while scanning server
      */
     public int getMailNumber() throws POP3Exception {
         String cmd = "STAT";
-        String response = this.dialog(cmd);
-        if(TestRegex.Match("+OK .*", response) == false) {
-            m_error = response.substring(4);
+        String response = null;
+        try {
+            response = dialog(cmd);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to stat.", e);
+        }
+        if(!TestRegex.CheckPOP(response)) {
+            m_error = response;
             throw new POP3Exception("Unable to stat.\nServer response :\n  " + response);
         }
-        return Integer.parseInt(response.split(" ")[1]);
+        int nbr = Integer.parseInt(response.split(" ")[1]);
+        System.out.println("STAT : " + nbr);
+        return nbr;
     }
 }

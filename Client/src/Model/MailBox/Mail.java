@@ -13,6 +13,7 @@ public class Mail {
     protected ArrayList<MailAddress> m_to;
     protected String m_subject;
     protected String m_message;
+    protected boolean m_deleted;
 
     protected static final String _DATE = "Date: ";
     protected static final String _FROM = "From: ";
@@ -20,7 +21,7 @@ public class Mail {
     protected static final String _MIME = "MIME-Version: 1.0";
     protected static final String _CONTENT  = "Content-Type: text/plain; charset: UTF-8\nContent-Transfer-Encoding: quoted-printable";
     public static final String _EOM = "\n.\n";
-    protected static final String _PATTERN = (_DATE + " ([^\n]*)\n" + _FROM + " ([^\n]*)\n" + _SUBJECT + " ([^\n]*)\n" + _MIME + "\n" + _CONTENT + "\n(.*)" + _EOM).replace("\n", "\\n");
+    protected static final String _PATTERN = (_DATE + "([^\\\\\n]*)[\nn]" + _FROM + "([^\\\\\n]*)[\nn]" + _SUBJECT + "([^\\\\\n]*)[\nn]" + _MIME + "[\nn]" + _CONTENT + "[\nn](.*)[\nn]" + _EOM);
 
     /*  ###
      *  # CONSTRUCTORS
@@ -34,6 +35,7 @@ public class Mail {
         m_subject = "";
         m_message = "";
         m_date = Date.from(Instant.now()).toString();
+        m_deleted = false;
     }
 
     public Mail(String encrypted, String id) throws MailException {
@@ -51,7 +53,7 @@ public class Mail {
      */
 
     protected void decode(String encrypted) throws MailException {
-        String[] fields = TestRegex.Submatches(_PATTERN, encrypted);
+        String[] fields = TestRegex.Submatches(_PATTERN, encrypted.replace("\\n", "\n"));
         if(fields.length != 4) {
             throw new MailException(encrypted + " isn't a valid mail string, only " + fields.length + " field(s) found");
         }
@@ -59,6 +61,14 @@ public class Mail {
         this.m_from = MailAddress.createFromString(fields[1]);
         this.m_subject = fields[2];
         this.m_message = fields[3];
+    }
+
+    public void Delete() {
+        m_deleted = true;
+    }
+
+    public boolean Deleted() {
+        return m_deleted;
     }
 
     protected String encode() {

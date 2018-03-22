@@ -150,7 +150,7 @@ public class TCP {
                 m_server = InetAddress.getByName(address);
             }
         } catch(Exception e) {
-            throw new TCPException("Unable to set server address.", e);
+            throw new TCPException("Unable to set server address (" + address + ").", e);
         }
     }
 
@@ -253,6 +253,7 @@ public class TCP {
      */
     public void Send(String message) throws TCPException {
         if(this.checkConnection()) {
+            System.out.println("Message : " + message);
             m_output.println(message);
             m_output.flush();
         } else {
@@ -269,16 +270,36 @@ public class TCP {
      *      TCPException in case of undefined output.
      */
     public String Receive() throws TCPException {
-        String result;
-        if(this.checkConnection()) {
-            try{
-                result = m_input.readLine();
-            } catch(Exception e) {
-                throw new TCPException("Unable to receive anything.", e);
-            }
-        } else {
-            throw new TCPException("Unable to receive, input is undefined.");
+        StringBuilder messageReceived = new StringBuilder();
+        char iChar;
+        boolean first = true;
+
+        int i;
+        try {
+            InputStream in = m_socket.getInputStream();
+            BufferedInputStream bufIn = new BufferedInputStream(in);
+
+            do {
+                i = bufIn.read();
+                iChar = (char) i;
+                if ((i != -1) & (i != '\r')) {
+                    if(i == '\n') {
+                        if(first == false) {
+                            messageReceived.append("\n");
+                        }
+                    } else {
+                        messageReceived.append(iChar);
+                        first = false;
+                    }
+                }
+
+            } while (((i != -1) & (i != '\r')) || first);
+        } catch(IOException e) {
+            throw new TCPException("Unable to receive.", e);
         }
-        return result;
+
+        String msg = messageReceived.toString();
+        System.out.println("Received : " + msg);
+        return msg;
     }
 }

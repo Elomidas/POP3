@@ -16,92 +16,149 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 
+import java.util.HashMap;
 import java.util.Optional;
 
+/**
+ * Controlleur lié à la fenetre du client
+ */
 public class Controller_Client {
 
-    //Récupération du tabPane
+    /**
+     * Récupération du tabPane
+     * Utilisé ici pour la gestion des onglets
+     */
     @FXML
     private TabPane _tabPane;
 
-    //Récupération des objets relatifs à la réception de mail
+    /**
+     * TextFlow avec le contenu du mail
+     */
     @FXML
     private TextFlow _txtFlow;
 
+    /**
+     * Pagination de la réception de mails
+     */
     @FXML
     private Pagination _pagination;
 
+    /**
+     * Bouton pour répondre à un mail
+     */
     @FXML
     private Button _btnRepondre;
 
+    /**
+     * Bouton pour supprimer un mail
+     */
     @FXML
     private Button _btnSuppr;
 
 
-    //Récupération des objets relatifs à l'envoi de mails
+    /**
+     * Bouton pour envoyer un mail
+     */
     @FXML
     private Button _btnEnvoi;
 
+    /**
+     * Champ du destinataire
+     */
     @FXML
     private TextField _tfDestinataire;
 
+    /**
+     * Champ de l'objet
+     */
     @FXML
     private TextField _tfObjet;
 
+    /**
+     * Champ du contenu
+     */
     @FXML
     private TextArea _tfContenu;
 
+    /**
+     * Adresse mail de la personne connectée
+     */
     @FXML
     private Text _txtMailEmetteur;
 
+    /**
+     * Bouton de déconnexion
+     */
     @FXML
     private Button _btnDeconnexion;
 
+    /**
+     * Bouton pour actualiser la liste de mails
+     */
     @FXML
     private Button _btnActualiser;
 
-
+    /**
+     *
+     */
     private Main_Connexion _main;
 
+    /**
+     * Boite mail à laquelle on est connecté
+     */
     private Mailbox _mailbox;
-    
 
-    /*
-    Constructeur
+    /**
+     * Hashmap reliant ID du mail et ligne de la pagination correspondant
+     */
+    private HashMap<String, HBox> m_ligne;
+
+
+    /**
+     * Constructeur
      */
     public Controller_Client(){
-
+        m_ligne = new HashMap<>();
     }
 
-    /*
-    Nombre de messages par page
+    /**
+     *
+     * @return nombre de messages par page
      */
     private int itemsPerPage() {
         return 10;
     }
 
+    /**
+     * Création de la pagination
+     */
     private void creationPagination(){
         int nbPages = (int)Math.ceil(_mailbox.getMailNumber()/(float)itemsPerPage());
+        _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         _pagination.setPageCount(nbPages);
         _pagination.setPageFactory(new Callback<Integer, Node>() {
             @Override
             public Node call(Integer pageIndex) {
-                if(pageIndex > nbPages)
+                if(pageIndex >= nbPages)
                     return null;
                 else
-                    return createPage(pageIndex,recuperationMails(pageIndex));
+                    return createPage(recuperationMails(pageIndex));
             }
         });
     }
 
-    //Attention vérification indice à faire
+    /**
+     *
+     * @param indexPage index de la page à charger
+     * @return tableau de mails qui a été récupéré
+     */
     private Mail[] recuperationMails(int indexPage){
         Mail[] mails = null;
         try {
             mails = _mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //todo
+            //TODO
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
@@ -111,44 +168,54 @@ public class Controller_Client {
         return mails;
     }
 
-    /*
-    Crée une nouvelle page
+    /**
+     *
+     * @param mails
+     * @return VerticalBox contenant les mails de la page
      */
-    private VBox createPage(int pageIndex, Mail[] mails) {
+    private VBox createPage(Mail[] mails) {
         VBox box = new VBox(15);
-        //int page = pageIndex * itemsPerPage();
-
-        for (int i = 0; i < mails.length; i++) {
+        int length = mails.length;
+        for (int i = 0; (i < length) && (mails[i] != null); i++) {
             HBox element = new HBox();
             final String ind;
 
             Hyperlink link = new Hyperlink("Mail " + mails[i].getID() + " :");
-            //link.setVisited(true);
             Label destinataire = new Label(mails[i].getFrom());
             Label objet = new Label(mails[i].getSubject());
             Text contenu = new Text(mails[i].getMessage());
 
             element.getChildren().addAll(link, destinataire, objet);
-
             element.setSpacing(25);
+
+            m_ligne.put(mails[i].getID(), element);
+
             box.getChildren().add(element);
 
             ind = mails[i].getID();
+
+            if(mails[i].Deleted()){
+                for(Node mail : element.getChildren()){
+                    mail.setStyle("-fx-text-fill : red;");
+                }
+            }
             link.setOnMouseClicked(MouseEvent -> updateTF(ind, destinataire.getText(), objet.getText(), contenu));
         }
         return box;
     }
 
-    /*
-    Initialise la fenêtre, en particulier la pagination
+    /**
+     * Initialise
      */
     @FXML
     private void initialize(){
-
+        _btnRepondre.setDisable(true);
+        _btnSuppr.setDisable(true);
     }
 
-    /*
-    Envoi un mail lors du clic sur le bouton correspondant
+    /**
+     * Vérifie si l'on peut envoyer le mail correctement
+     * et si tous les champs sont corrects
      */
     private void TestEnvoiMail(){
         Platform.runLater(() ->{
@@ -191,8 +258,13 @@ public class Controller_Client {
         });
     }
 
+    /**
+     * Envoie un mail
+     * @param destinataire
+     * @param objet
+     * @param contenu
+     */
     private void EnvoiMail(String destinataire,String objet,String contenu){
-        //Envoi du message
         try {
             _mailbox.SendMail(destinataire, objet, contenu);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -210,8 +282,12 @@ public class Controller_Client {
         }
     }
 
-    /*
-    Mettre à jour le texteFlow avec le contenu des messages
+    /**
+     * Mettre à jour le texteFlow avec le contenu des messages
+     * @param ind
+     * @param destinataire
+     * @param objet
+     * @param contenu
      */
     private void updateTF(String ind, String destinataire, String objet, Text contenu){
         Platform.runLater(() -> {
@@ -222,9 +298,16 @@ public class Controller_Client {
             //On met à jour les boutons uniquement si un message a été sélectionné
             updateBTN(ind, destinataire, objet, contenu.getText());
         });
-
     }
 
+    /**
+     * Met à jour les boutons répondre et supprimer en fonction de lé sélection d'un message
+     * Initialise ces boutons pour leur assigner une tache à effectuer en cas d'action du bouton
+     * @param ind
+     * @param destinataire
+     * @param objet
+     * @param contenu
+     */
     private void updateBTN(String ind, String destinataire, String objet, String contenu){
         Platform.runLater(() -> {
             _btnRepondre.setDisable(false);
@@ -235,7 +318,12 @@ public class Controller_Client {
 
     }
 
+    /**
+     * Met à jour notre pagination en cas d'appui sur le bouton actualiser
+     */
     private void UpdatePagination(){
+        //Non fonctionnel !!!
+        //TODO
         int pageActuelle = _pagination.getCurrentPageIndex();
         //ATTENTIOn indice
         for (int i=pageActuelle; i<_pagination.getMaxPageIndicatorCount()+1;i++){
@@ -247,6 +335,11 @@ public class Controller_Client {
         alert.show();
     }
 
+    /**
+     * Supprime le mail sélectionné
+     * CSS pour l'afficher en rouge lorsqu'il est marqué comme supprimé
+     * @param ind indice du message à supprimer
+     */
     private void SupprMail(String ind){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Suppression message !");
@@ -259,6 +352,10 @@ public class Controller_Client {
         if(resultat.get() == btnOui) {
             try {
                 _mailbox.DeleteMail(ind);
+                for(Node mail : m_ligne.get(ind).getChildren()){
+                    mail.setStyle("-fx-text-fill : red;");
+                }
+
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
                 //todo
@@ -273,6 +370,13 @@ public class Controller_Client {
             alert.close();
     }
 
+    /**
+     * Permet de répondre à un mail lors du clic sur le bouton répondre
+     * Remplis tous les champs nécessaires dans la partie envoi
+     * @param destinataire
+     * @param objet
+     * @param contenu
+     */
     private void RepondreMail(String destinataire, String objet, String contenu){
         _tabPane.getSelectionModel().select(1);
         _tfDestinataire.setText(destinataire);
@@ -282,6 +386,9 @@ public class Controller_Client {
         _tfContenu.setText(contenu);
     }
 
+    /**
+     * Se déconnecte lors du clic sur le bouton déconnexion
+     */
     private void Deconnexion(){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Déconnexion !");
@@ -293,12 +400,14 @@ public class Controller_Client {
 
         if(resultat.get() == btnOui) {
             _main.RetourConnexion();
-            FinSession();
         }
         else
             alert.close();
     }
 
+    /**
+     * Ferme correctement la session POP3 et la connexion TCP
+     */
     public void FinSession(){
         try {
             _mailbox.Close();
@@ -313,8 +422,9 @@ public class Controller_Client {
         }
     }
 
-    /*
-    Synchronisation du main avec le controlleur
+    /**
+     * Synchronisation du main avec le controlleur
+     * @param main
      */
     public void setMain(Main_Connexion main, Mailbox mailbox)
     {
