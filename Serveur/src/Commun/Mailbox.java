@@ -1,9 +1,8 @@
 package Commun;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -37,26 +36,44 @@ public class Mailbox {
     }
 
     public void loadMails() {
-        for (Utilisateur u: this.repertoireUtilisateur.getM_listeUtilisateurs()
-                ) {
-
-            if (u != null) {
-                try {
-                    BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
-                    int i = 0;
-                    while (this.readMail(br, u)) {
-                        i++;
-                    }
-                    System.out.println(i + " message(s) loaded.");
-                    br.close();
-                } catch (FileNotFoundException e) {
-                    //Do nothing
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        for (Utilisateur u: this.repertoireUtilisateur.getM_listeUtilisateurs()) {
+            loadMails(u);
         }
     }
+
+    public void loadMails(Utilisateur u) {
+        if (u != null) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
+                int i = 0;
+                while (this.readMail(br, u)) {
+                    i++;
+                }
+                System.out.println(i + " message(s) loaded.");
+                br.close();
+            } catch (FileNotFoundException e) {
+                //Do nothing
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
+
+    public List<Email> recupereEmails(Utilisateur utilisateur) {
+        //To be tested
+        List<Email> listEmails = new ArrayList<Email>();
+        for (Email email: m_listeEmails) {
+            if (email.getM_emetteur().equals(utilisateur)
+                    || email.getM_destinataires().equals(utilisateur)) {
+                listEmails.add(email);
+            }
+        }
+        return listEmails;
+    }
+
 
     protected boolean readMail(BufferedReader br, Utilisateur u) {
         ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
@@ -87,4 +104,70 @@ public class Mailbox {
         }
         return false;
     }
+
+
+    public int removeMails(Utilisateur u) {
+        String temp ="";
+        String idMail ="";
+        int i = 0;
+        if(u != null) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
+                BufferedWriter bw = new BufferedWriter(new FileWriter("data/" + u.getM_adresseEmail() + "temp.pop"));
+                idMail = br.readLine();
+                Email email = getEmail(idMail);
+                if (email != null) {
+                    bw.write(email.encode());
+                }
+
+                while ((temp = br.readLine()) != null) {
+                    if (temp.equals(".")) {
+                        idMail = br.readLine();
+                        if (idMail != null) {
+                            email = getEmail(idMail);
+                            if (email != null) {
+                                System.out.println("Email est contenu dans la liste" + idMail);
+
+                                bw.write(email.encode());
+                            } else {
+                                System.out.println("Email pas dans la liste" + idMail);
+                            }
+                        }
+                    }
+                }
+                bw.close();
+                br.close();
+                File oldFile =  new File("data/" + u.getM_adresseEmail() + ".pop");
+                oldFile.delete();
+                File newFile = new File("data/" + u.getM_adresseEmail() + "temp.pop");
+                newFile.renameTo(new File("data/" + u.getM_adresseEmail() + ".pop"));
+            } catch(FileNotFoundException e) {
+                //Do nothing
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return i;
+    }
+
+    public void setEmailsUndeleted(Utilisateur utilisateur) {
+
+        List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
+
+        for (Email email: listeEmailsDeUtilisateur
+                ) {
+            email.setM_etat(true);
+            m_listeEmails.set(m_listeEmails.indexOf(email), email);
+        }
+    }
+
+    public Email getEmail(String emailId){
+        for (Email email: this.getM_listeEmails()) {
+            if (email.getM_id().equals(emailId)) {
+                return email;
+            }
+        }
+        return null;
+    }
+
 }

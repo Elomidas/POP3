@@ -1,13 +1,9 @@
 package SMTP;
 
 import Commun.*;
-import com.sun.xml.internal.bind.v2.TODO;
 
-import javax.rmi.CORBA.Util;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 import static SMTP.ReponseServeur.*;
 

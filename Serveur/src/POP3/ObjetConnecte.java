@@ -1,6 +1,7 @@
 package POP3;
 
 import Commun.Email;
+import Commun.Mailbox;
 import Commun.Tcp;
 import Commun.Utilisateur;
 
@@ -17,17 +18,14 @@ public class ObjetConnecte {
     protected static final String POP3_REPONSE_NEGATIVE = "-ERR";
     protected static final String POP3_REPONSE_POSITIVE = "+OK";
     protected static HashMap<String, Boolean> m_locked;
-    protected static ArrayList<Utilisateur> m_listeUtilisateurs;
 
     static {
         m_locked = new HashMap<>();
-        m_listeUtilisateurs = new ArrayList<>();
-        loadUsersFromFile();
     }
 
     protected boolean m_continuer;
     protected String m_etat;
-    private ArrayList<Email> m_listeEmails;
+    protected Mailbox m_mailbox;
     protected Utilisateur m_current;
     protected boolean m_lock;
     protected Tcp m_tcp;
@@ -38,12 +36,12 @@ public class ObjetConnecte {
     }
 
     protected void initialize() {
-        m_listeEmails = new ArrayList<>();
+        m_mailbox = new Mailbox();
         m_current = null;
         m_continuer = true;
         m_lock = false;
         m_blankCount = 0;
-
+        m_mailbox.getRepertoireUtilisateur().loadUsersFromFile();
     }
 
     public void Launch() {
@@ -122,8 +120,8 @@ public class ObjetConnecte {
             if(this.checkPass(password)) {
                 if(this.isFree(m_current.getM_adresseEmail())) {
                     this.lock(m_current.getM_adresseEmail());
-                    this.loadMails(m_current);
-                    this.setEmailsUndeleted(m_current);
+                    this.m_mailbox.loadMails(m_current);
+                    this.m_mailbox.setEmailsUndeleted(m_current);
                     m_etat = POP3_ETAT_TRANSACTION;
                     return ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready";
                 } else {
@@ -177,12 +175,12 @@ public class ObjetConnecte {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
                 .append(" ")
-                .append(m_listeEmails.size())
+                .append(m_mailbox.getM_listeEmails().size())
                 .append(" message(s) :\n");
-        for(int i = 0; i < m_listeEmails.size(); i++) {
+        for(int i = 0; i < m_mailbox.getM_listeEmails().size(); i++) {
             sBuilder.append(i+1)
                     .append(" ")
-                    .append(m_listeEmails.get(i).Size())
+                    .append(m_mailbox.getM_listeEmails().get(i).Size())
                     .append("\n");
         }
         return sBuilder.toString();
@@ -192,12 +190,12 @@ public class ObjetConnecte {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
                 .append(" ")
-                .append(m_listeEmails.size())
+                .append(m_mailbox.getM_listeEmails().size())
                 .append(" message(s) :\n");
-        for(int i = 0; i < m_listeEmails.size(); i++) {
+        for(int i = 0; i < m_mailbox.getM_listeEmails().size(); i++) {
             sBuilder.append(i+1)
                     .append(" ")
-                    .append(m_listeEmails.get(i).getM_id())
+                    .append(m_mailbox.getM_listeEmails().get(i).getM_id())
                     .append("\n");
         }
         return sBuilder.toString();
@@ -217,20 +215,20 @@ public class ObjetConnecte {
             this.unlock(m_current.getM_adresseEmail());
         }
         List<Email> listEmailsToRemove = new ArrayList<>();
-        List<Email> listEmailsOfUser = recupereEmails(m_current);
+        List<Email> listEmailsOfUser = m_mailbox.recupereEmails(m_current);
         for (Email email: listEmailsOfUser) {
             if (!email.getM_etat()) {
-                m_listeEmails.remove(email);
+                m_mailbox.getM_listeEmails().remove(email);
                 listEmailsToRemove.add(email);
             }
         }
 
-        this.removeMails(m_current, listEmailsToRemove);
+        this.m_mailbox.removeMails(m_current);
         return POP3_REPONSE_POSITIVE;
     }
 
     private String retr(String id) {
-        Email m = getEmail(id);
+        Email m = m_mailbox.getEmail(id);
         if(m == null) {
             return POP3_REPONSE_NEGATIVE + " unable to find this message.";
         }
@@ -247,7 +245,7 @@ public class ObjetConnecte {
         int nombreOctets = 0;
         //drop deleted tag on all message tagged as deleted
 
-        for (Email email: m_listeEmails) {
+        for (Email email: m_mailbox.getM_listeEmails()) {
 
             if (email.getM_etat() == false){
                 email.setM_etat(true);
@@ -267,11 +265,11 @@ public class ObjetConnecte {
         String reponse = POP3_REPONSE_NEGATIVE;
         //tag message as deleted
         StringBuilder stringBuilder = new StringBuilder();
-        Email email = getEmail(stringBuilder.append(idMessage).toString());
-        int index = m_listeEmails.indexOf(email);
+        Email email = m_mailbox.getEmail(stringBuilder.append(idMessage).toString());
+        int index = m_mailbox.getM_listeEmails().indexOf(email);
         if (email.getM_etat()) {
             email.setM_etat(false);
-            m_listeEmails.set(index, email);
+            m_mailbox.getM_listeEmails().set(index, email);
             //return positive answer or negative if message already tagged as deleted + "message" idMessage + "deleted"
             return POP3_REPONSE_POSITIVE + " message " + idMessage + "deleted";
         } else {
@@ -282,7 +280,7 @@ public class ObjetConnecte {
     private String stat() {
         int size = 0;
         int number = 0;
-        for(Email m : m_listeEmails) {
+        for(Email m : m_mailbox.getM_listeEmails()) {
             size += m.Size();
             number++;
         }
@@ -295,9 +293,9 @@ public class ObjetConnecte {
      */
 
     protected boolean checkUser(String username) {
-        Utilisateur u = getUtilisateurParNom(username);
+        Utilisateur u = this.m_mailbox.getRepertoireUtilisateur().getUtilisateurParNom(username);
         if(u == null) {
-            u = getUtilisateurParEmail(username);
+            u = this.m_mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(username);
         }
         if (u != null) {
             m_current = u;
@@ -316,52 +314,6 @@ public class ObjetConnecte {
         return m_locked.containsKey(mail) && (m_locked.get(mail) == false);
     }
 
-    /*  ###
-     *  # Users
-     *  ###
-     */
-
-    public Utilisateur getUtilisateurParEmail(String email) {
-        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
-            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
-            if (utilisateur.getM_adresseEmail().equals(email)) {
-                return utilisateur;
-            }
-        }
-        return null;
-    }
-    
-    public Utilisateur getUtilisateurParNom(String nomUtilisateur) {
-        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
-            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
-            if (utilisateur.getM_adresseEmail().equals(nomUtilisateur)) {
-                return utilisateur;
-            }
-        }
-        return null;
-    }
-
-    protected static void loadUsersFromFile() {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader("data/users.pop"));
-            String line = br.readLine();
-            int i = 0;
-            while((line != null) && (line.length() > 4)) {
-                Utilisateur u = new Utilisateur(line);
-                m_listeUtilisateurs.add(u);
-                m_locked.putIfAbsent(u.getM_adresseEmail(), false);
-                line = br.readLine();
-                i++;
-            }
-            System.out.println(i + " users added.");
-            br.close();
-        } catch(FileNotFoundException e) {
-            System.out.println("Unable to open users.pop");
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     /*  Lock a mailbox
      */
     protected void lock(String mail) {
@@ -376,150 +328,5 @@ public class ObjetConnecte {
         m_lock = false;
     }
 
-    /*  ###
-     *  # Emails
-     *  ###
-     */
-
-    public Email getEmail(String emailId){
-        for (Email email: m_listeEmails) {
-            if (email.getM_id().equals(emailId)) {
-                return email;
-            }
-        }
-        return null;
-    }
-
-    public List<Email> recupereEmails(Utilisateur utilisateur) {
-        //To be tested
-        List<Email> listEmails = new ArrayList<Email>();
-        for (Email email: m_listeEmails) {
-            if (email.getM_emetteur().equals(utilisateur)
-                || email.getM_destinataires().equals(utilisateur)) {
-                listEmails.add(email);
-            }
-        }
-        return listEmails;
-    }
-
-//    protected void saveMails(Utilisateur u) {
-//        try {
-//
-//
-//
-//            for(Email m : m_listeEmails) {
-//                for (Utilisateur utilisateur: m.getM_destinataires()) {
-//                    BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop"));
-//                    writer.write(m.encode());
-//                    writer.close();
-//                }
-//            }
-//
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    protected void loadMails(Utilisateur u) {
-        if(u != null) {
-            try {
-                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
-                int i = 0;
-                while (this.readMail(br, u)) {
-                    i++;
-                }
-                System.out.println(i + " message(s) loaded.");
-                br.close();
-            } catch(FileNotFoundException e) {
-                //Do nothing
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    protected boolean readMail(BufferedReader br, Utilisateur u) {
-        ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
-        utilisateurArrayList.add(u);
-        try {
-            StringBuilder sBuilder = new StringBuilder();
-            String id = br.readLine();
-            if(id == null) {
-                return false;
-            }
-            while(true) {
-                String line = br.readLine();
-                if(line.equals(".")) {
-                    sBuilder.append(".\n");
-                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), m_listeUtilisateurs);
-                    m.setM_id(UUID.fromString(id));
-                    m_listeEmails.add(m);
-                    return true;
-                } else if(line == null) {
-                    return false;
-                } else {
-                    sBuilder.append(line + "\n");
-                }
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    protected int removeMails(Utilisateur u, List<Email> listeEmailsToRemove) {
-        String temp ="";
-        String idMail ="";
-        int i = 0;
-        if(u != null) {
-            try {
-                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
-                BufferedWriter bw = new BufferedWriter(new FileWriter("data/" + u.getM_adresseEmail() + "temp.pop"));
-                idMail = br.readLine();
-                Email email = getEmail(idMail);
-                if (email != null) {
-                    bw.write(email.encode());
-                }
-
-                while ((temp = br.readLine()) != null) {
-                    if (temp.equals(".")) {
-                        idMail = br.readLine();
-                        if (idMail != null) {
-                            email = getEmail(idMail);
-                            if (email != null) {
-                                System.out.println("Email est contenu dans la liste" + idMail);
-
-                                bw.write(email.encode());
-                            } else {
-                                System.out.println("Email pas dans la liste" + idMail);
-                            }
-                        }
-                    }
-                }
-                bw.close();
-                br.close();
-                File oldFile =  new File("data/" + u.getM_adresseEmail() + ".pop");
-                oldFile.delete();
-                File newFile = new File("data/" + u.getM_adresseEmail() + "temp.pop");
-                newFile.renameTo(new File("data/" + u.getM_adresseEmail() + ".pop"));
-            } catch(FileNotFoundException e) {
-                //Do nothing
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return i;
-    }
-    
-    protected void setEmailsUndeleted(Utilisateur utilisateur) {
-
-        List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
-
-        for (Email email: listeEmailsDeUtilisateur
-                ) {
-            email.setM_etat(true);
-            m_listeEmails.set(m_listeEmails.indexOf(email), email);
-        }
-    }
 
 }

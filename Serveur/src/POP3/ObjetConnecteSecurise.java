@@ -1,17 +1,13 @@
 package POP3;
 
-import Commun.Email;
 import Commun.Tcp;
-import Commun.Utilisateur;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import static java.lang.System.*;
 
@@ -25,8 +21,6 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
 
     static {
         m_locked = new HashMap<>();
-        m_listeUtilisateurs = new ArrayList<>();
-        loadUsersFromFile();
     }
 
 
@@ -157,8 +151,8 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                     if(this.decrypteTimbre(password)) {
                         if (this.isFree(m_current.getM_adresseEmail())) {
                             this.lock(m_current.getM_adresseEmail());
-                            this.loadMails(m_current);
-                            setEmailsUndeleted(m_current);
+                            this.m_mailbox.loadMails(m_current);
+                            this.m_mailbox.setEmailsUndeleted(m_current);
                             m_etat = POP3_ETAT_TRANSACTION;
                             return ObjetConnecte.POP3_REPONSE_POSITIVE;
                         } else {
