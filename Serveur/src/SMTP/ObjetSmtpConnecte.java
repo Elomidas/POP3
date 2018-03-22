@@ -1,8 +1,11 @@
 package SMTP;
 
 import Commun.*;
+import com.sun.xml.internal.bind.v2.TODO;
 
 import javax.rmi.CORBA.Util;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -17,13 +20,14 @@ public class ObjetSmtpConnecte {
     private String reponseServeur;
     private Email currentEmail;
     protected static RepertoireUtilisateur repertoireUtilisateur;
+    protected ArrayList<Email> m_listeEmails;
 
     public ObjetSmtpConnecte(Tcp tcp){
         this.tcp = tcp;
         this.etatServeur = SERVER_READY;
         this.continuer = true;
         this.currentEmail = null;
-        this.repertoireUtilisateur = new RepertoireUtilisateur();
+        repertoireUtilisateur = new RepertoireUtilisateur();
     }
 
     public void Launch() throws IOException {
@@ -67,6 +71,10 @@ public class ObjetSmtpConnecte {
         System.out.println("End of POP3");
     }
 
+    /*
+        Etats
+     */
+
     /**
      * return answer of command related to connexion stat
      * @param command
@@ -96,6 +104,8 @@ public class ObjetSmtpConnecte {
         switch (command){
             case "RCPT":
                 return commandeRcpt(parameters);
+            case "RSET":
+                return commandeRset();
             default :
                 return SMTP_500_UNKNOWN_COMMAND;
         }
@@ -109,8 +119,16 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String envoie(String command, String[] parameters) {
-        return "envoie";
+        switch (command){
+            case "RSET":
+                return commandeRset();
+            case "DATA":
+                return commandeData(parameters);
+            default :
+                return SMTP_500_UNKNOWN_COMMAND;
+        }
     }
+
 
     /**
      * return answer of commands related to reading stat
@@ -119,7 +137,12 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String lecture(String command, String[] parameters) {
-        return "lecture";
+        switch (command){
+            case "CLRF":
+                return commandeClrf(parameters);
+            default :
+                return SMTP_500_UNKNOWN_COMMAND;
+        }
     }
 
     /**
@@ -129,7 +152,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String identification(String command, String[] parameters) {
-        System.out.println("commandes: " + command);
+        System.out.println(repertoireUtilisateur.toString());
         switch (command){
             case "MAIL":
                 return commandeMailFrom(parameters);
@@ -137,6 +160,10 @@ public class ObjetSmtpConnecte {
                 return SMTP_500_UNKNOWN_COMMAND;
         }
     }
+
+    /*
+        Commandes
+     */
 
     /**
      * handle and return answer of command EHLO
@@ -173,18 +200,20 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeMailFrom(String[] parameters) {
-        System.out.println(parameters.toString());
+        System.out.println(parameters[0] + parameters[1]);
         if (parameters.length < 1) {
             return SMTP_500_UNKNOWN_COMMAND;
         }
 
-        String emailAddress = parameters[0];
+        String emailAddress = parameters[1];
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = repertoireUtilisateur.getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
-            this.currentEmail = new Email( utilisateur,"", new ArrayList<>());
+            ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
+            utilisateurArrayList.add(utilisateur);
+            this.currentEmail = new Email( utilisateurArrayList,"", new ArrayList<>());
 
         } else {
             return SMTP_550_UNKNOWN_USER;
@@ -193,6 +222,11 @@ public class ObjetSmtpConnecte {
         return SMTP_250_OK;
     }
 
+    /**
+     * handle and return answer of command RCPT TO
+     * @param parameters
+     * @return
+     */
     private String commandeRcpt(String[] parameters) {
         if (parameters.length < 1) {
             return SMTP_500_UNKNOWN_COMMAND;
@@ -205,15 +239,55 @@ public class ObjetSmtpConnecte {
                 return SMTP_550_UNKNOWN_USER;
             }
 
-            //TODO : refactor email should have more than 1 recipient
-            //TODO : refactor ObjetConnecteSecurise and ObjetConnecte
-            //this.currentEmail.addRecipient(utilisateur);
+            this.currentEmail.addRecipient(utilisateur);
 
         } else {
             return SMTP_550_UNKNOWN_USER;
         }
         etatServeur = SERVER_ENVOIE;
         return SMTP_250_OK;
+    }
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    private String commandeData(String[] parameters) {
+        //TODO
+        return null;
+    }
+
+    /**
+     *
+     * @param parameters
+     * @return
+     */
+    private String commandeClrf(String[] parameters) {
+        //TODO
+        return null;
+    }
+
+    /*
+        Autres
+     */
+
+    /**
+     * save Emails in files
+     * @param u
+     */
+    protected void saveMails(Utilisateur u) {
+        try {
+            for(Email m : m_listeEmails) {
+                for (Utilisateur utilisateur: m.getM_destinataires()) {
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop"));
+                    writer.write(m.encode());
+                    writer.close();
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

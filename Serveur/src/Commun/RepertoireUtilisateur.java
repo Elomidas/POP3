@@ -65,4 +65,14 @@ public class RepertoireUtilisateur {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Utilisateur utilisateur: m_listeUtilisateurs
+             ) {
+            stringBuilder.append("Nom : ").append(utilisateur.getM_nom()).append(" Email: ").append(utilisateur.getM_adresseEmail()).append("\n");
+        }
+        return stringBuilder.toString();
+    }
 }

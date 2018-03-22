@@ -152,7 +152,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
             String password = parameters[1];
             out.println("username : " + username);
 
-            if(this.checkUser(username)) {
+            if(checkUser(username)) {
                 try {
                     if(this.decrypteTimbre(password)) {
                         if (this.isFree(m_current.getM_adresseEmail())) {

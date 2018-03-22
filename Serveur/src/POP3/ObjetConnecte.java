@@ -269,14 +269,6 @@ public class ObjetConnecte {
         StringBuilder stringBuilder = new StringBuilder();
         Email email = getEmail(stringBuilder.append(idMessage).toString());
         int index = m_listeEmails.indexOf(email);
-        for (Email email2: m_listeEmails
-             ) {
-            System.out.println("Email:");
-            System.out.println(email2.getM_id());
-            System.out.println(email2.getM_destinataire());
-            System.out.println(email2.getM_emetteur());
-            System.out.println(email2.getM_etat());
-        }
         if (email.getM_etat()) {
             email.setM_etat(false);
             m_listeEmails.set(index, email);
@@ -302,7 +294,7 @@ public class ObjetConnecte {
      *  ###
      */
 
-    private boolean checkUser(String username) {
+    protected boolean checkUser(String username) {
         Utilisateur u = getUtilisateurParNom(username);
         if(u == null) {
             u = getUtilisateurParEmail(username);
@@ -403,32 +395,30 @@ public class ObjetConnecte {
         List<Email> listEmails = new ArrayList<Email>();
         for (Email email: m_listeEmails) {
             if (email.getM_emetteur().equals(utilisateur)
-                || email.getM_destinataire().equals(utilisateur)) {
+                || email.getM_destinataires().equals(utilisateur)) {
                 listEmails.add(email);
             }
         }
         return listEmails;
     }
 
-    protected void saveMails(Utilisateur u) {
-        try {
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + u.getM_adresseEmail() + ".pop"));
-
-            for(Email m : m_listeEmails) {
-                if(m.getM_destinataire().getM_adresseEmail().equals(u.getM_adresseEmail())) {
-                    System.out.println(m.getM_destinataire().getM_adresseEmail() + " == " + u.getM_adresseEmail());
-                    writer.write(m.encode());
-                } else {
-                    System.out.println(m.getM_destinataire().getM_adresseEmail() + " != " + u.getM_adresseEmail());
-                }
-            }
-
-            writer.close();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    protected void saveMails(Utilisateur u) {
+//        try {
+//
+//
+//
+//            for(Email m : m_listeEmails) {
+//                for (Utilisateur utilisateur: m.getM_destinataires()) {
+//                    BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop"));
+//                    writer.write(m.encode());
+//                    writer.close();
+//                }
+//            }
+//
+//        } catch(Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     protected void loadMails(Utilisateur u) {
         if(u != null) {
@@ -449,6 +439,8 @@ public class ObjetConnecte {
     }
 
     protected boolean readMail(BufferedReader br, Utilisateur u) {
+        ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
+        utilisateurArrayList.add(u);
         try {
             StringBuilder sBuilder = new StringBuilder();
             String id = br.readLine();
@@ -459,7 +451,7 @@ public class ObjetConnecte {
                 String line = br.readLine();
                 if(line.equals(".")) {
                     sBuilder.append(".\n");
-                    Email m = new Email(u, sBuilder.toString(), m_listeUtilisateurs);
+                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), m_listeUtilisateurs);
                     m.setM_id(id);
                     m_listeEmails.add(m);
                     return true;

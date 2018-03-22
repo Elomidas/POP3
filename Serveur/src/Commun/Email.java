@@ -11,7 +11,7 @@ public class Email {
     protected String m_message;
     protected String m_date;
     protected String m_subject;
-    protected Utilisateur m_destinataire;
+    protected ArrayList<Utilisateur> m_destinataire;
     protected Utilisateur m_emetteur;
     protected boolean m_etat;
 
@@ -25,7 +25,7 @@ public class Email {
 
 
 
-    public Email(String m_id, String m_message, Utilisateur m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
+    public Email(String m_id, String m_message, ArrayList<Utilisateur> m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
         this.m_id = m_id;
         this.m_message = m_message;
         this.m_destinataire = m_destinataire;
@@ -33,7 +33,7 @@ public class Email {
         this.m_etat = m_etat;
     }
 
-    public Email(Utilisateur dest, String encoded, ArrayList<Utilisateur> list) {
+    public Email(ArrayList<Utilisateur> dest, String encoded, ArrayList<Utilisateur> list) {
         m_destinataire = dest;
         decode(encoded, list);
     }
@@ -125,11 +125,11 @@ public class Email {
         this.m_message = m_message;
     }
 
-    public Utilisateur getM_destinataire() {
+    public ArrayList<Utilisateur> getM_destinataires() {
         return m_destinataire;
     }
 
-    public void setM_destinataire(Utilisateur m_destinataire) {
+    public void setM_destinataire(ArrayList<Utilisateur> m_destinataire) {
         this.m_destinataire = m_destinataire;
     }
 
@@ -149,5 +149,9 @@ public class Email {
             e.printStackTrace();
         }
         return size;
+    }
+
+    public void addRecipient(Utilisateur utilisateur) {
+        this.m_destinataire.add(utilisateur);
     }
 }

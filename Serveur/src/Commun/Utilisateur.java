@@ -92,4 +92,11 @@ public class Utilisateur {
         return password.equals(m_mdp);
     }
 
+    @Override
+    public String toString() {
+        return "Utilisateur{" +
+                "m_nom='" + m_nom + '\'' +
+                ", m_adresseEmail='" + m_adresseEmail + '\'' +
+                '}';
+    }
 }
