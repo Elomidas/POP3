@@ -116,11 +116,12 @@ public class ObjetSmtpConnecte {
                 return commandeRcpt(parameters);
             case "RSET":
                 return commandeRset();
+            case "QUIT":
+                return commandeQuit();
             default :
                 return SMTP_500_UNKNOWN_COMMAND;
         }
     }
-
 
     /**
      * return answer of commands related to sending stat
@@ -136,11 +137,12 @@ public class ObjetSmtpConnecte {
                 return commandeRcpt(parameters);
             case "DATA":
                 return commandeData();
+            case "QUIT":
+                return commandeQuit();
             default :
                 return SMTP_500_UNKNOWN_COMMAND;
         }
     }
-
 
     /**
      * return answer of commands related to reading stat
@@ -152,13 +154,15 @@ public class ObjetSmtpConnecte {
         switch (command){
             case SMTP_CRLF:
                 return commandeCrlf(parameters);
+            case "QUIT":
+                return commandeQuit();
+            case "RSET":
+                return commandeRset();
             default :
                 writeEmail(parameters);
                 return SMTP_354_START_READING;
         }
     }
-
-
 
     /**
      * return answer of commands related to identification stat
@@ -172,6 +176,8 @@ public class ObjetSmtpConnecte {
                 return commandeMailFrom(parameters);
             case "QUIT":
                 return commandeQuit();
+            case "RSET":
+                return commandeRset();
             default :
                 return SMTP_500_UNKNOWN_COMMAND;
         }
@@ -206,6 +212,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeQuit() {
+        continuer = false;
         etatServeur = SERVER_READY;
         return SMTP_221_CLOSING;
     }
