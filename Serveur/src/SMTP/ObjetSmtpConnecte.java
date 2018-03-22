@@ -23,6 +23,7 @@ public class ObjetSmtpConnecte {
         this.etatServeur = SERVER_READY;
         this.continuer = true;
         this.currentEmail = null;
+        this.repertoireUtilisateur = new RepertoireUtilisateur();
     }
 
     public void Launch() throws IOException {
@@ -40,7 +41,7 @@ public class ObjetSmtpConnecte {
             if(explodedCommand.length > 1) {
                 parameters = explodedCommand[1].split(" ");
             }
-
+            System.out.println("etat: " + etatServeur + "commande:" + command);
             switch (etatServeur) {
                 case SERVER_CONNEXION:
                     reponseServeur = this.connexion(command, parameters);
@@ -92,8 +93,14 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String transaction(String command, String[] parameters) {
-        return "transaction";
+        switch (command){
+            case "RCPT":
+                return commandeRcpt(parameters);
+            default :
+                return SMTP_500_UNKNOWN_COMMAND;
+        }
     }
+
 
     /**
      * return answer of commands related to sending stat
@@ -122,6 +129,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String identification(String command, String[] parameters) {
+        System.out.println("commandes: " + command);
         switch (command){
             case "MAIL":
                 return commandeMailFrom(parameters);
@@ -136,6 +144,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeEhlo(String[] parameters) {
+        etatServeur = SERVER_IDENTIFICATION;
         return SMTP_250_SERVERDOMAIN ;
     }
 
@@ -145,6 +154,7 @@ public class ObjetSmtpConnecte {
      */
     private String commandeRset() {
         this.currentEmail = null;
+        etatServeur = SERVER_IDENTIFICATION;
         return SMTP_250_OK;
     }
 
@@ -153,6 +163,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeQuit() {
+        etatServeur = SERVER_READY;
         return SMTP_221_CLOSING;
     }
 
@@ -162,7 +173,27 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeMailFrom(String[] parameters) {
+        System.out.println(parameters.toString());
+        if (parameters.length < 1) {
+            return SMTP_500_UNKNOWN_COMMAND;
+        }
 
+        String emailAddress = parameters[0];
+        if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
+            Utilisateur utilisateur = repertoireUtilisateur.getUtilisateurParEmail(emailAddress);
+            if (utilisateur == null) {
+                return SMTP_550_UNKNOWN_USER;
+            }
+            this.currentEmail = new Email( utilisateur,"", new ArrayList<>());
+
+        } else {
+            return SMTP_550_UNKNOWN_USER;
+        }
+        etatServeur = SERVER_TRANSACTION;
+        return SMTP_250_OK;
+    }
+
+    private String commandeRcpt(String[] parameters) {
         if (parameters.length < 1) {
             return SMTP_500_UNKNOWN_COMMAND;
         }
@@ -173,9 +204,16 @@ public class ObjetSmtpConnecte {
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
-            this.currentEmail = new Email( utilisateur,"", new ArrayList<>());
-            return SMTP_250_OK;
+
+            //TODO : refactor email should have more than 1 recipient
+            //TODO : refactor ObjetConnecteSecurise and ObjetConnecte
+            //this.currentEmail.addRecipient(utilisateur);
+
+        } else {
+            return SMTP_550_UNKNOWN_USER;
         }
+        etatServeur = SERVER_ENVOIE;
+        return SMTP_250_OK;
     }
 
 }

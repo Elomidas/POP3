@@ -15,7 +15,8 @@ public class RepertoireUtilisateur {
     private static ArrayList<Utilisateur> m_listeUtilisateurs;
 
     public RepertoireUtilisateur() {
-        this.m_listeUtilisateurs = new ArrayList<Utilisateur>();
+        m_listeUtilisateurs = new ArrayList<Utilisateur>();
+        loadUsersFromFile();
     }
 
     public static ArrayList<Utilisateur> getM_listeUtilisateurs() {
@@ -28,8 +29,7 @@ public class RepertoireUtilisateur {
 
 
     public Utilisateur getUtilisateurParEmail(String email) {
-        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
-            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
+        for (Utilisateur utilisateur : m_listeUtilisateurs) {
             if (utilisateur.getM_adresseEmail().equals(email)) {
                 return utilisateur;
             }
@@ -38,8 +38,7 @@ public class RepertoireUtilisateur {
     }
 
     public Utilisateur getUtilisateurParNom(String nomUtilisateur) {
-        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
-            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
+        for (Utilisateur utilisateur : m_listeUtilisateurs) {
             if (utilisateur.getM_adresseEmail().equals(nomUtilisateur)) {
                 return utilisateur;
             }
