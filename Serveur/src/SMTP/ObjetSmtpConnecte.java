@@ -4,10 +4,10 @@ import Commun.*;
 import com.sun.xml.internal.bind.v2.TODO;
 
 import javax.rmi.CORBA.Util;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static SMTP.ReponseServeur.*;
 
@@ -28,8 +28,9 @@ public class ObjetSmtpConnecte {
         this.etatServeur = SERVER_READY;
         this.continuer = true;
         this.currentEmail = null;
-        this.m_listeEmails = new ArrayList<Email>();
+        this.m_listeEmails = new ArrayList<>();
         this.repertoireUtilisateur = new RepertoireUtilisateur();
+        loadMails();
     }
 
     public void Launch() throws IOException {
@@ -289,10 +290,11 @@ public class ObjetSmtpConnecte {
      * save Emails in files
      */
     protected void saveMails() {
+        removeSavedFiles();
         try {
             for(Email m : m_listeEmails) {
                 for (Utilisateur utilisateur: m.getM_destinataires()) {
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop"));
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop", true));
                     writer.write(m.encode());
                     writer.close();
                 }
@@ -307,7 +309,76 @@ public class ObjetSmtpConnecte {
      * @param line
      */
     private void writeEmail(String[] line) {
-        this.currentEmail.setM_message(this.currentEmail.getM_message() + "\n" + line[0]);
+        if (this.currentEmail.getM_message().equals("")) {
+            this.currentEmail.setM_message(line[0]);
+        } else {
+            this.currentEmail.setM_message(this.currentEmail.getM_message() + "\n" + line[0]);
+        }
+    }
+
+    protected void loadMails() {
+        for (Utilisateur u: this.repertoireUtilisateur.getM_listeUtilisateurs()
+             ) {
+
+            if (u != null) {
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
+                    int i = 0;
+                    while (this.readMail(br, u)) {
+                        i++;
+                    }
+                    System.out.println(i + " message(s) loaded.");
+                    br.close();
+                } catch (FileNotFoundException e) {
+                    //Do nothing
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    protected boolean readMail(BufferedReader br, Utilisateur u) {
+        ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
+        utilisateurArrayList.add(u);
+        try {
+            StringBuilder sBuilder = new StringBuilder();
+            String id = br.readLine();
+            if(id == null) {
+                return false;
+            }
+            while(true) {
+                String line = br.readLine();
+                if(line.equals(".")) {
+                    sBuilder.append(".\n");
+                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), this.repertoireUtilisateur.getM_listeUtilisateurs());
+                    m.setM_id(UUID.fromString(id));
+                    m_listeEmails.add(m);
+                    return true;
+                } else if(line == null) {
+                    return false;
+                } else {
+                    sBuilder.append(line)
+                        .append("\n");
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void removeSavedFiles() {
+        File directory = new File("data/");
+        for (File f : directory.listFiles()) {
+            if (f.getName().endsWith(".com.pop")) {
+                try {
+                    FileOutputStream writer = new FileOutputStream(f.getAbsolutePath());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }

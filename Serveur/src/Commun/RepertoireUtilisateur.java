@@ -50,7 +50,7 @@ public class RepertoireUtilisateur {
     protected void loadUsersFromFile() {
         try {
             System.out.println(System.getProperty("user.dir"));
-            BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/data/users.pop"));
+            BufferedReader br = new BufferedReader(new FileReader("data/users.pop"));
 
             String line = br.readLine();
             int i = 0;

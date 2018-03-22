@@ -452,7 +452,7 @@ public class ObjetConnecte {
                 if(line.equals(".")) {
                     sBuilder.append(".\n");
                     Email m = new Email(utilisateurArrayList, sBuilder.toString(), m_listeUtilisateurs);
-                    m.setM_id(id);
+                    m.setM_id(UUID.fromString(id));
                     m_listeEmails.add(m);
                     return true;
                 } else if(line == null) {
