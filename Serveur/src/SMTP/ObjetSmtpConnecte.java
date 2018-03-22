@@ -19,15 +19,17 @@ public class ObjetSmtpConnecte {
     private String input;
     private String reponseServeur;
     private Email currentEmail;
-    protected static RepertoireUtilisateur repertoireUtilisateur;
+    protected RepertoireUtilisateur repertoireUtilisateur;
     protected ArrayList<Email> m_listeEmails;
+    protected Utilisateur currentUser;
 
     public ObjetSmtpConnecte(Tcp tcp){
         this.tcp = tcp;
         this.etatServeur = SERVER_READY;
         this.continuer = true;
         this.currentEmail = null;
-        repertoireUtilisateur = new RepertoireUtilisateur();
+        this.m_listeEmails = new ArrayList<Email>();
+        this.repertoireUtilisateur = new RepertoireUtilisateur();
     }
 
     public void Launch() throws IOException {
@@ -40,12 +42,21 @@ public class ObjetSmtpConnecte {
             System.out.println(input + " received");
 
             String[] explodedCommand = input.split(" ", 2);
-            String command = explodedCommand[0].toUpperCase();
+            String command = etatServeur == SERVER_LECTURE ? explodedCommand[0] : explodedCommand[0].toUpperCase();
             String[] parameters = new String[0];
-            if(explodedCommand.length > 1) {
-                parameters = explodedCommand[1].split(" ");
+
+            if (!etatServeur.equals(SERVER_LECTURE)) {
+                if(explodedCommand.length > 1) {
+                    parameters = explodedCommand[1].split(" ");
+                }
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (String line: explodedCommand
+                     ) {
+                    sb.append(line);
+                }
+                parameters = new String[]{sb.toString()};
             }
-            System.out.println("etat: " + etatServeur + "commande:" + command);
             switch (etatServeur) {
                 case SERVER_CONNEXION:
                     reponseServeur = this.connexion(command, parameters);
@@ -155,7 +166,6 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String identification(String command, String[] parameters) {
-        System.out.println(repertoireUtilisateur.toString());
         switch (command){
             case "MAIL":
                 return commandeMailFrom(parameters);
@@ -205,8 +215,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeMailFrom(String[] parameters) {
-        System.out.println(parameters[0] + parameters[1]);
-        if (parameters.length < 1) {
+        if (parameters.length <= 1) {
             return SMTP_500_UNKNOWN_COMMAND;
         }
 
@@ -216,10 +225,7 @@ public class ObjetSmtpConnecte {
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
-            ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
-            utilisateurArrayList.add(utilisateur);
-            this.currentEmail = new Email( utilisateurArrayList,"", new ArrayList<>());
-
+            this.currentEmail = new Email( new ArrayList<Utilisateur>(),utilisateur);
         } else {
             return SMTP_550_UNKNOWN_USER;
         }
@@ -233,12 +239,13 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeRcpt(String[] parameters) {
-        if (parameters.length < 1) {
+        if (parameters.length <= 1) {
             return SMTP_500_UNKNOWN_COMMAND;
         }
 
         String emailAddress = parameters[1];
-        if (TestRegex.CheckMail(emailAddress)) {
+
+        if ((emailAddress  != null ) && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = repertoireUtilisateur.getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
@@ -268,7 +275,6 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeCrlf(String[] parameters) {
-
         this.m_listeEmails.add(currentEmail);
         this.saveMails();
         etatServeur = SERVER_IDENTIFICATION;
@@ -301,7 +307,7 @@ public class ObjetSmtpConnecte {
      * @param line
      */
     private void writeEmail(String[] line) {
-
+        this.currentEmail.setM_message(this.currentEmail.getM_message() + "\n" + line[0]);
     }
 
 }

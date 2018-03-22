@@ -17,5 +17,5 @@ public class ReponseServeur {
     public final static String SERVER_ENVOIE = "Envoie de Message";
     public final static String SERVER_LECTURE = "Lecture des Lignes";
 
-    public final static String SMTP_CRLF = "\r\n";
+    public final static String SMTP_CRLF = "\\r\\n";
 }

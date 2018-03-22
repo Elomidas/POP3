@@ -1,7 +1,10 @@
 package Commun;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by tardy on 26/02/2018.
@@ -36,6 +39,16 @@ public class Email {
     public Email(ArrayList<Utilisateur> dest, String encoded, ArrayList<Utilisateur> list) {
         m_destinataire = dest;
         decode(encoded, list);
+    }
+
+    public Email(ArrayList<Utilisateur> dest, Utilisateur emetteur) {
+        m_destinataire = dest;
+        m_emetteur = emetteur;
+        DateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        this.m_date = formatDate.format(date);
+        this.m_subject = null;
+        this.m_message = "";
     }
 
     protected void decode(String encrypted, ArrayList<Utilisateur> usrs) {
