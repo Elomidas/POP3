@@ -4,12 +4,10 @@ import Model.Protocols.POP3.POP3;
 import Model.Protocols.POP3.POP3Exception;
 import Model.Protocols.POP3.POP3S;
 import Model.Protocols.ProtocolUnderTCPException;
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.logging.FileHandler;
 
 public class Mailbox {
     private HashMap<String, Mail> m_mails;
@@ -144,34 +142,44 @@ public class Mailbox {
         return false;
     }
 
-    //Check if server and port are correctly set
-    public boolean ServerJoined() {
-        if(m_pop == null) {
-            return false;
-        }
-        return (m_pop.Status() != POP3._DISCONNECTED);
+    /**
+     * Check if server and port are correctly set.
+     * @return true if all is correctly set, false else.
+     */
+    private boolean ServerJoined() {
+        return m_pop != null && (m_pop.Status() != POP3._DISCONNECTED);
     }
 
-    //Check if user is authenticated
-    public boolean Usable() {
-        if(this.ServerJoined() == false) {
-            return false;
-        }
-        return m_pop.CheckConnected();
+    /**
+     * Check if user is authenticated.
+     * @return true if user is authenticated, false else.
+     */
+    private boolean Usable() {
+        return this.ServerJoined() && m_pop.CheckConnected();
     }
 
-    protected void assertUsable() throws MailException {
-        if(this.Usable() == false) {
+    /**
+     * Check if Mailbox is usable.
+     * @throws MailException Mailbox isn't usable.
+     */
+    private void assertUsable() throws MailException {
+        if(!this.Usable()) {
             throw new MailException("You are not connected.");
         }
     }
 
-    //Return user address
+    /**
+     * Get user's address.
+     * @return User's address.
+     */
     public String getUser() {
         return m_user.getAddress();
     }
 
-    //Close connection
+    /**
+     * Close Mailbox
+     * @throws MailException Error while closing Mailbox
+     */
     public void Close() throws MailException {
         this.saveStorage();
         if(this.Usable()) {
@@ -183,7 +191,12 @@ public class Mailbox {
         }
     }
 
-    //TODO later
+    /**
+     * Do something. TODO later
+     * @param strMail mail to be send
+     * @param id mail ID
+     * @throws MailException Error while doing something
+     */
     public void AddMail(String strMail, String id) throws MailException {
         Mail m;
         try {
@@ -194,25 +207,28 @@ public class Mailbox {
         m_mails.put(id, m);
     }
 
-    //Number of mail currently downloadable
+    /**
+     * Get number of mails on the server that can be download.
+     * @return number of mail
+     */
     public int getMailNumber() {
         return m_UUIDs.length;
     }
 
-    //Number of mail currently downloaded
+    /**
+     * Get number of mails currently downloaded
+     * @return number of mail
+     */
     public int getSize() {
         return m_mails.size();
     }
 
-    /*  Get few mails.
-     *  Ignore new mails
-     *  Parameters :
-     *      first :     Index of the first mail
-     *      length :    Number of mails wanted
-     *  Return :
-     *      Mail array
-     *  Throw :
-     *      MailException in case of error
+    /**
+     * Get few mails
+     * @param first index of the first mail to get
+     * @param length maximum number of mail returned
+     * @return Array of mails, maximum length passed in params
+     * @throws MailException Error while generating mails'array
      */
     public Mail[] getMails(int first, int length) throws MailException {
         this.assertUsable();
@@ -227,7 +243,7 @@ public class Mailbox {
             for (int i = 0; i < size; i++) {
                 String UUID = m_UUIDs[fromLast - i];
                 //If we didn't retrieve this mail before, we retrieve it now
-                if (m_mails.containsKey(UUID) == false) {
+                if (!m_mails.containsKey(UUID)) {
                     String message;
                     try {
                         message = m_pop.getMail(UUID);
@@ -246,28 +262,22 @@ public class Mailbox {
         return array;
     }
 
-    /*  Get few mails.
-     *  Check if there is new mails
-     *  Parameters :
-     *      first :     Index of the first mail
-     *      length :    Number of mails wanted
-     *  Return :
-     *      Mail array
-     *  Throw :
-     *      MailException in case of error
+    /**
+     * Same as getMails but update repository before generating array
+     * @param first index of the first mail to get
+     * @param length maximum number of mail returned
+     * @return Array of mails, maximum length passed in params
+     * @throws MailException Error while generating mails'array
      */
     public Mail[] getMailsUpdated(int first, int length) throws MailException{
         this.Update();
         return this.getMails(first, length);
     }
 
-    //TODO later
-    public void SendMail(String to, String object, String message) throws MailException {
-        this.assertUsable();
-        //TODO
-    }
-
-    //Update the list of downloadable mails
+    /**
+     * Update the list of downloadable mails
+     * @throws MailException Error while updating the list
+     */
     public void Update() throws MailException {
         this.assertUsable();
         try {
@@ -280,12 +290,11 @@ public class Mailbox {
         }
     }
 
-    //Delete a mail
-    public void DeleteMail(Mail m) throws MailException {
-        this.DeleteMail(m.getID());
-    }
-
-    //Delete a mail
+    /**
+     * Delete a mail from its ID
+     * @param id Mail's ID
+     * @throws MailException Error while deleting the mail
+     */
     public void DeleteMail(String id) throws MailException {
         this.assertUsable();
         try {
@@ -296,7 +305,10 @@ public class Mailbox {
         }
     }
 
-    //Cancel all delete tags
+    /**
+     * Reset all mails on the server, cancel deleting
+     * @throws MailException Error while resetting mail
+     */
     public void Reset() throws MailException {
         this.assertUsable();
         try {
