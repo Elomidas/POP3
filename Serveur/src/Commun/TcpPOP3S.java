@@ -19,26 +19,30 @@ public class TcpPOP3S extends Connexion{
     }
 
     public void run(){
-        try {
 
-            ServerSocket serverSocketPOP3 = new ServerSocket(this.m_port);
-            this.socket = serverSocketPOP3.accept();
+            try {
 
-            System.out.println("Début de connexion");
+                while (true) {
+                    ServerSocket serverSocketPOP3S = new ServerSocket(this.m_port);
+                    this.socket = serverSocketPOP3S.accept();
 
-            m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            m_output = new PrintStream(socket.getOutputStream());
+                    System.out.println("Début de connexion");
 
-            ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
-            object.Launch();
+                    m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    m_output = new PrintStream(socket.getOutputStream());
 
-            socket.close();
+                    ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
+                    object.Launch();
 
-            if(socket.isClosed()) {
-                System.out.println("Fin de Connexion");
+                    socket.close();
+                    if (socket.isClosed()) {
+                        serverSocketPOP3S.close();
+                        System.out.println("Fin de Connexion");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 }

@@ -19,27 +19,30 @@ public class TcpSMTP extends Connexion{
         super(portSMTP);
     }
 
-    public void run(){
+    public void run() {
+
         try {
 
-            ServerSocket serverSocketPOP3 = new ServerSocket(this.m_port);
-            this.socket = serverSocketPOP3.accept();
+            while (true) {
+                ServerSocket serverSocketSMTP = new ServerSocket(this.m_port);
+                this.socket = serverSocketSMTP.accept();
+                System.out.println("Début de connexion");
 
-            System.out.println("Début de connexion");
+                m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                m_output = new PrintStream(socket.getOutputStream());
 
-            m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            m_output = new PrintStream(socket.getOutputStream());
+                ObjetSmtpConnecte object = new ObjetSmtpConnecte(this);
+                object.Launch();
 
-            ObjetSmtpConnecte object = new ObjetSmtpConnecte(this);
-            object.Launch();
-
-            this.socket.close();
-
-            if(socket.isClosed()) {
-                System.out.println("Fin de Connexion");
+                this.socket.close();
+                if (socket.isClosed()) {
+                    serverSocketSMTP.close();
+                    System.out.println("Fin de Connexion");
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }

@@ -17,26 +17,29 @@ public class TcpPOP3 extends Connexion {
 
     public void run(){
 
-        try {
-            ServerSocket serverSocketPOP3 = new ServerSocket(this.m_port);
-            this.socket = serverSocketPOP3.accept();
+            try {
+                while (true) {
+                    ServerSocket serverSocketPOP3 = new ServerSocket(this.m_port);
+                    this.socket = serverSocketPOP3.accept();
 
-            System.out.println("Début de connexion");
+                    System.out.println("Début de connexion");
 
-            m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            m_output = new PrintStream(socket.getOutputStream());
+                    m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    m_output = new PrintStream(socket.getOutputStream());
 
-            ObjetConnecte object = new ObjetConnecte(this);
-            object.Launch();
+                    ObjetConnecte object = new ObjetConnecte(this);
+                    object.Launch();
 
-            socket.close();
-
-            if(socket.isClosed()) {
-                System.out.println("Fin de Connexion");
+                    socket.close();
+                    if (socket.isClosed()) {
+                        serverSocketPOP3.close();
+                        System.out.println("Fin de Connexion");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
 
