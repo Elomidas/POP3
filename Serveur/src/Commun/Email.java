@@ -11,7 +11,7 @@ import java.util.UUID;
  * Created by tardy on 26/02/2018.
  */
 public class Email {
-    protected UUID m_id;
+    protected String m_id;
     protected String m_message;
     protected String m_date;
     protected String m_subject;
@@ -29,7 +29,7 @@ public class Email {
 
 
 
-    public Email(UUID m_id, String m_message, ArrayList<Utilisateur> m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
+    public Email(String m_id, String m_message, ArrayList<Utilisateur> m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
         this.m_id = m_id;
         this.m_message = m_message;
         this.m_destinataire = m_destinataire;
@@ -42,8 +42,8 @@ public class Email {
         decode(encoded, list);
     }
 
-    public Email(ArrayList<Utilisateur> dest, Utilisateur emetteur) {
-        m_id = UUID.randomUUID();
+    public Email(String id, ArrayList<Utilisateur> dest, Utilisateur emetteur) {
+        m_id = id;
         m_destinataire = dest;
         m_emetteur = emetteur;
         DateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -124,11 +124,11 @@ public class Email {
         this.m_etat = m_etat;
     }
 
-    public UUID getM_id() {
+    public String getM_id() {
         return m_id;
     }
 
-    public void setM_id(UUID m_id) {
+    public void setM_id(String m_id) {
         this.m_id = m_id;
     }
 

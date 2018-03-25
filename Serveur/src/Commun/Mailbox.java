@@ -12,11 +12,13 @@ public class Mailbox {
 
     private RepertoireUtilisateur repertoireUtilisateur;
     private ArrayList<Email> m_listeEmails;
+    private int id;
 
     public Mailbox() {
         this.repertoireUtilisateur = new RepertoireUtilisateur();
         this.m_listeEmails = new ArrayList<>();
         this.loadMails();
+        id = 1;
     }
 
     public RepertoireUtilisateur getRepertoireUtilisateur() {
@@ -47,6 +49,7 @@ public class Mailbox {
                 BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
                 int i = 0;
                 while (this.readMail(br, u)) {
+                    id++;
                     i++;
                 }
                 System.out.println(i + " message(s) loaded.");
@@ -89,7 +92,7 @@ public class Mailbox {
                 if(line.equals(".")) {
                     sBuilder.append(".\n");
                     Email m = new Email(utilisateurArrayList, sBuilder.toString(), this.repertoireUtilisateur.getM_listeUtilisateurs());
-                    m.setM_id(UUID.fromString(id));
+                    m.setM_id(id);
                     m_listeEmails.add(m);
                     return true;
                 } else if(line == null) {
@@ -168,6 +171,12 @@ public class Mailbox {
             }
         }
         return null;
+    }
+
+    public Email createEmail(ArrayList<Utilisateur> dest, Utilisateur emetteur){
+        String i = String.valueOf(id);
+        id++;
+        return new Email(i,new ArrayList<Utilisateur>(),emetteur);
     }
 
 }

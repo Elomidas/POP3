@@ -237,7 +237,7 @@ public class ObjetSmtpConnecte {
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
-            this.currentEmail = new Email( new ArrayList<Utilisateur>(),utilisateur);
+            this.currentEmail = this.mailbox.createEmail( new ArrayList<Utilisateur>(),utilisateur);
         } else {
             return SMTP_550_UNKNOWN_USER;
         }
