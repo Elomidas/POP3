@@ -39,10 +39,16 @@ public class Controller_Connexion extends Controller {
     private TextField _tfAdresseIP;
 
     /**
-     * Champ correspondant au port
+     * Champ correspondant au port POP3
      */
     @FXML
-    private TextField _tfPort;
+    private TextField _tfPortPOP3;
+
+    /**
+     * Champ correspondant au port SMTP
+     */
+    @FXML
+    private TextField _tfPortSMTP;
 
     /**
      * Bouton utilisé pour se connecter à une boite mail
@@ -74,7 +80,7 @@ public class Controller_Connexion extends Controller {
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
             try {
-                if(mailbox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText()), 1212))
+                if(mailbox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPortPOP3.getText()), Integer.parseInt(_tfPortSMTP.getText())))
                 {
                     mailbox.setUser(_tfAdresseMail.getText());
                     if(mailbox.Authenticate(_tfMotDePasse.getText())){
@@ -118,7 +124,8 @@ public class Controller_Connexion extends Controller {
      * Le bouton sort de l'état désactivé si tous les champs ont été correctement remplis
      */
     private void gestionBtnConnexion(){
-        if((_tfPort.getText().matches("[0-9]+")) &&
+        if((_tfPortPOP3.getText().matches("[0-9]+")) &&
+                (_tfPortSMTP.getText().matches("[0-9]+")) &&
                 TestRegex.CheckMail(_tfAdresseMail.getText()) &&
                 TestRegex.CheckIP(_tfAdresseIP.getText()) &&
                 !_tfMotDePasse.getText().equals(""))
@@ -147,6 +154,7 @@ public class Controller_Connexion extends Controller {
         _tfAdresseMail.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfAdresseIP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfMotDePasse.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-        _tfPort.addEventHandler(KeyEvent.ANY, eventHandlerTF);
+        _tfPortPOP3.addEventHandler(KeyEvent.ANY, eventHandlerTF);
+        _tfPortSMTP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
     }
 }
