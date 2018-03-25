@@ -227,7 +227,8 @@ public class ObjetSmtpConnecte {
             return SMTP_500_UNKNOWN_COMMAND;
         }
 
-        String emailAddress = parameters[1];
+        String emailAddressNotexploded = parameters[1];
+        String emailAddress = emailAddressNotexploded.substring(1,emailAddressNotexploded.length() - 1);
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
