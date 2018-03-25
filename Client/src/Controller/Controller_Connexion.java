@@ -113,7 +113,8 @@ public class Controller_Connexion {
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
             try {
-                if(_mailBox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText())))
+                //TODO Add a port for SMTP
+                if(_mailBox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText()), 1212))
                 {
                     _mailBox.setUser(_tfAdresseMail.getText());
                     if(_mailBox.Authenticate(_tfMotDePasse.getText())){

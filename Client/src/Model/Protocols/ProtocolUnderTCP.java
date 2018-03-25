@@ -38,18 +38,37 @@ public abstract class ProtocolUnderTCP {
      */
 
     /**
-     *
+     * SetTCP connection parameters
+     * @param address
+     * @param port
+     * @throws ProtocolUnderTCPException
+     */
+    protected void setParameters(String address, int port) throws ProtocolUnderTCPException {
+        try {
+            tcp.setServerAddress(address);
+            tcp.setServerPort(port);
+        } catch (TCPException e) {
+            throw new ProtocolUnderTCPException("Unable to set TCP parameters.", e);
+        }
+
+    }
+
+    /**
+     * Join the server through TCP
      * @param address
      * @param port
      * @throws ProtocolUnderTCPException
      */
     public void Connect(String address, int port) throws ProtocolUnderTCPException {
+        this.setParameters(address, port);
+        this.connect();
+    }
+
+    protected void connect() throws ProtocolUnderTCPException {
         try {
-            tcp.setServerAddress(address);
-            tcp.setServerPort(port);
             tcp.Connect();
-        } catch(TCPException e) {
-            throw new ProtocolUnderTCPException("Unable to connect " + protocolName + ".", e);
+        } catch (TCPException e) {
+            throw new ProtocolUnderTCPException("Unable to join server through TCP.", e);
         }
     }
 

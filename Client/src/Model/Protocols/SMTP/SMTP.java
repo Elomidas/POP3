@@ -62,39 +62,82 @@ public class SMTP extends ProtocolUnderTCP {
      * Main functions
      */
 
+    /**
+     * Set the connection parameters
+     * @param address
+     * @param port
+     * @throws SMTPException
+     */
     @Override
     public void Connect(String address, int port) throws SMTPException {
         try {
-            super.Connect(address, port);
-            tcp.Receive();
-        } catch (ProtocolUnderTCPException | TCPException e) {
-            throw new SMTPException("Unable to connect.", e);
+            super.setParameters(address, port);
+        } catch (ProtocolUnderTCPException e) {
+            throw (SMTPException)e;
         }
     }
 
+    /**
+     * Connect with previously set parameters
+     * @throws SMTPException
+     */
     @Override
-    public boolean CheckConnected() {
-        return super.CheckConnected();
+    protected void connect() throws SMTPException {
+        try {
+            super.connect();
+            tcp.Receive();
+        } catch (ProtocolUnderTCPException e) {
+            throw new SMTPException("Unable to send mails with SMTP.", e);
+        } catch (TCPException e) {
+            throw new SMTPException("Unable to receive response from server.", e);
+        }
     }
 
     /**
      * Send a mail to one or more targets
      * @param targets String containing targets, separated by ";" or "; "
-     * @param mail Mail to send
-     * @throws SMTPException Error while sending mail
+     * @param from Mail of the sender
+     * @param subject Mail's subject
+     * @param mail Mail's text
+     * @throws SMTPException Error while sending the mail(s)
      */
     public void SendMail(String targets, String from, String subject, String mail) throws SMTPException {
+        this.connect();
+        try {
+            this.dialog("EHLO " + System.getenv().get("USERDOMAIN"));
+        } catch (ProtocolUnderTCPException e) {
+            throw new SMTPException("Unable to send messages with SMTP.", e);
+        }
         String[] to = targets.split(";");
         MailConvertor mailConvertor = new MailConvertor();
         mailConvertor.setSubject(subject);
         mailConvertor.setFrom(from);
         mailConvertor.setMessage(mail);
+        StringBuilder errors = new StringBuilder("");
         for(int i = 0; i < to.length; i++) {
             String target = to[i].trim();
-            //
+            mailConvertor.setTo(target);
+            if(!this.sendSimpleMail(mailConvertor)) {
+                errors.append("Mail to ")
+                        .append(target)
+                        .append(" hasn't been delivered.\n");
+            }
+        }
+        try {
+            super.Close();
+        } catch (ProtocolUnderTCPException e) {
+            throw (SMTPException)e;
+        }
+        if(!errors.toString().equals("")) {
+            throw new SMTPException(errors.toString());
         }
     }
 
+    /**
+     * Send a mail to an unique address
+     * @param mail Mail to be send
+     * @return true if the mail has been send, false else.
+     */
     protected boolean sendSimpleMail(MailConvertor mail) {
         try {
             this.sendFrom(mail.getFrom());
@@ -107,6 +150,11 @@ public class SMTP extends ProtocolUnderTCP {
         return true;
     }
 
+    /**
+     * Send the MAIL FROM SMTP command
+     * @param from address of the guy who send the mail
+     * @throws SMTPException Error while sending the MAIL FROM command
+     */
     private void sendFrom(String from) throws SMTPException {
         String msg = "MAIL FROM:<" + from + ">";
         try {
@@ -117,6 +165,11 @@ public class SMTP extends ProtocolUnderTCP {
         }
     }
 
+    /**
+     * Send the RCPT TO SMTP command
+     * @param to Address on which send the mail
+     * @throws SMTPException
+     */
     private void sendTo(String to) throws SMTPException {
         String msg = "RCPT TO:<" + to + ">";
         try {
@@ -160,6 +213,7 @@ public class SMTP extends ProtocolUnderTCP {
 
     public void Observe() throws SMTPException {
         try {
+            this.connect();
             this.dialog("EHLO " + System.getenv().get("USERDOMAIN"));
             MailConvertor mail = new MailConvertor();
             mail.setFrom("vremond@email.com");

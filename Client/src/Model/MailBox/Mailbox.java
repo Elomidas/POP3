@@ -4,32 +4,36 @@ import Model.Protocols.POP3.POP3;
 import Model.Protocols.POP3.POP3Exception;
 import Model.Protocols.POP3.POP3S;
 import Model.Protocols.ProtocolUnderTCPException;
+import Model.Protocols.SMTP.SMTP;
+import Model.Protocols.SMTP.SMTPException;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Set;
 
 public class Mailbox {
-    private HashMap<String, Mail> m_mails;
-    private String[] m_UUIDs;
-    private MailAddress m_user;
-    private POP3 m_pop;
+    private HashMap<String, Mail> mails;
+    private String[] UUIDs;
+    private MailAddress user;
+    private POP3S pop3;
+    private SMTP smtp;
 
     //Constructor
     public Mailbox() {
-        m_mails = new HashMap<>();
-        m_user = null;
-        m_pop = null;
-        m_UUIDs = new String[0];
+        mails = new HashMap<>();
+        user = null;
+        pop3 = null;
+        smtp = null;
+        UUIDs = new String[0];
     }
 
     /**
      * Open the user's file and lock it.
      */
     private void openStorage() {
-        if(m_user != null) {
+        if(user != null) {
             try {
-                BufferedReader br = new BufferedReader(new FileReader(m_user.getAddress() + ".pop"));
+                BufferedReader br = new BufferedReader(new FileReader(user.getAddress() + ".pop"));
                 int i = 0;
                 while (this.readMail(br)) {
                     i++;
@@ -60,7 +64,7 @@ public class Mailbox {
                 String line = br.readLine();
                 if(line.equals(".")) {
                     sBuilder.append(".\n");
-                    m_mails.put(UUID, new Mail(sBuilder.toString()));
+                    mails.put(UUID, new Mail(sBuilder.toString()));
                     return true;
                 } else {
                     sBuilder.append(line).append("\n");
@@ -76,15 +80,15 @@ public class Mailbox {
      * Save current mails in user's storage
      */
     private void saveStorage() {
-        if(m_user != null) {
+        if(user != null) {
             try {
 
-                BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + m_user.getAddress() + ".pop"));
+                BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + user.getAddress() + ".pop"));
 
-                Set<String> keys = m_mails.keySet();
+                Set<String> keys = mails.keySet();
                 for (String key : keys) {
                     writer.write(key + "\n");
-                    writer.write(m_mails.get(key).getEncoded());
+                    writer.write(mails.get(key).getEncoded());
                 }
 
                 writer.close();
@@ -97,16 +101,23 @@ public class Mailbox {
     /**
      * Try to join the server. Useful to test validity of address:port
      * @param address Address of the server to join (can be an IP or an URL)
-     * @param port Port on which joining the server.
+     * @param portPOP Port on which joining the server for POP3S protocol.
+     * @param portSMTP Port on which joining the server for SMTP protocol.
      * @return true if the server has been reached, false else.
      * @throws MailException Error while joining the server.
      */
-    public boolean joinServer(String address, int port) throws MailException {
-        m_pop = new POP3();
+    public boolean joinServer(String address, int portPOP, int portSMTP) throws MailException {
+        pop3 = new POP3S();
+        smtp = new SMTP();
         try {
-            m_pop.Connect(address, port);
+            pop3.Connect(address, portPOP);
         } catch(ProtocolUnderTCPException e) {
-            throw new MailException("Your configuration " + address + ":" + port + " seems invalid...", e);
+            throw new MailException("Your POP3 configuration " + address + ":" + portPOP + " seems invalid...", e);
+        }
+        try {
+            smtp.Connect(address, portSMTP);
+        } catch (SMTPException e) {
+            throw new MailException("Your SMTP configuration " + address + ":" + portSMTP + " seems invalid...", e);
         }
         return this.ServerJoined();
     }
@@ -117,7 +128,7 @@ public class Mailbox {
      * @throws MailException Error if mail isn't valid.
      */
     public void setUser(String user) throws MailException {
-        m_user = MailAddress.createFromString(user);
+        this.user = MailAddress.createFromString(user);
     }
 
     /**
@@ -131,13 +142,13 @@ public class Mailbox {
             throw new MailException("You should try to join the server before trying to authenticate yourself.");
         }
         try {
-            if(m_pop.Authentication(m_user.getAddress(), password)) {
+            if(pop3.Authentication(user.getAddress(), password)) {
                 this.openStorage();
                 this.Update();
                 return true;
             }
         } catch(POP3Exception e) {
-            throw new MailException("Unable to authenticate user '" + m_user.getAddress() + "'", e);
+            throw new MailException("Unable to authenticate user '" + user.getAddress() + "'", e);
         }
         return false;
     }
@@ -147,7 +158,7 @@ public class Mailbox {
      * @return true if all is correctly set, false else.
      */
     private boolean ServerJoined() {
-        return m_pop != null && (m_pop.Status() != POP3._DISCONNECTED);
+        return pop3 != null && (pop3.Status() != POP3._DISCONNECTED);
     }
 
     /**
@@ -155,7 +166,7 @@ public class Mailbox {
      * @return true if user is authenticated, false else.
      */
     private boolean Usable() {
-        return this.ServerJoined() && m_pop.CheckConnected();
+        return this.ServerJoined() && pop3.CheckConnected();
     }
 
     /**
@@ -173,7 +184,7 @@ public class Mailbox {
      * @return User's address.
      */
     public String getUser() {
-        return m_user.getAddress();
+        return user.getAddress();
     }
 
     /**
@@ -184,7 +195,7 @@ public class Mailbox {
         this.saveStorage();
         if(this.Usable()) {
             try {
-                m_pop.Disconnect();
+                pop3.Disconnect();
             } catch (POP3Exception e) {
                 throw new MailException("Unable to quit.", e);
             }
@@ -192,19 +203,18 @@ public class Mailbox {
     }
 
     /**
-     * Do something. TODO later
-     * @param strMail mail to be send
-     * @param id mail ID
+     * Send a mail with SMTP
+     * @param to Address to which send the mail, separated with a ';'
+     * @param subject mail's subject
+     * @param mail mail's body
      * @throws MailException Error while doing something
      */
-    public void AddMail(String strMail, String id) throws MailException {
-        Mail m;
+    public void SendMail(String to, String subject, String mail) throws MailException {
         try {
-            m = new Mail(strMail, id);
-        } catch(MailException e) {
-            throw e;
+            smtp.SendMail(to, this.user.getAddress(), subject, mail);
+        } catch (SMTPException e) {
+            throw new MailException("Unable to send mail(s).", e);
         }
-        m_mails.put(id, m);
     }
 
     /**
@@ -212,7 +222,7 @@ public class Mailbox {
      * @return number of mail
      */
     public int getMailNumber() {
-        return m_UUIDs.length;
+        return UUIDs.length;
     }
 
     /**
@@ -220,7 +230,7 @@ public class Mailbox {
      * @return number of mail
      */
     public int getSize() {
-        return m_mails.size();
+        return mails.size();
     }
 
     /**
@@ -232,30 +242,30 @@ public class Mailbox {
      */
     public Mail[] getMails(int first, int length) throws MailException {
         this.assertUsable();
-        int size = (m_UUIDs.length - first);
+        int size = (UUIDs.length - first);
         if(size > length) {
             size = length;
         }
         Mail[] array = new Mail[0];
         if(size > 0) {
             array = new Mail[size];
-            int fromLast = m_UUIDs.length - first - 1;
+            int fromLast = UUIDs.length - first - 1;
             for (int i = 0; i < size; i++) {
-                String UUID = m_UUIDs[fromLast - i];
+                String UUID = UUIDs[fromLast - i];
                 //If we didn't retrieve this mail before, we retrieve it now
-                if (!m_mails.containsKey(UUID)) {
+                if (!mails.containsKey(UUID)) {
                     String message;
                     try {
-                        message = m_pop.getMail(UUID);
+                        message = pop3.getMail(UUID);
                     } catch (POP3Exception e) {
                         throw new MailException("Unable to create mail with UUID " + UUID, e);
                     }
                     System.out.println(message);
                     String[] parts = message.split(" - ", 2);
                     Mail m = new Mail(parts[1], parts[0]);
-                    m_mails.put(UUID, m);
+                    mails.put(UUID, m);
                 }
-                array[i] = m_mails.get(UUID);
+                array[i] = mails.get(UUID);
             }
         }
         this.saveStorage();
@@ -281,8 +291,8 @@ public class Mailbox {
     public void Update() throws MailException {
         this.assertUsable();
         try {
-            if(m_UUIDs.length == 0 || m_pop.getMailNumber() != m_UUIDs.length) {
-                m_UUIDs = m_pop.getUUIDList();
+            if(UUIDs.length == 0 || pop3.getMailNumber() != UUIDs.length) {
+                UUIDs = pop3.getUUIDList();
             }
         } catch(POP3Exception e) {
             e.printStackTrace();
@@ -298,8 +308,8 @@ public class Mailbox {
     public void DeleteMail(String id) throws MailException {
         this.assertUsable();
         try {
-            m_mails.get(id).Delete();
-            m_pop.Delete(id);
+            mails.get(id).Delete();
+            pop3.Delete(id);
         } catch(POP3Exception e) {
             throw new MailException("Unable to delete mail " + id + ".", e);
         }
@@ -312,7 +322,7 @@ public class Mailbox {
     public void Reset() throws MailException {
         this.assertUsable();
         try {
-            m_pop.Reset();
+            pop3.Reset();
         } catch(POP3Exception e) {
             throw new MailException("Unable to reset this repository.", e);
         }
