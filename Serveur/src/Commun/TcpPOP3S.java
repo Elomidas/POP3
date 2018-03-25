@@ -28,8 +28,7 @@ public class TcpPOP3S extends Connexion{
 
                     System.out.println("Début de connexion");
 
-                    m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    m_output = new PrintStream(socket.getOutputStream());
+                    this.createIO();
 
                     ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
                     object.Launch();

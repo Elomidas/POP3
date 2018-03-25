@@ -5,12 +5,12 @@ import java.net.Socket;
 
 public class Connexion extends Thread {
 
-    protected BufferedReader m_input;
-    protected PrintStream m_output;
-    protected Socket socket;
-    protected int m_port;
+    BufferedInputStream m_input;
+    PrintStream m_output;
+    Socket socket;
+    int m_port;
 
-    public Connexion (int port){
+    public Connexion(int port){
         this.m_port = port;
         this.socket = null;
         this.m_input = null;
@@ -21,19 +21,22 @@ public class Connexion extends Thread {
         m_output.flush();
     }
 
+    protected void createIO() throws IOException {
+        m_input = new BufferedInputStream(socket.getInputStream());
+        m_output = new PrintStream(socket.getOutputStream());
+    }
+
     public String receive() throws IOException {
         StringBuilder messageReceived = new StringBuilder();
         try {
             char iChar;
 
             int i;
-            InputStream in = socket.getInputStream();
-            BufferedInputStream bufIn = new BufferedInputStream(in);
             int count = 0;
             boolean first = true;
 
             do {
-                i = bufIn.read();
+                i = m_input.read();
                 iChar = (char) i;
                 if ((i != -1) & (i != '\n') & (i != '\r')) {
                     messageReceived.append(iChar);

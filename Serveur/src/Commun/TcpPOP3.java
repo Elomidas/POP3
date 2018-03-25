@@ -24,8 +24,7 @@ public class TcpPOP3 extends Connexion {
 
                     System.out.println("Début de connexion");
 
-                    m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    m_output = new PrintStream(socket.getOutputStream());
+                    this.createIO();
 
                     ObjetConnecte object = new ObjetConnecte(this);
                     object.Launch();

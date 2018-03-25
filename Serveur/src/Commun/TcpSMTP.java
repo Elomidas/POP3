@@ -3,10 +3,7 @@ package Commun;
 import POP3.ObjetConnecteSecurise;
 import SMTP.ObjetSmtpConnecte;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -28,8 +25,7 @@ public class TcpSMTP extends Connexion{
                 this.socket = serverSocketSMTP.accept();
                 System.out.println("Début de connexion");
 
-                m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                m_output = new PrintStream(socket.getOutputStream());
+                this.createIO();
 
                 ObjetSmtpConnecte object = new ObjetSmtpConnecte(this);
                 object.Launch();
