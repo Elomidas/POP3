@@ -308,7 +308,7 @@ public class ObjetConnecte {
     /*  Check if a mail repository is free or locked
      */
     protected boolean isFree(String mail) {
-        return m_locked.containsKey(mail) && (m_locked.get(mail) == false);
+        return !m_locked.containsKey(mail) || (m_locked.get(mail) == false);
     }
 
     /*  Lock a mailbox

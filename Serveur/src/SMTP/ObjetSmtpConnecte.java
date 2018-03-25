@@ -74,8 +74,11 @@ public class ObjetSmtpConnecte {
                 default:
                     reponseServeur = SMTP_500_UNKNOWN_COMMAND;
             }
-            System.out.println("reponse: "+reponseServeur);
-            tcp.send(reponseServeur);
+            if (reponseServeur != null) {
+                System.out.println("reponse: "+reponseServeur);
+                tcp.send(reponseServeur);
+            }
+
         }
         System.out.println("End of POP3");
     }
@@ -153,13 +156,9 @@ public class ObjetSmtpConnecte {
         switch (command){
             case SMTP_CRLF:
                 return commandeCrlf(parameters);
-            case "QUIT":
-                return commandeQuit();
-            case "RSET":
-                return commandeRset();
             default :
                 writeEmail(parameters);
-                return SMTP_354_START_READING;
+                return null;
         }
     }
 
