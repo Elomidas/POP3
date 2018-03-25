@@ -265,12 +265,13 @@ public class Controller_Client {
      */
     private void EnvoiMail(String destinataire,String objet,String contenu){
         try {
-            _mailbox.SendMail(destinataire, objet, contenu);
+            //TODO sendMail
+            //_mailbox.SendMail(destinataire, objet, contenu);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Envoi réussi !");
             alert.setContentText("Message envoyé avec succès.");
             alert.show();
-        } catch (MailException e) {
+        } catch (Exception e) {
             //gestion erreur de connexion dans les logs
             //todo
             //affichage message erreur à l'utilisateur

@@ -8,13 +8,24 @@ public class TestRegex {
     protected static final String _POP = "\\+OK.*";
     public static final String _MD5 = "<.+>";
 
-
+    /**
+     * Check if target matches pattern
+     * @param pattern Pattern to test
+     * @param target String to be tested
+     * @return true if string matches pattern, false else
+     */
     public static boolean Match(String pattern, String target) {
         Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
         Matcher m = p.matcher(target);
         return m.find();
     }
 
+    /**
+     * Check if target matches pattern and return submatches
+     * @param pattern Pattern to test
+     * @param target String to be tested
+     * @return String[] containing matches and submatches
+     */
     public static String[] Submatches(String pattern, String target) {
         Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
         Matcher m = p.matcher(target);

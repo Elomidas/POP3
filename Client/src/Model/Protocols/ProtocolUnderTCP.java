@@ -95,4 +95,12 @@ public abstract class ProtocolUnderTCP {
             throw new ProtocolUnderTCPException("Unable to send message.", e);
         }
     }
+
+    public void Close() throws ProtocolUnderTCPException {
+        try {
+            tcp.Close();
+        } catch (TCPException e) {
+            throw new ProtocolUnderTCPException("Unable to close " + protocolName + ".", e);
+        }
+    }
 }

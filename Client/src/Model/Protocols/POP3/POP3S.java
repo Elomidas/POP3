@@ -39,7 +39,7 @@ public class POP3S extends POP3 {
         }
         if(this.CheckConnected()) {
             try {
-                String response = super.getTcp().Receive();
+                String response = tcp.Receive();
                 if (TestRegex.CheckPOP(response)) {
                     String[] matches = TestRegex.Submatches("\\+OK[^<]+(<.*>)", response);
                     if (matches.length != 1) {
