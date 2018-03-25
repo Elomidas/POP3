@@ -223,12 +223,16 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeMailFrom(String[] parameters) {
-        if (parameters.length <= 1) {
-            return SMTP_500_UNKNOWN_COMMAND;
+        if (parameters.length < 1) {
+            return SMTP_550_UNKNOWN_USER;
         }
 
-        String emailAddressNotexploded = parameters[1];
-        String emailAddress = emailAddressNotexploded.substring(1,emailAddressNotexploded.length() - 1);
+        String emailAddressNotexploded = parameters[0];
+        if ( emailAddressNotexploded == null || emailAddressNotexploded.length() <= 6) {
+            return SMTP_550_UNKNOWN_USER;
+        }
+        String emailAddress = emailAddressNotexploded.substring(6,emailAddressNotexploded.length() - 1);
+        System.out.println(emailAddress);
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
@@ -248,12 +252,16 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeRcpt(String[] parameters) {
-        if (parameters.length <= 1) {
-            return SMTP_500_UNKNOWN_COMMAND;
+        if (parameters.length < 1) {
+            return SMTP_550_UNKNOWN_USER;
         }
 
-        String emailAddress = parameters[1];
-
+        String emailAddressNotexploded = parameters[0];
+        if (emailAddressNotexploded == null  || emailAddressNotexploded.length() <= 5) {
+            return SMTP_550_UNKNOWN_USER;
+        }
+        String emailAddress = emailAddressNotexploded.substring(4,emailAddressNotexploded.length() - 1);
+        System.out.println(emailAddress);
         if ((emailAddress  != null ) && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
