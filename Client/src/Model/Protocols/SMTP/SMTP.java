@@ -139,6 +139,10 @@ public class SMTP extends ProtocolUnderTCP {
             for(String msg : table) {
                 tcp.Send(msg);
             }
+            String response = tcp.Receive();
+            if(!TestRegex.Match("250.*", response)) {
+                throw new SMTPException("Unable to send message.\nServer respond : " + response);
+            }
         } catch (TCPException e) {
             throw new SMTPException("Unable to send message.", e);
         }
@@ -161,7 +165,7 @@ public class SMTP extends ProtocolUnderTCP {
             mail.setFrom("vremond@email.com");
             mail.setTo("mtardy@email.com");
             mail.setSubject("Test Coucou");
-            mail.setMessage("Comment ça va ?\nMoi ça va nickel.\n.\nVictor");
+            mail.setMessage("Comment tu vas ?\nMoi je vais nickel.\n.\nVictor");
             this.sendSimpleMail(mail);
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Receive error", e);
