@@ -19,6 +19,7 @@ public class ObjetSmtpConnecte {
     protected Utilisateur currentUser;
     protected Mailbox mailbox;
     protected String clientDomain;
+    private int idLine;
 
     public ObjetSmtpConnecte(TcpSMTP tcp){
         this.tcp = tcp;
@@ -26,8 +27,9 @@ public class ObjetSmtpConnecte {
         this.continuer = true;
         this.currentEmail = null;
         this.m_listeEmails = new ArrayList<>();
-        this.mailbox = new Mailbox();
+        this.mailbox = new Mailbox(0);
         clientDomain = null;
+        idLine = 0;
     }
 
     public void Launch() throws IOException {

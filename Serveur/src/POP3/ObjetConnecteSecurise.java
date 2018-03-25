@@ -1,6 +1,5 @@
 package POP3;
 
-import Commun.TcpPOP3;
 import Commun.TcpPOP3S;
 
 import java.io.*;

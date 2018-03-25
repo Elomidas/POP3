@@ -50,13 +50,11 @@ public class RepertoireUtilisateur {
 
     public void loadUsersFromFile() {
         try {
-            System.out.println(System.getProperty("user.dir"));
             BufferedReader br = new BufferedReader(new FileReader("data/users.pop"));
 
             String line = br.readLine();
             int i = 0;
             while((line != null) && (line.length() > 4)) {
-                System.out.println(line);
                 Utilisateur u = new Utilisateur(line);
                 m_listeUtilisateurs.add(u);
                 line = br.readLine();

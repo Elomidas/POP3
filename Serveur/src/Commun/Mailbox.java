@@ -17,6 +17,12 @@ public class Mailbox {
     public Mailbox() {
         this.repertoireUtilisateur = new RepertoireUtilisateur();
         this.m_listeEmails = new ArrayList<>();
+        id = 1;
+    }
+
+    public Mailbox(int i) {
+        this.repertoireUtilisateur = new RepertoireUtilisateur();
+        this.m_listeEmails = new ArrayList<>();
         this.loadMails();
         id = 1;
     }
@@ -69,9 +75,13 @@ public class Mailbox {
         //To be tested
         List<Email> listEmails = new ArrayList<Email>();
         for (Email email: m_listeEmails) {
-            if (email.getM_emetteur().equals(utilisateur)
-                    || email.getM_destinataires().equals(utilisateur)) {
+            if (email.getM_emetteur().equals(utilisateur)) {
                 listEmails.add(email);
+            }
+            for (Utilisateur utilisateur1 : email.getM_destinataires()) {
+                if (utilisateur1.equals(utilisateur) && !listEmails.contains(email)) {
+                    listEmails.add(email);
+                }
             }
         }
         return listEmails;
@@ -156,7 +166,6 @@ public class Mailbox {
     public void setEmailsUndeleted(Utilisateur utilisateur) {
 
         List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
-
         for (Email email: listeEmailsDeUtilisateur
                 ) {
             email.setM_etat(true);
