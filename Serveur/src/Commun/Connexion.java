@@ -7,10 +7,14 @@ public class Connexion extends Thread {
 
     protected BufferedReader m_input;
     protected PrintStream m_output;
-    private Socket socket;
+    protected Socket socket;
+    protected int m_port;
 
-    public Connexion (Socket socket){
-        this.socket = socket;
+    public Connexion (int port){
+        this.m_port = port;
+        this.socket = null;
+        this.m_input = null;
+        this.m_output = null;
     }
     public void send(String message) {
         m_output.println(message + "\r");

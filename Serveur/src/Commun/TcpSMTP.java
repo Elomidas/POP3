@@ -1,34 +1,39 @@
 package Commun;
 
-import Commun.Connexion;
 import POP3.ObjetConnecteSecurise;
+import SMTP.ObjetSmtpConnecte;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Tcp extends Connexion {
+/**
+ * Created by tardy on 22/03/2018.
+ */
+public class TcpSMTP extends Connexion{
 
-    private Socket socket;
-
-    public Tcp(Socket socket){
-        super(socket);
-        this.socket = socket;
+    public TcpSMTP(int portSMTP){
+        super(portSMTP);
     }
 
     public void run(){
         try {
+
+            ServerSocket serverSocketPOP3 = new ServerSocket(this.m_port);
+            this.socket = serverSocketPOP3.accept();
+
             System.out.println("Début de connexion");
 
             m_input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             m_output = new PrintStream(socket.getOutputStream());
 
-            ObjetConnecteSecurise object = new ObjetConnecteSecurise(this);
+            ObjetSmtpConnecte object = new ObjetSmtpConnecte(this);
             object.Launch();
 
-            socket.close();
+            this.socket.close();
 
             if(socket.isClosed()) {
                 System.out.println("Fin de Connexion");
@@ -37,6 +42,4 @@ public class Tcp extends Connexion {
             e.printStackTrace();
         }
     }
-
-
 }

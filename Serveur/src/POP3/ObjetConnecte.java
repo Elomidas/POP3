@@ -1,9 +1,6 @@
 package POP3;
 
-import Commun.Email;
-import Commun.Mailbox;
-import Commun.Tcp;
-import Commun.Utilisateur;
+import Commun.*;
 
 import java.io.*;
 import java.util.*;
@@ -28,10 +25,10 @@ public class ObjetConnecte {
     protected Mailbox m_mailbox;
     protected Utilisateur m_current;
     protected boolean m_lock;
-    protected Tcp m_tcp;
+    protected Connexion m_tcp;
     protected int m_blankCount;
 
-    public ObjetConnecte(Tcp tcp) {
+    public ObjetConnecte(Connexion tcp) {
         this.m_tcp = tcp;
     }
 

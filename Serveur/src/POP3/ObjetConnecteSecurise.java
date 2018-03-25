@@ -1,6 +1,7 @@
 package POP3;
 
-import Commun.Tcp;
+import Commun.TcpPOP3;
+import Commun.TcpPOP3S;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -24,7 +25,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
     }
 
 
-    public ObjetConnecteSecurise(Tcp tcp) {
+    public ObjetConnecteSecurise(TcpPOP3S tcp) {
         super(tcp);
     }
 

@@ -4,17 +4,29 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Main {
-    final static int port = 1210;
+    final static int portPOP3 = 1210;
+    final static int portPOP3S = 1211;
+    final static int portSMTP = 1212;
 
     public static void main(String[] args) {
         try{
-            ServerSocket serverSocket = new ServerSocket(port);
-            System.out.println("Lancement du serveur sur le port " + port);
-            while (true){
-                Socket socketClient = serverSocket.accept();
-                Tcp t = new Tcp(socketClient);
-                t.start();
-            }
+
+//            ServerSocket serverSocketPOP3S = new ServerSocket(portPOP3S);
+//            ServerSocket serverSocketSMTP = new ServerSocket(portSMTP);
+            System.out.println("Lancement du serveur POP3 sur le port " + portPOP3);
+            System.out.println("Lancement du serveur POP3S sur le port " + portPOP3S);
+            System.out.println("Lancement du serveur SMTP sur le port " + portSMTP);
+
+                System.out.println("hello");
+
+                TcpPOP3 tPOP3 = new TcpPOP3(portPOP3);
+                System.out.println("pas hello");
+                tPOP3.start();
+                TcpPOP3S tPOP3S = new TcpPOP3S(portPOP3S);
+                tPOP3S.start();
+                TcpSMTP tSMTP = new TcpSMTP(portSMTP);
+                tSMTP.start();
+
         }catch(Exception e){
             e.printStackTrace();
         }

@@ -9,7 +9,7 @@ import static SMTP.ReponseServeur.*;
 
 public class ObjetSmtpConnecte {
 
-    protected Tcp tcp;
+    protected TcpSMTP tcp;
     private String etatServeur;
     private boolean continuer;
     private String input;
@@ -20,7 +20,7 @@ public class ObjetSmtpConnecte {
     protected Mailbox mailbox;
     protected String clientDomain;
 
-    public ObjetSmtpConnecte(Tcp tcp){
+    public ObjetSmtpConnecte(TcpSMTP tcp){
         this.tcp = tcp;
         this.etatServeur = SERVER_READY;
         this.continuer = true;
@@ -93,6 +93,8 @@ public class ObjetSmtpConnecte {
     private String connexion(String command, String[] parameters) {
         switch (command){
             case "EHLO":
+                return commandeEhlo(parameters);
+            case "HELO":
                 return commandeEhlo(parameters);
             case "QUIT":
                 return commandeQuit();
