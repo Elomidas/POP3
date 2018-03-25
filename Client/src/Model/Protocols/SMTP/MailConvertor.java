@@ -9,6 +9,7 @@ public class MailConvertor {
     private String to;
     private String date;
     private String[] message;
+    private String eol = "\r\n";
 
     public MailConvertor() {
         subject = "none";
@@ -57,10 +58,9 @@ public class MailConvertor {
         return headers;
     }
 
-    public String getSendableMessage() {
+    public String getSendableMail() {
         String[] headers = this.getHeaders();
         StringBuilder sendable = new StringBuilder("");
-        String eol = "\r\n";
         for(int i = 0; i < headers.length; i++) {
             sendable.append(headers[i]).append(eol);
         }
@@ -70,5 +70,9 @@ public class MailConvertor {
         }
         sendable.append(".").append(eol);
         return sendable.toString();
+    }
+
+    public String[] getSendableTable() {
+        return getSendableMail().split(eol);
     }
 }

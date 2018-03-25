@@ -134,8 +134,11 @@ public class SMTP extends ProtocolUnderTCP {
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Unable to send DATA command.", e);
         }
+        String[] table = mail.getSendableTable();
         try {
-            tcp.Send(mail.getSendableMessage());
+            for(String msg : table) {
+                tcp.Send(msg);
+            }
         } catch (TCPException e) {
             throw new SMTPException("Unable to send message.", e);
         }
