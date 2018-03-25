@@ -1,6 +1,6 @@
 package Controller;
 
-import Main.Main_Client;
+import Main.Main;
 import Model.MailBox.Mail;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
@@ -17,11 +17,12 @@ import javafx.util.Callback;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.logging.Level;
 
 /**
  * Controlleur lié à la fenetre du client
  */
-public class Controller_Client {
+public class Controller_Client extends Controller{
 
     /**
      * Récupération du tabPane
@@ -98,16 +99,6 @@ public class Controller_Client {
     private Button _btnActualiser;
 
     /**
-     * Main deu client auquel on se rattache
-     */
-    private Main_Client _mainClient;
-
-    /**
-     * Boite mail à laquelle on est connecté
-     */
-    private Mailbox _mailbox;
-
-    /**
      * Hashmap reliant ID du mail et ligne de la pagination correspondant
      */
     private HashMap<String, HBox> m_ligne;
@@ -132,7 +123,7 @@ public class Controller_Client {
      * Création de la pagination
      */
     private void creationPagination(){
-        int nbPages = (int)Math.ceil(_mailbox.getMailNumber()/(float)itemsPerPage());
+        int nbPages = (int)Math.ceil(mailbox.getMailNumber()/(float)itemsPerPage());
         _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         _pagination.setPageCount(nbPages);
         _pagination.setPageFactory(new Callback<Integer, Node>() {
@@ -154,10 +145,11 @@ public class Controller_Client {
     private Mail[] recuperationMails(int indexPage){
         Mail[] mails = null;
         try {
-            mails = _mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
+            mails = mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
+            main.getLogs().info("Messages collected.");
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //TODO
+            main.getLogs().log(Level.SEVERE, "Unable to collect messages.", e);
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
@@ -191,13 +183,13 @@ public class Controller_Client {
 
             box.getChildren().add(element);
 
-            ind = mails[i].getID();
-
             if(mails[i].Deleted()){
                 for(Node mail : element.getChildren()){
                     mail.setStyle("-fx-text-fill : red;");
                 }
             }
+
+            ind = mails[i].getID();
             link.setOnMouseClicked(MouseEvent -> updateTF(ind, destinataire.getText(), objet.getText(), contenu));
         }
         return box;
@@ -226,7 +218,6 @@ public class Controller_Client {
             contenu = _tfContenu.getText();
 
             if(TestRegex.CheckMail(destinataire)){
-
                 if(!objet.equals(""))
                 {
                     EnvoiMail(destinataire, objet, contenu);
@@ -239,7 +230,6 @@ public class Controller_Client {
                     ButtonType btnNon = new ButtonType("Non");
                     confirm.getButtonTypes().setAll(btnOui, btnNon);
                     Optional<ButtonType> resultat = confirm.showAndWait();
-
                     if(resultat.get() == btnOui){
                         EnvoiMail(destinataire, objet, contenu);
                     }
@@ -249,6 +239,9 @@ public class Controller_Client {
             }
             else
             {
+                //gestion erreur de connexion dans les logs
+                main.getLogs().log(Level.SEVERE, "Invalid target.");
+                //affichage message erreur à l'utilisateur
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Erreur destinataire !");
                 alert.setContentText("Veuillez renseigner une adresse mail valide.");
@@ -265,15 +258,15 @@ public class Controller_Client {
      */
     private void EnvoiMail(String destinataire,String objet,String contenu){
         try {
-            //TODO sendMail
-            //_mailbox.SendMail(destinataire, objet, contenu);
+            mailbox.SendMail(destinataire, objet, contenu);
+            main.getLogs().info("Mail sent.");
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Envoi réussi !");
             alert.setContentText("Message envoyé avec succès.");
             alert.show();
-        } catch (Exception e) {
+        } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            //todo
+            main.getLogs().log(Level.SEVERE, "Unable to send mail.", e);
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
@@ -315,7 +308,6 @@ public class Controller_Client {
             _btnRepondre.setOnMouseClicked(mouseEvent -> RepondreMail(destinataire, objet, contenu));
             _btnSuppr.setOnMouseClicked(mouseEvent -> SupprMail(ind));
         });
-
     }
 
     /**
@@ -351,14 +343,14 @@ public class Controller_Client {
 
         if(resultat.get() == btnOui) {
             try {
-                _mailbox.DeleteMail(ind);
+                mailbox.DeleteMail(ind);
                 for(Node mail : m_ligne.get(ind).getChildren()){
                     mail.setStyle("-fx-text-fill : red;");
                 }
-
+                main.getLogs().info("Mail deleted.");
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
-                //todo
+                main.getLogs().log(Level.SEVERE, "Unable to delete mail.", e);
                 //affichage message erreur à l'utilisateur
                 alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Une erreur est survenue !");
@@ -400,39 +392,21 @@ public class Controller_Client {
 
         if(resultat.get() == btnOui) {
             FinSession();
-            _mainClient.RetourConnexion();
+            main.RetourConnexion();
         }
         else
             alert.close();
     }
 
     /**
-     * Ferme correctement la session POP3 et la connexion TCP
-     */
-    public void FinSession(){
-        try {
-            _mailbox.Close();
-        } catch (MailException e) {
-            //gestion erreur de connexion dans les logs
-            //todo
-            //affichage message erreur à l'utilisateur
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Une erreur est survenue !");
-            alert.setContentText(e.getMessage());
-            alert.show();
-        }
-    }
-
-    /**
      * Synchronisation du main avec le controlleur
-     * @param mainClient
+     * @param main
      */
-    public void SetMain(Main_Client mainClient)
+    public void setMain(Main main, Mailbox mailbox)
     {
-        _mainClient = mainClient;
-        _mailbox = _mainClient.getMailbox();
-        _txtMailEmetteur.setText(_mailbox.getUser());
-
+        super.main= main;
+        super.mailbox = mailbox;
+        _txtMailEmetteur.setText(super.mailbox.getUser());
         creationPagination();
 
         _btnEnvoi.setOnMouseClicked(mouseEvent -> TestEnvoiMail());
