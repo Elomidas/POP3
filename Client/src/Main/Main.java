@@ -1,7 +1,6 @@
 package Main;
 
 import Controller.*;
-import Model.MailBox.Mail;
 import Model.MailBox.Mailbox;
 import Model.MyLogger.MyLogger;
 import javafx.application.Application;
