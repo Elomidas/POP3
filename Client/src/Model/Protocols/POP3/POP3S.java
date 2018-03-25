@@ -113,7 +113,7 @@ public class POP3S extends POP3 {
      * @throws POP3Exception If secure key is not set
      */
     protected String encrypt(String clear) throws POP3Exception {
-        if(this.checkKey()) {
+        if(!this.checkKey()) {
             throw new POP3Exception("Secure Key not set");
         }
         StringBuilder sBuilder = new StringBuilder();
@@ -127,7 +127,7 @@ public class POP3S extends POP3 {
      * Check if secure key is correctly set
      * @return true if secure key is correct, false else
      */
-    protected  boolean checkKey() {
+    protected boolean checkKey() {
         return TestRegex.CheckMD5(m_secureKey);
     }
 }

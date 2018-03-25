@@ -168,22 +168,31 @@ public class SMTP extends ProtocolUnderTCP {
     /**
      * Send the RCPT TO SMTP command
      * @param to Address on which send the mail
-     * @throws SMTPException
+     * @throws SMTPException Error while executing RCPT
      */
     private void sendTo(String to) throws SMTPException {
         String msg = "RCPT TO:<" + to + ">";
         try {
             String response = dialog(msg);
-            if(!TestRegex.Match("250.*", response));
+            if(!TestRegex.Match("250.*", response)) {
+                throw new SMTPException("Unable to execute RCPT TO command.\nServer respond with " + response);
+            }
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Unable to send RCPT command.", e);
         }
     }
 
+    /**
+     * Send the DATA SMTP command
+     * @param mail Mail to be send
+     * @throws SMTPException Error while sending the mail
+     */
     private void sendMail(MailConvertor mail) throws SMTPException {
         try {
             String response = dialog("DATA");
-            if(!TestRegex.Match("354.*", response));
+            if(!TestRegex.Match("354.*", response)) {
+                throw new SMTPException("Unable to execute DATA command.\nServer respond with " + response);
+            }
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Unable to send DATA command.", e);
         }
@@ -211,6 +220,10 @@ public class SMTP extends ProtocolUnderTCP {
         super.Close();
     }
 
+    /**
+     * Function used to test
+     * @throws SMTPException
+     */
     public void Observe() throws SMTPException {
         try {
             this.connect();

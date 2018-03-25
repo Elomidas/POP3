@@ -288,7 +288,7 @@ public class Mailbox {
      * Update the list of downloadable mails
      * @throws MailException Error while updating the list
      */
-    public void Update() throws MailException {
+    private void Update() throws MailException {
         this.assertUsable();
         try {
             if(UUIDs.length == 0 || pop3.getMailNumber() != UUIDs.length) {
