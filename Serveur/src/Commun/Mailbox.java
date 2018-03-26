@@ -183,7 +183,7 @@ public class Mailbox {
     }
 
     public Email createEmail(ArrayList<Utilisateur> dest, Utilisateur emetteur){
-        String i = String.valueOf(id);
+        String i = String.valueOf(id +1);
         id++;
         return new Email(i,new ArrayList<Utilisateur>(),emetteur);
     }

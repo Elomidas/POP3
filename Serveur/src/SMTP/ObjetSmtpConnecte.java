@@ -1,9 +1,13 @@
 package SMTP;
 
 import Commun.*;
+import com.sun.deploy.util.ArrayUtil;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 import static SMTP.ReponseServeur.*;
 
@@ -293,7 +297,7 @@ public class ObjetSmtpConnecte {
      * @return
      */
     private String commandeCrlf(String[] parameters) {
-        this.m_listeEmails.add(currentEmail);
+        this.mailbox.getM_listeEmails().add(currentEmail);
         this.saveMails();
         etatServeur = SERVER_IDENTIFICATION;
         return SMTP_250_OK;
@@ -309,7 +313,7 @@ public class ObjetSmtpConnecte {
     protected void saveMails() {
         removeSavedFiles();
         try {
-            for(Email m : m_listeEmails) {
+            for(Email m : mailbox.getM_listeEmails()) {
                 for (Utilisateur utilisateur: m.getM_destinataires()) {
                     BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop", true));
                     writer.write(m.encode());
@@ -326,7 +330,29 @@ public class ObjetSmtpConnecte {
      * @param line
      */
     private void writeEmail(String[] line) {
-        if (this.currentEmail.getM_message().equals("")) {
+
+        String[] emailEmetteur = TestRegex.Submatches("From:\"(.*?)\" <(.*?)>", line[0]);
+        String[] emailDestinataire = TestRegex.Submatches("To:\"(.*?)\" <(.*?)>", line[0]);
+        System.out.println(Arrays.toString(emailEmetteur));
+        if (emailEmetteur.length>0) {
+            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailEmetteur[1]);
+            if (utilisateur != null) {
+                this.currentEmail.setM_emetteur(utilisateur);
+            }
+            idLine++;
+        } else if (emailDestinataire.length>0) {
+            System.out.println(emailDestinataire[1]);
+            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailDestinataire[1]);
+            if (utilisateur != null) {
+                this.currentEmail.addRecipient(utilisateur);
+            }
+            idLine++;
+        } else if (idLine == 2) {
+            idLine++;
+        } else if (idLine == 3) {
+            this.currentEmail.setM_subject(line[0]);
+            idLine++;
+        } else if (this.currentEmail.getM_message().equals("")) {
             this.currentEmail.setM_message(line[0]);
         } else {
             this.currentEmail.setM_message(this.currentEmail.getM_message() + "\n" + line[0]);

@@ -156,6 +156,14 @@ public class Email {
         this.m_emetteur = m_emetteur;
     }
 
+    public String getM_subject() {
+        return m_subject;
+    }
+
+    public void setM_subject(String m_subject) {
+        this.m_subject = m_subject;
+    }
+
     public int Size() {
         int size = 0;
         try {
@@ -167,6 +175,8 @@ public class Email {
     }
 
     public void addRecipient(Utilisateur utilisateur) {
-        this.m_destinataire.add(utilisateur);
+        if (!this.m_destinataire.contains(utilisateur)) {
+            this.m_destinataire.add(utilisateur);
+        }
     }
 }
