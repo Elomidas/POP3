@@ -171,7 +171,7 @@ public class Controller_Client extends Controller{
             HBox element = new HBox();
             final String ind;
 
-            Hyperlink link = new Hyperlink("Mail " + mails[i].getID() + " :");
+            Hyperlink link = new Hyperlink("Mail :");
             Label destinataire = new Label(mails[i].getFrom());
             Label objet = new Label(mails[i].getSubject());
             Text contenu = new Text(mails[i].getMessage());
