@@ -1,17 +1,43 @@
-3c0c3e3d-3523-47d1-bc17-b2eb1bfb95f8
-Date: 2018/03/26 00:03:25
-From: vremond@email.comSubject: null
+1
+Date: 2018/03/26 11:36:23
+From: vremond@email.comSubject: Test SMTP
 MIME-Version: 1.0
 Content-Type: text/plain; charset: UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-From:"vremond" <vremond@email.com>
-To:"mtardy" <mtardy@email.com>
-MonMar 26 00:03:25 CEST 2018
-TestCoucou
-Commenttu vas ?
-Moije vais nickel.
-..
-Victor
+Coucou !
+Tu veux voir mon SMTP ?
+
+.
+2
+Date: 2018/03/26 11:36:50
+From: vremond@email.comSubject: Test SMTP 2
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Coucou 2 !
+Tu veux voir mon POP3S ?
+
+.
+3
+Date: 2018/03/26 11:37:36
+From: vremond@email.comSubject: Test SMTP 3
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Coucou 3 !
+Tu veux voir mon serveur ?
+
+.
+4
+Date: 2018/03/26 11:40:34
+From: vremond@email.comSubject: Subject
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Does it work ?
 
 .
