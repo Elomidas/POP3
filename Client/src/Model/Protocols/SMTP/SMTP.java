@@ -124,7 +124,7 @@ public class SMTP extends ProtocolUnderTCP {
             }
         }
         try {
-            super.Close();
+            this.Close();
         } catch (ProtocolUnderTCPException e) {
             throw (SMTPException)e;
         }
@@ -211,13 +211,15 @@ public class SMTP extends ProtocolUnderTCP {
     }
 
     @Override
-    public void Close() throws ProtocolUnderTCPException {
+    public void Close() throws SMTPException {
         try {
             tcp.Send("QUIT");
+            super.Close();
         } catch (TCPException e) {
-            e.printStackTrace();
+            throw new SMTPException("Unable to use command QUIT.", e);
+        } catch (ProtocolUnderTCPException e) {
+            throw (SMTPException)e;
         }
-        super.Close();
     }
 
     /**
