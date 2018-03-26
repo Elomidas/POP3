@@ -122,7 +122,7 @@ public class Main extends Application {
         {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(Main.class.getResource(root));
-            AnchorPane contenu = (AnchorPane) loader.load();
+            AnchorPane contenu = loader.load();
 
             controller = loader.getController();
             controller.setMain(main, mailbox);

@@ -145,12 +145,7 @@ public class Controller_Connexion extends Controller {
             if(ke.getCode() == KeyCode.ENTER)
                 connexion();
         });
-        EventHandler<KeyEvent> eventHandlerTF = new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                gestionBtnConnexion();
-            }
-        };
+        EventHandler<KeyEvent> eventHandlerTF = event -> gestionBtnConnexion();
         _tfAdresseMail.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfAdresseIP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfMotDePasse.addEventHandler(KeyEvent.ANY, eventHandlerTF);

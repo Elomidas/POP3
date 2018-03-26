@@ -126,14 +126,11 @@ public class Controller_Client extends Controller{
         int nbPages = (int)Math.ceil(mailbox.getMailNumber()/(float)itemsPerPage());
         _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         _pagination.setPageCount(nbPages);
-        _pagination.setPageFactory(new Callback<Integer, Node>() {
-            @Override
-            public Node call(Integer pageIndex) {
-                if(pageIndex >= nbPages)
-                    return null;
-                else
-                    return createPage(recuperationMails(pageIndex));
-            }
+        _pagination.setPageFactory(pageIndex -> {
+            if(pageIndex >= nbPages)
+                return null;
+            else
+                return createPage(recuperationMails(pageIndex));
         });
     }
 
