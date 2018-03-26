@@ -1,4 +1,4 @@
-# Rapport IPC
+# Rapport IPC POP3S
 
 **Etudiants :**
 *  JACOUD Bastien
