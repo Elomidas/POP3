@@ -6,12 +6,14 @@ import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCP;
 import Model.Protocols.TCP.TCPException;
 import Utilities.TestRegex;
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 public class SMTP extends ProtocolUnderTCP {
 
     /**
      * Constants
      */
+    public static final int _UNINITIALIZED = -1;
     private static final int _INITIALIZED = 0;
     private static final int _CONNECTION = 1;
     private static final int _IDENTIFICATION = 2;
@@ -19,7 +21,7 @@ public class SMTP extends ProtocolUnderTCP {
     private static final int _RECEIVERIDENTIFIED = 4;
     private static final int _MAILSENDING = 5;
     private static final int _CONTENTSENT = 6;
-    private static final int _DECONNECTION = 7;
+    private int currentState;
     protected static final String _EOM = ".";
 
     /**
@@ -27,6 +29,7 @@ public class SMTP extends ProtocolUnderTCP {
      */
     public SMTP(){
         super("SMTP");
+        currentState = SMTP._UNINITIALIZED;
     }
 
 
@@ -70,10 +73,15 @@ public class SMTP extends ProtocolUnderTCP {
      */
     @Override
     public void Connect(String address, int port) throws SMTPException {
-        try {
-            super.setParameters(address, port);
-        } catch (ProtocolUnderTCPException e) {
-            throw (SMTPException)e;
+        if(currentState == SMTP._UNINITIALIZED) {
+            try {
+                super.setParameters(address, port);
+                currentState = SMTP._INITIALIZED;
+            } catch (ProtocolUnderTCPException e) {
+                throw (SMTPException) e;
+            }
+        } else {
+            throw new SMTPException("Connection not allowed in state " + currentState);
         }
     }
 
@@ -83,13 +91,24 @@ public class SMTP extends ProtocolUnderTCP {
      */
     @Override
     protected void connect() throws SMTPException {
-        try {
-            super.connect();
-            tcp.Receive();
-        } catch (ProtocolUnderTCPException e) {
-            throw new SMTPException("Unable to send mails with SMTP.", e);
-        } catch (TCPException e) {
-            throw new SMTPException("Unable to receive response from server.", e);
+        if(currentState == SMTP._INITIALIZED) {
+            try {
+                super.connect();
+                currentState = SMTP._CONNECTION;
+                String response = tcp.Receive();
+                if(TestRegex.Match("220.*", response)) {
+                    currentState = SMTP._IDENTIFICATION;
+                    this.dialog("EHLO " + System.getenv().get("USERDOMAIN"));
+                } else {
+                    throw new SMTPException("Server respond to connection with " + response);
+                }
+            } catch (ProtocolUnderTCPException e) {
+                throw new SMTPException("Unable to send mails with SMTP.", e);
+            } catch (TCPException e) {
+                throw new SMTPException("Unable to receive response from server.", e);
+            }
+        } else {
+            throw new SMTPException("TCP connection not allowed in state " + currentState);
         }
     }
 
@@ -103,11 +122,6 @@ public class SMTP extends ProtocolUnderTCP {
      */
     public void SendMail(String targets, String from, String subject, String mail) throws SMTPException {
         this.connect();
-        try {
-            this.dialog("EHLO " + System.getenv().get("USERDOMAIN"));
-        } catch (ProtocolUnderTCPException e) {
-            throw new SMTPException("Unable to send messages with SMTP.", e);
-        }
         String[] to = targets.split(";");
         MailConvertor mailConvertor = new MailConvertor();
         mailConvertor.setSubject(subject);
@@ -143,6 +157,7 @@ public class SMTP extends ProtocolUnderTCP {
             this.sendFrom(mail.getFrom());
             this.sendTo(mail.getTo());
             this.sendMail(mail);
+            currentState = SMTP._IDENTIFICATION;
         } catch (SMTPException e) {
             e.printStackTrace();
             return false;
@@ -156,10 +171,18 @@ public class SMTP extends ProtocolUnderTCP {
      * @throws SMTPException Error while sending the MAIL FROM command
      */
     private void sendFrom(String from) throws SMTPException {
+        if(currentState != SMTP._IDENTIFICATION) {
+            throw new SMTPException("Sending MAIL FROM not allowed in state " + currentState);
+        }
         String msg = "MAIL FROM:<" + from + ">";
         try {
             String response = dialog(msg);
-            if(!TestRegex.Match("250.*", response));
+            if(TestRegex.Match("250.*", response)) {
+                currentState = SMTP._SENDERIDENTIFIED;
+            } else {
+                currentState = SMTP._IDENTIFICATION;
+                throw new SMTPException("Sender not recognized.");
+            }
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Unable to send MAIL command.", e);
         }
@@ -171,11 +194,17 @@ public class SMTP extends ProtocolUnderTCP {
      * @throws SMTPException Error while executing RCPT
      */
     private void sendTo(String to) throws SMTPException {
+        if(currentState != SMTP._SENDERIDENTIFIED) {
+            throw new SMTPException("Sending RCPT TO not allowed in state " + currentState);
+        }
         String msg = "RCPT TO:<" + to + ">";
         try {
             String response = dialog(msg);
             if(!TestRegex.Match("250.*", response)) {
+                currentState = SMTP._IDENTIFICATION;
                 throw new SMTPException("Unable to execute RCPT TO command.\nServer respond with " + response);
+            } else {
+                currentState = SMTP._RECEIVERIDENTIFIED;
             }
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Unable to send RCPT command.", e);
@@ -188,12 +217,18 @@ public class SMTP extends ProtocolUnderTCP {
      * @throws SMTPException Error while sending the mail
      */
     private void sendMail(MailConvertor mail) throws SMTPException {
+        if(currentState != SMTP._RECEIVERIDENTIFIED) {
+            throw new SMTPException("Sending DATA not allowed in state " + currentState);
+        }
+        currentState = SMTP._MAILSENDING;
         try {
             String response = dialog("DATA");
             if(!TestRegex.Match("354.*", response)) {
+                currentState = SMTP._IDENTIFICATION;
                 throw new SMTPException("Unable to execute DATA command.\nServer respond with " + response);
             }
         } catch (ProtocolUnderTCPException e) {
+            currentState = SMTP._IDENTIFICATION;
             throw new SMTPException("Unable to send DATA command.", e);
         }
         String[] table = mail.getSendableTable();
@@ -203,17 +238,25 @@ public class SMTP extends ProtocolUnderTCP {
             }
             String response = tcp.Receive();
             if(!TestRegex.Match("250.*", response)) {
+                currentState = SMTP._IDENTIFICATION;
                 throw new SMTPException("Unable to send message.\nServer respond : " + response);
             }
         } catch (TCPException e) {
+            currentState = SMTP._IDENTIFICATION;
             throw new SMTPException("Unable to send message.", e);
         }
+        currentState = SMTP._CONTENTSENT;
     }
 
     @Override
     public void Close() throws SMTPException {
+        if((currentState != SMTP._IDENTIFICATION)
+                && (currentState != SMTP._MAILSENDING)) {
+            throw new SMTPException("Sending QUIT not allowed in state " + currentState);
+        }
         try {
             tcp.Send("QUIT");
+            currentState = SMTP._INITIALIZED;
             super.Close();
         } catch (TCPException e) {
             throw new SMTPException("Unable to use command QUIT.", e);
