@@ -2,6 +2,7 @@ package Commun;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Objects;
 
 public class Connexion extends Thread {
 

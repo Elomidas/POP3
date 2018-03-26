@@ -43,7 +43,6 @@ public class ObjetSmtpConnecte {
         while(continuer){
             System.out.println("Wait...");
             input = tcp.receive();
-            System.out.println(input + " received");
 
             String[] explodedCommand = input.split(" ", 2);
             String command = etatServeur == SERVER_LECTURE ? explodedCommand[0] : explodedCommand[0].toUpperCase();
@@ -55,6 +54,7 @@ public class ObjetSmtpConnecte {
                 }
             } else {
                 StringBuilder sb = new StringBuilder();
+                explodedCommand = input.split(" ", 1);
                 for (String line: explodedCommand
                      ) {
                     sb.append(line);
@@ -237,7 +237,6 @@ public class ObjetSmtpConnecte {
             return SMTP_550_UNKNOWN_USER;
         }
         String emailAddress = emailAddressNotexploded.substring(6,emailAddressNotexploded.length() - 1);
-        System.out.println(emailAddress);
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
@@ -266,7 +265,6 @@ public class ObjetSmtpConnecte {
             return SMTP_550_UNKNOWN_USER;
         }
         String emailAddress = emailAddressNotexploded.substring(4,emailAddressNotexploded.length() - 1);
-        System.out.println(emailAddress);
         if ((emailAddress  != null ) && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
@@ -316,7 +314,7 @@ public class ObjetSmtpConnecte {
             for(Email m : mailbox.getM_listeEmails()) {
                 for (Utilisateur utilisateur: m.getM_destinataires()) {
                     BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop", true));
-                    writer.write(m.encode());
+                    writer.write(m.encode().replace("\\n", "\n"));
                     writer.close();
                 }
             }
@@ -331,9 +329,8 @@ public class ObjetSmtpConnecte {
      */
     private void writeEmail(String[] line) {
 
-        String[] emailEmetteur = TestRegex.Submatches("From:\"(.*?)\" <(.*?)>", line[0]);
-        String[] emailDestinataire = TestRegex.Submatches("To:\"(.*?)\" <(.*?)>", line[0]);
-        System.out.println(Arrays.toString(emailEmetteur));
+        String[] emailEmetteur = TestRegex.Submatches("From: \"(.*?)\" <(.*?)>", line[0]);
+        String[] emailDestinataire = TestRegex.Submatches("To: \"(.*?)\" <(.*?)>", line[0]);
         if (emailEmetteur.length>0) {
             Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailEmetteur[1]);
             if (utilisateur != null) {
@@ -341,7 +338,6 @@ public class ObjetSmtpConnecte {
             }
             idLine++;
         } else if (emailDestinataire.length>0) {
-            System.out.println(emailDestinataire[1]);
             Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailDestinataire[1]);
             if (utilisateur != null) {
                 this.currentEmail.addRecipient(utilisateur);
@@ -366,7 +362,8 @@ public class ObjetSmtpConnecte {
             if (f.getName().endsWith(".com.pop")) {
                 try {
                     FileOutputStream writer = new FileOutputStream(f.getAbsolutePath());
-                } catch (FileNotFoundException e) {
+                    writer.close();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

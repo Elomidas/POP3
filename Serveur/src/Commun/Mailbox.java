@@ -23,8 +23,8 @@ public class Mailbox {
     public Mailbox(int i) {
         this.repertoireUtilisateur = new RepertoireUtilisateur();
         this.m_listeEmails = new ArrayList<>();
-        this.loadMails();
         id = 1;
+        this.loadMails();
     }
 
     public RepertoireUtilisateur getRepertoireUtilisateur() {
@@ -183,7 +183,7 @@ public class Mailbox {
     }
 
     public Email createEmail(ArrayList<Utilisateur> dest, Utilisateur emetteur){
-        String i = String.valueOf(id +1);
+        String i = String.valueOf(id);
         id++;
         return new Email(i,new ArrayList<Utilisateur>(),emetteur);
     }

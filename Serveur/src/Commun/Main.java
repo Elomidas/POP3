@@ -10,16 +10,16 @@ public class Main {
 
     public static void main(String[] args) {
         try{
-            System.out.println("Lancement du serveur POP3 sur le port " + portPOP3);
-            System.out.println("Lancement du serveur POP3S sur le port " + portPOP3S);
-            System.out.println("Lancement du serveur SMTP sur le port " + portSMTP);
 
-            TcpPOP3 tPOP3 = new TcpPOP3(portPOP3);
-            tPOP3.start();
-            TcpPOP3S tPOP3S = new TcpPOP3S(portPOP3S);
-            tPOP3S.start();
-            TcpSMTP tSMTP = new TcpSMTP(portSMTP);
-            tSMTP.start();
+                System.out.println("Lancement du serveur POP3 sur le port " + portPOP3);
+                TcpPOP3 tPOP3 = new TcpPOP3(portPOP3);
+                tPOP3.start();
+                System.out.println("Lancement du serveur POP3S sur le port " + portPOP3S);
+                TcpPOP3S tPOP3S = new TcpPOP3S(portPOP3S);
+                tPOP3S.start();
+                System.out.println("Lancement du serveur SMTP sur le port " + portSMTP);
+                TcpSMTP tSMTP = new TcpSMTP(portSMTP);
+                tSMTP.start();
 
         }catch(Exception e){
             e.printStackTrace();
