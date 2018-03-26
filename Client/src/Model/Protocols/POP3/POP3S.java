@@ -119,9 +119,12 @@ public class POP3S extends POP3 {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append(m_secureKey)
                 .append(clear);
-        byte[] digestedBytes;
-        digestedBytes = m_digest.digest(sBuilder.toString().getBytes());
-        return String.format("%02x", digestedBytes);
+        byte[] digestedBytes = m_digest.digest(sBuilder.toString().getBytes());
+        StringBuilder returnBuilder = new StringBuilder();
+        for(int i = 0; i < digestedBytes.length; i++) {
+            returnBuilder.append(String.format("%02X", digestedBytes[i]));
+        }
+        return returnBuilder.toString();
     }
 
     /**
