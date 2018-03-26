@@ -37,6 +37,7 @@ public class TcpPOP3 extends Connexion {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                return;
             }
 
     }

@@ -36,53 +36,59 @@ public class ObjetSmtpConnecte {
         idLine = 0;
     }
 
-    public void Launch() throws IOException {
+    public void Launch(){
         this.etatServeur = SERVER_CONNEXION;
         tcp.send(SMTP_SERVER_READY);
 
         while(continuer){
-            System.out.println("Wait...");
-            input = tcp.receive();
+            try {
+                System.out.println("Wait...");
+                input = tcp.receive();
 
-            String[] explodedCommand = input.split(" ", 2);
-            String command = etatServeur == SERVER_LECTURE ? explodedCommand[0] : explodedCommand[0].toUpperCase();
-            String[] parameters = new String[0];
+                String[] explodedCommand = input.split(" ", 2);
+                String command = etatServeur == SERVER_LECTURE ? explodedCommand[0] : explodedCommand[0].toUpperCase();
+                String[] parameters = new String[0];
 
-            if (!etatServeur.equals(SERVER_LECTURE)) {
-                if(explodedCommand.length > 1) {
-                    parameters = explodedCommand[1].split(" ");
+                if (!etatServeur.equals(SERVER_LECTURE)) {
+                    if (explodedCommand.length > 1) {
+                        parameters = explodedCommand[1].split(" ");
+                    }
+                } else {
+                    StringBuilder sb = new StringBuilder();
+                    explodedCommand = input.split(" ", 1);
+                    for (String line : explodedCommand
+                            ) {
+                        sb.append(line);
+                    }
+                    parameters = new String[]{sb.toString()};
                 }
-            } else {
-                StringBuilder sb = new StringBuilder();
-                explodedCommand = input.split(" ", 1);
-                for (String line: explodedCommand
-                     ) {
-                    sb.append(line);
+                switch (etatServeur) {
+                    case SERVER_CONNEXION:
+                        reponseServeur = this.connexion(command, parameters);
+                        break;
+                    case SERVER_IDENTIFICATION:
+                        reponseServeur = this.identification(command, parameters);
+                        break;
+                    case SERVER_TRANSACTION:
+                        reponseServeur = this.transaction(command, parameters);
+                        break;
+                    case SERVER_ENVOIE:
+                        reponseServeur = this.envoie(command, parameters);
+                        break;
+                    case SERVER_LECTURE:
+                        reponseServeur = this.lecture(command, parameters);
+                        break;
+                    default:
+                        reponseServeur = SMTP_500_UNKNOWN_COMMAND;
                 }
-                parameters = new String[]{sb.toString()};
-            }
-            switch (etatServeur) {
-                case SERVER_CONNEXION:
-                    reponseServeur = this.connexion(command, parameters);
-                    break;
-                case SERVER_IDENTIFICATION:
-                    reponseServeur = this.identification(command, parameters);
-                    break;
-                case SERVER_TRANSACTION:
-                    reponseServeur = this.transaction(command, parameters);
-                    break;
-                case SERVER_ENVOIE:
-                    reponseServeur = this.envoie(command, parameters);
-                    break;
-                case SERVER_LECTURE:
-                    reponseServeur = this.lecture(command, parameters);
-                    break;
-                default:
-                    reponseServeur = SMTP_500_UNKNOWN_COMMAND;
-            }
-            if (reponseServeur != null) {
-                System.out.println("reponse: "+reponseServeur);
-                tcp.send(reponseServeur);
+                if (reponseServeur != null) {
+                    System.out.println("reponse: " + reponseServeur);
+                    tcp.send(reponseServeur);
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                continuer = false;
+                return;
             }
 
         }
@@ -218,6 +224,8 @@ public class ObjetSmtpConnecte {
      */
     private String commandeQuit() {
         continuer = false;
+        this.currentEmail = null;
+        this.currentUser = null;
         etatServeur = SERVER_READY;
         return SMTP_221_CLOSING;
     }
@@ -298,6 +306,7 @@ public class ObjetSmtpConnecte {
         this.mailbox.getM_listeEmails().add(currentEmail);
         this.saveMails();
         etatServeur = SERVER_IDENTIFICATION;
+        idLine = 0;
         return SMTP_250_OK;
     }
 

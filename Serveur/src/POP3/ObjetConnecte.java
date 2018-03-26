@@ -80,6 +80,8 @@ public class ObjetConnecte {
                 m_tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
+                m_continuer = false;
+                return;
             }
         }
         System.out.println("End of POP3");
@@ -198,7 +200,7 @@ public class ObjetConnecte {
         return sBuilder.toString();
     }
 
-    private String quit() {
+    protected String quit() {
         m_continuer = false;
         if(m_lock) {
             this.unlock(m_current.getM_adresseEmail());
@@ -206,7 +208,7 @@ public class ObjetConnecte {
         return POP3_REPONSE_POSITIVE;
     }
 
-    private String quitTransaction() {
+    protected String quitTransaction() {
         m_continuer = false;
         if(m_lock) {
             this.unlock(m_current.getM_adresseEmail());

@@ -51,9 +51,9 @@ public class Connexion extends Thread {
                     }
                 }
             } while (((i != -1) & (iChar != '\n') & (i != '\r')) || first);
-            System.out.println("Requête reçue: " + messageReceived);
+            System.out.println("Requête reçue: \"" + messageReceived + "\"");
         } catch(Exception e) {
-            return "";
+            return e.getMessage();
         }
 
         return messageReceived.toString();
