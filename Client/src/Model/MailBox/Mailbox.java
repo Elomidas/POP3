@@ -107,17 +107,23 @@ public class Mailbox {
      * @throws MailException Error while joining the server.
      */
     public boolean joinServer(String address, int portPOP, int portSMTP) throws MailException {
-        pop3 = new POP3S();
-        smtp = new SMTP();
-        try {
-            pop3.Connect(address, portPOP);
-        } catch(ProtocolUnderTCPException e) {
-            throw new MailException("Your POP3 configuration " + address + ":" + portPOP + " seems invalid...", e);
+        if(pop3 == null) {
+            pop3 = new POP3S();
+            try {
+                pop3.Connect(address, portPOP);
+            } catch(ProtocolUnderTCPException e) {
+                pop3 = null;
+                throw new MailException("Your POP3 configuration " + address + ":" + portPOP + " seems invalid...", e);
+            }
         }
-        try {
-            smtp.Connect(address, portSMTP);
-        } catch (SMTPException e) {
-            throw new MailException("Your SMTP configuration " + address + ":" + portSMTP + " seems invalid...", e);
+        if(smtp == null) {
+            smtp = new SMTP();
+            try {
+                smtp.Connect(address, portSMTP);
+            } catch (SMTPException e) {
+                smtp = null;
+                throw new MailException("Your SMTP configuration " + address + ":" + portSMTP + " seems invalid...", e);
+            }
         }
         return this.ServerJoined();
     }

@@ -6,12 +6,14 @@ import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCP;
 import Model.Protocols.TCP.TCPException;
 import Utilities.TestRegex;
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 public class SMTP extends ProtocolUnderTCP {
 
     /**
      * Constants
      */
+    public static final int _UNINITIALIZED = -1;
     private static final int _INITIALIZED = 0;
     private static final int _CONNECTION = 1;
     private static final int _IDENTIFICATION = 2;
@@ -20,6 +22,7 @@ public class SMTP extends ProtocolUnderTCP {
     private static final int _MAILSENDING = 5;
     private static final int _CONTENTSENT = 6;
     private static final int _DECONNECTION = 7;
+    private int currentState;
     protected static final String _EOM = ".";
 
     /**
@@ -27,6 +30,7 @@ public class SMTP extends ProtocolUnderTCP {
      */
     public SMTP(){
         super("SMTP");
+        currentState = SMTP._UNINITIALIZED;
     }
 
 
@@ -70,10 +74,15 @@ public class SMTP extends ProtocolUnderTCP {
      */
     @Override
     public void Connect(String address, int port) throws SMTPException {
-        try {
-            super.setParameters(address, port);
-        } catch (ProtocolUnderTCPException e) {
-            throw (SMTPException)e;
+        if(currentState == SMTP._UNINITIALIZED) {
+            try {
+                super.setParameters(address, port);
+                currentState = SMTP._INITIALIZED;
+            } catch (ProtocolUnderTCPException e) {
+                throw (SMTPException) e;
+            }
+        } else {
+            throw new SMTPException("Connection not allowed in state " + currentState);
         }
     }
 
@@ -83,13 +92,24 @@ public class SMTP extends ProtocolUnderTCP {
      */
     @Override
     protected void connect() throws SMTPException {
-        try {
-            super.connect();
-            tcp.Receive();
-        } catch (ProtocolUnderTCPException e) {
-            throw new SMTPException("Unable to send mails with SMTP.", e);
-        } catch (TCPException e) {
-            throw new SMTPException("Unable to receive response from server.", e);
+        if(currentState == SMTP._INITIALIZED) {
+            try {
+                super.connect();
+                currentState = SMTP._CONNECTION;
+                String response = tcp.Receive();
+                if(TestRegex.Match("220.*", response)) {
+                    currentState = SMTP._IDENTIFICATION;
+                    this.dialog("EHLO " + System.getenv().get("USERDOMAIN"));
+                } else {
+                    throw new SMTPException("Server respond to connection with " + response);
+                }
+            } catch (ProtocolUnderTCPException e) {
+                throw new SMTPException("Unable to send mails with SMTP.", e);
+            } catch (TCPException e) {
+                throw new SMTPException("Unable to receive response from server.", e);
+            }
+        } else {
+            throw new SMTPException("TCP connection not allowed in state " + currentState);
         }
     }
 
@@ -103,11 +123,6 @@ public class SMTP extends ProtocolUnderTCP {
      */
     public void SendMail(String targets, String from, String subject, String mail) throws SMTPException {
         this.connect();
-        try {
-            this.dialog("EHLO " + System.getenv().get("USERDOMAIN"));
-        } catch (ProtocolUnderTCPException e) {
-            throw new SMTPException("Unable to send messages with SMTP.", e);
-        }
         String[] to = targets.split(";");
         MailConvertor mailConvertor = new MailConvertor();
         mailConvertor.setSubject(subject);
@@ -156,10 +171,17 @@ public class SMTP extends ProtocolUnderTCP {
      * @throws SMTPException Error while sending the MAIL FROM command
      */
     private void sendFrom(String from) throws SMTPException {
+        if(currentState != SMTP._IDENTIFICATION) {
+            throw new SMTPException("Sending MAIL FROM not allowed in state " + currentState);
+        }
         String msg = "MAIL FROM:<" + from + ">";
         try {
             String response = dialog(msg);
-            if(!TestRegex.Match("250.*", response));
+            if(TestRegex.Match("250.*", response)) {
+                currentState = SMTP._SENDERIDENTIFIED;
+            } else {
+                throw new SMTPException("Sender not recognized.");
+            }
         } catch (ProtocolUnderTCPException e) {
             throw new SMTPException("Unable to send MAIL command.", e);
         }
