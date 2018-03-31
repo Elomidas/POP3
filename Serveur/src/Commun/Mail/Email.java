@@ -1,11 +1,13 @@
-package Commun;
+package Commun.Mail;
+
+import Commun.Utiles.TestRegex;
+import Commun.Utilisateur.Utilisateur;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * Created by tardy on 26/02/2018.

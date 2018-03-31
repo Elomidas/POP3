@@ -1,4 +1,4 @@
-package Commun;
+package Commun.Utiles;
 
 import java.util.regex.*;
 

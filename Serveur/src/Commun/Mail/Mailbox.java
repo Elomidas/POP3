@@ -1,9 +1,11 @@
-package Commun;
+package Commun.Mail;
+
+import Commun.Utilisateur.RepertoireUtilisateur;
+import Commun.Utilisateur.Utilisateur;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by tardy on 22/03/2018.

@@ -1,9 +1,10 @@
 package POP3;
 
-import Commun.TcpPOP3S;
+//import Commun.TcpPOP3S;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
@@ -24,11 +25,11 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
     }
 
 
-    public ObjetConnecteSecurise(TcpPOP3S tcp) {
-        super(tcp);
+    public ObjetConnecteSecurise(Socket socket) throws IOException {
+        super(socket);
     }
 
-    public void Launch() {
+    public void run() {
         this.initialize();
 
        this.m_etat = POP3_ETAT_AUTORISATION;
@@ -40,9 +41,9 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
         }
         while (m_continuer) {
             try {
-                out.println("Wait...");
+//                out.println("Wait...");
                 input = m_tcp.receive();
-                out.println(input + " received");
+//                out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
                 String command = explodedCommand[0].toUpperCase();
@@ -78,7 +79,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                             break;
                     }
                 }
-                out.println("Response : " + response);
+                out.println("S: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
 
@@ -88,7 +89,8 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                 return;
             }
         }
-        out.println("End of POP3");
+        this.m_tcp.Destroy();
+        out.println("End of POP3S");
     }
 
     public int getProcessId() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
@@ -148,7 +150,6 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
             }
             String username = parameters[0];
             String password = parameters[1];
-            out.println("username : " + username);
 
             if(checkUser(username)) {
                 try {

@@ -1,4 +1,4 @@
-package Commun;
+package Commun.Utilisateur;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

@@ -1,19 +1,20 @@
 package SMTP;
 
-import Commun.*;
-import com.sun.deploy.util.ArrayUtil;
+import Commun.Mail.Email;
+import Commun.Mail.Mailbox;
+import Commun.Tcp;
+import Commun.Utiles.TestRegex;
+import Commun.Utilisateur.Utilisateur;
 
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.*;
+import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 
 import static SMTP.ReponseServeur.*;
 
-public class ObjetSmtpConnecte {
+public class ObjetSmtpConnecte extends Thread{
 
-    protected TcpSMTP tcp;
+    protected Tcp tcp;
     private String etatServeur;
     private boolean continuer;
     private String input;
@@ -25,8 +26,9 @@ public class ObjetSmtpConnecte {
     protected String clientDomain;
     private int idLine;
 
-    public ObjetSmtpConnecte(TcpSMTP tcp){
-        this.tcp = tcp;
+    public ObjetSmtpConnecte(Socket socket) throws IOException {
+        this.tcp = new Tcp(socket);
+
         this.etatServeur = SERVER_READY;
         this.continuer = true;
         this.currentEmail = null;
@@ -36,13 +38,13 @@ public class ObjetSmtpConnecte {
         idLine = 0;
     }
 
-    public void Launch(){
+    public void run(){
         this.etatServeur = SERVER_CONNEXION;
         tcp.send(SMTP_SERVER_READY);
 
         while(continuer){
             try {
-                System.out.println("Wait...");
+//                System.out.println("Wait...");
                 input = tcp.receive();
 
                 String[] explodedCommand = input.split(" ", 2);
@@ -82,7 +84,7 @@ public class ObjetSmtpConnecte {
                         reponseServeur = SMTP_500_UNKNOWN_COMMAND;
                 }
                 if (reponseServeur != null) {
-                    System.out.println("reponse: " + reponseServeur);
+                    System.out.println("S: " + reponseServeur);
                     tcp.send(reponseServeur);
                 }
             } catch (IOException e) {
@@ -92,7 +94,8 @@ public class ObjetSmtpConnecte {
             }
 
         }
-        System.out.println("End of POP3");
+        this.tcp.Destroy();
+        System.out.println("End of SMTP");
     }
 
     /*

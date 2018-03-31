@@ -1,14 +1,18 @@
 package POP3;
 
-import Commun.*;
+import Commun.Mail.Email;
+import Commun.Mail.Mailbox;
+import Commun.Tcp;
+import Commun.Utilisateur.Utilisateur;
 
 import java.io.*;
+import java.net.Socket;
 import java.util.*;
 
 /**
  * Created by tardy on 13/02/2018.
  */
-public class ObjetConnecte {
+public class ObjetConnecte extends Thread{
     protected static final String POP3_ETAT_AUTORISATION = "Autorisation";
     protected static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
     protected static final String POP3_ETAT_TRANSACTION = "Transaction";
@@ -25,11 +29,12 @@ public class ObjetConnecte {
     protected Mailbox m_mailbox;
     protected Utilisateur m_current;
     protected boolean m_lock;
-    protected Connexion m_tcp;
+    protected Tcp m_tcp;
     protected int m_blankCount;
 
-    public ObjetConnecte(Connexion tcp) {
-        this.m_tcp = tcp;
+    public ObjetConnecte(Socket socket) throws IOException {
+        this.m_tcp = new Tcp(socket);
+
     }
 
     protected void initialize() {
@@ -41,16 +46,16 @@ public class ObjetConnecte {
         m_mailbox.getRepertoireUtilisateur().loadUsersFromFile();
     }
 
-    public void Launch() {
+    public void run() {
         this.initialize();
 
         m_etat = POP3_ETAT_AUTORISATION;
         String input;
         while (m_continuer) {
             try {
-                System.out.println("Wait...");
+//                System.out.println("Wait...");
                 input = m_tcp.receive();
-                System.out.println(input + " received");
+//                System.out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
                 String command = explodedCommand[0].toUpperCase();
@@ -76,7 +81,7 @@ public class ObjetConnecte {
                         break;
                 }
 
-                System.out.println("Response : " + response);
+                System.out.println("S: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -84,6 +89,7 @@ public class ObjetConnecte {
                 return;
             }
         }
+        this.m_tcp.Destroy();
         System.out.println("End of POP3");
     }
 
