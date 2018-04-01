@@ -1,13 +1,8 @@
 package SMTP;
 
 import Commun.*;
-import com.sun.deploy.util.ArrayUtil;
-
-import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 
 import static SMTP.ReponseServeur.*;
 
