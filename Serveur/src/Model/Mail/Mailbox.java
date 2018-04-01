@@ -1,7 +1,7 @@
-package Mail;
+package Model.Mail;
 
-import Utilisateur.RepertoireUtilisateur;
-import Utilisateur.Utilisateur;
+import Model.Utilisateur.RepertoireUtilisateur;
+import Model.Utilisateur.Utilisateur;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class Mailbox {
     public void loadMails(Utilisateur u) {
         if (u != null) {
             try {
-                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
+                BufferedReader br = new BufferedReader(new FileReader("storage/" + u.getM_adresseEmail() + ".pop"));
                 int i = 0;
                 while (this.readMail(br, u)) {
                     id++;
@@ -127,8 +127,8 @@ public class Mailbox {
         int i = 0;
         if(u != null) {
             try {
-                BufferedReader br = new BufferedReader(new FileReader("data/" + u.getM_adresseEmail() + ".pop"));
-                BufferedWriter bw = new BufferedWriter(new FileWriter("data/" + u.getM_adresseEmail() + "temp.pop"));
+                BufferedReader br = new BufferedReader(new FileReader("storage/" + u.getM_adresseEmail() + ".pop"));
+                BufferedWriter bw = new BufferedWriter(new FileWriter("storage/" + u.getM_adresseEmail() + "temp.pop"));
                 idMail = br.readLine();
                 Email email = getEmail(idMail);
                 if (email != null) {
@@ -152,10 +152,10 @@ public class Mailbox {
                 }
                 bw.close();
                 br.close();
-                File oldFile =  new File("data/" + u.getM_adresseEmail() + ".pop");
+                File oldFile =  new File("storage/" + u.getM_adresseEmail() + ".pop");
                 oldFile.delete();
-                File newFile = new File("data/" + u.getM_adresseEmail() + "temp.pop");
-                newFile.renameTo(new File("data/" + u.getM_adresseEmail() + ".pop"));
+                File newFile = new File("storage/" + u.getM_adresseEmail() + "temp.pop");
+                newFile.renameTo(new File("storage/" + u.getM_adresseEmail() + ".pop"));
             } catch(FileNotFoundException e) {
                 //Do nothing
             } catch(Exception e) {

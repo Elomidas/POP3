@@ -1,16 +1,14 @@
-package Connexions;
+package Model.Connexions;
 
-import Model.Protocols.POP3S.ObjetConnecteSecurise;
+import Model.Protocols.POP3.ObjetConnecteSecurise;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-/**
- * Created by tardy on 31/03/2018.
- */
 public class ConnexionPOP3S extends Thread{
+
     Socket socket;
     ServerSocket serverSocket;
     int m_port;
@@ -26,8 +24,7 @@ public class ConnexionPOP3S extends Thread{
     public void run(){
         try {
             this.serverSocket = new ServerSocket(this.m_port);
-            serverSocket.setSoTimeout(60000);
-            while (m_continuer) {
+            while (true) {
                 System.out.println("Attente de connexion au port 1211 ");
                 this.socket = this.serverSocket.accept();
 
@@ -35,23 +32,9 @@ public class ConnexionPOP3S extends Thread{
                 objetConnecte.start();
                 System.out.println("Début de connexion POP3S");
             }
-
-        } catch (SocketTimeoutException e) {
-            m_continuer = false;
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-//        try {
-//            this.socket.close();
-//            if (socket.isClosed()) {
-//                this.serverSocket.close();
-//                System.out.println("Fin de Connexions");
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
 
     }
 }

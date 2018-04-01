@@ -1,8 +1,6 @@
-package Model.Protocols.POP3S;
+package Model.Protocols.POP3;
 
 //import Commun.TcpPOP3S;
-
-import Model.Protocols.POP3.ObjetConnecte;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +35,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
        this.m_etat = POP3_ETAT_AUTORISATION;
         String input;
         try {
-            m_tcp.send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " POP3 server ready "  + generateTimbre());
+            m_tcp.send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " Model.Protocols.POP3 server ready "  + generateTimbre());
         } catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -81,7 +79,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                             break;
                     }
                 }
-                out.println("S POP3S: " + response);
+                out.println("S: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
 

@@ -1,4 +1,4 @@
-package Utilisateur;
+package Model.Utilisateur;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -50,7 +50,7 @@ public class RepertoireUtilisateur {
 
     public void loadUsersFromFile() {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("data/users.pop"));
+            BufferedReader br = new BufferedReader(new FileReader("storage/users.pop"));
 
             String line = br.readLine();
             int i = 0;

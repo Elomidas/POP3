@@ -1,14 +1,12 @@
+package Model.Mail;
 
-package Mail;
-
-import Utilisateur.Utilisateur;
 import Utilities.TestRegex;
+import Model.Utilisateur.Utilisateur;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
 import java.util.Date;
 
 /**

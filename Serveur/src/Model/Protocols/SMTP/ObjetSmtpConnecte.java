@@ -1,10 +1,10 @@
 package Model.Protocols.SMTP;
 
-import Mail.Email;
-import Mail.Mailbox;
+import Model.Mail.Email;
+import Model.Mail.Mailbox;
 import Model.Protocols.TCP.Tcp;
-import Utilisateur.Utilisateur;
 import Utilities.TestRegex;
+import Model.Utilisateur.Utilisateur;
 
 import java.io.*;
 import java.net.Socket;
@@ -84,7 +84,7 @@ public class ObjetSmtpConnecte extends Thread{
                         reponseServeur = SMTP_500_UNKNOWN_COMMAND;
                 }
                 if (reponseServeur != null) {
-                    System.out.println("S Model.Protocols.SMTP: " + reponseServeur);
+                    System.out.println("S: " + reponseServeur);
                     tcp.send(reponseServeur);
                 }
             } catch (IOException e) {
@@ -325,7 +325,7 @@ public class ObjetSmtpConnecte extends Thread{
         try {
             for(Email m : mailbox.getM_listeEmails()) {
                 for (Utilisateur utilisateur: m.getM_destinataires()) {
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("data/" + utilisateur.getM_adresseEmail() + ".pop", true));
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + utilisateur.getM_adresseEmail() + ".pop", true));
                     writer.write(m.encode().replace("\\n", "\n"));
                     writer.close();
                 }
@@ -369,7 +369,7 @@ public class ObjetSmtpConnecte extends Thread{
 
 
     public void removeSavedFiles() {
-        File directory = new File("data/");
+        File directory = new File("storage/");
         for (File f : directory.listFiles()) {
             if (f.getName().endsWith(".com.pop")) {
                 try {

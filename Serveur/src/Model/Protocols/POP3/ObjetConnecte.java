@@ -1,9 +1,9 @@
 package Model.Protocols.POP3;
 
-import Mail.Email;
-import Mail.Mailbox;
+import Model.Mail.Email;
+import Model.Mail.Mailbox;
 import Model.Protocols.TCP.Tcp;
-import Utilisateur.Utilisateur;
+import Model.Utilisateur.Utilisateur;
 
 import java.io.*;
 import java.net.Socket;
@@ -81,7 +81,7 @@ public class ObjetConnecte extends Thread{
                         break;
                 }
 
-                System.out.println("S POP3: " + response);
+                System.out.println("S: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -90,7 +90,7 @@ public class ObjetConnecte extends Thread{
             }
         }
         this.m_tcp.Destroy();
-        System.out.println("End of POP3");
+        System.out.println("End of Model.Protocols.POP3");
     }
 
     /*  ###
@@ -128,7 +128,7 @@ public class ObjetConnecte extends Thread{
                     this.m_mailbox.loadMails(m_current);
                     this.m_mailbox.setEmailsUndeleted(m_current);
                     m_etat = POP3_ETAT_TRANSACTION;
-                    return ObjetConnecte.POP3_REPONSE_POSITIVE + " POP3 server ready";
+                    return ObjetConnecte.POP3_REPONSE_POSITIVE + " Model.Protocols.POP3 server ready";
                 } else {
                     return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
                 }
@@ -172,7 +172,7 @@ public class ObjetConnecte extends Thread{
     }
 
     /*  ###
-     *  # POP3 Commands
+     *  # Model.Protocols.POP3 Commands
      *  ###
      */
 
