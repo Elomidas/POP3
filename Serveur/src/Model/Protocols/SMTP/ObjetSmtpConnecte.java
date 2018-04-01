@@ -1,8 +1,7 @@
 package Model.Protocols.SMTP;
 
 import Model.MailBox.Email;
-import Model.MailBox.Mailbox;
-import Model.Protocols.TCP.Tcp;
+import Model.Protocols.ObjetConnecteUnderTCP;
 import Utilities.TestRegex;
 import Model.Utilisateur.Utilisateur;
 
@@ -12,43 +11,41 @@ import java.util.ArrayList;
 
 import static Model.Protocols.SMTP.ReponseServeur.*;
 
-public class ObjetSmtpConnecte extends Thread{
+public class ObjetSmtpConnecte extends ObjetConnecteUnderTCP {
 
-    protected Tcp tcp;
     private String etatServeur;
-    private boolean continuer;
     private String input;
     private String reponseServeur;
     private Email currentEmail;
-    protected ArrayList<Email> m_listeEmails;
-    protected Utilisateur currentUser;
-    protected Mailbox mailbox;
-    protected String clientDomain;
+    //TODO voir si on supprime par la suite
+    private ArrayList<Email> listeEmails;
+    private String clientDomain;
     private int idLine;
 
-    public ObjetSmtpConnecte(Socket socket) throws IOException {
-        this.tcp = new Tcp(socket);
+    public ObjetSmtpConnecte(Socket socket) {
+        super(socket);
 
         this.etatServeur = SERVER_READY;
-        this.continuer = true;
         this.currentEmail = null;
-        this.m_listeEmails = new ArrayList<>();
-        this.mailbox = new Mailbox(0);
-        clientDomain = null;
-        idLine = 0;
+        this.listeEmails = new ArrayList<>();
+        this.clientDomain = null;
+        this.idLine = 0;
+        this.input = "";
+        this.reponseServeur = "";
+
+        super.mailbox.loadMails();
     }
 
     public void run(){
-        this.etatServeur = SERVER_CONNEXION;
+        etatServeur = SERVER_CONNEXION;
         tcp.send(SMTP_SERVER_READY);
 
         while(continuer){
             try {
-//                System.out.println("Wait...");
                 input = tcp.receive();
 
                 String[] explodedCommand = input.split(" ", 2);
-                String command = etatServeur == SERVER_LECTURE ? explodedCommand[0] : explodedCommand[0].toUpperCase();
+                String command = etatServeur.equals(SERVER_LECTURE) ? explodedCommand[0] : explodedCommand[0].toUpperCase();
                 String[] parameters = new String[0];
 
                 if (!etatServeur.equals(SERVER_LECTURE)) {
@@ -66,19 +63,19 @@ public class ObjetSmtpConnecte extends Thread{
                 }
                 switch (etatServeur) {
                     case SERVER_CONNEXION:
-                        reponseServeur = this.connexion(command, parameters);
+                        reponseServeur = connexion(command, parameters);
                         break;
                     case SERVER_IDENTIFICATION:
-                        reponseServeur = this.identification(command, parameters);
+                        reponseServeur = identification(command, parameters);
                         break;
                     case SERVER_TRANSACTION:
-                        reponseServeur = this.transaction(command, parameters);
+                        reponseServeur = transaction(command, parameters);
                         break;
                     case SERVER_ENVOIE:
-                        reponseServeur = this.envoie(command, parameters);
+                        reponseServeur = envoie(command, parameters);
                         break;
                     case SERVER_LECTURE:
-                        reponseServeur = this.lecture(command, parameters);
+                        reponseServeur = lecture(command, parameters);
                         break;
                     default:
                         reponseServeur = SMTP_500_UNKNOWN_COMMAND;
@@ -94,8 +91,8 @@ public class ObjetSmtpConnecte extends Thread{
             }
 
         }
-        this.tcp.Destroy();
-        System.out.println("End of Model.Protocols.SMTP");
+        tcp.Destroy();
+        System.out.println("End of SMTP");
     }
 
     /*
@@ -127,7 +124,8 @@ public class ObjetSmtpConnecte extends Thread{
      * @param parameters
      * @return
      */
-    private String transaction(String command, String[] parameters) {
+    @Override
+    protected String transaction(String command, String[] parameters) {
         switch (command){
             case "RCPT":
                 return commandeRcpt(parameters);
@@ -206,7 +204,7 @@ public class ObjetSmtpConnecte extends Thread{
      * @return
      */
     private String commandeEhlo(String[] parameters) {
-        this.clientDomain = parameters.length >= 1 ? parameters[0] : "";
+        clientDomain = parameters.length >= 1 ? parameters[0] : "";
         etatServeur = SERVER_IDENTIFICATION;
         return SMTP_250_SERVERDOMAIN ;
     }
@@ -215,8 +213,9 @@ public class ObjetSmtpConnecte extends Thread{
      * handle and return answer of command RSET
      * @return
      */
-    private String commandeRset() {
-        this.currentEmail = null;
+    @Override
+    protected String commandeRset() {
+        currentEmail = null;
         etatServeur = SERVER_IDENTIFICATION;
         return SMTP_250_OK;
     }
@@ -225,10 +224,10 @@ public class ObjetSmtpConnecte extends Thread{
      * handle and return answer of command QUIT
      * @return
      */
-    private String commandeQuit() {
+    @Override
+    protected String commandeQuit() {
         continuer = false;
-        this.currentEmail = null;
-        this.currentUser = null;
+        currentEmail = null;
         etatServeur = SERVER_READY;
         return SMTP_221_CLOSING;
     }
@@ -248,12 +247,13 @@ public class ObjetSmtpConnecte extends Thread{
             return SMTP_550_UNKNOWN_USER;
         }
         String emailAddress = emailAddressNotexploded.substring(6,emailAddressNotexploded.length() - 1);
+        //TODO vérifier warning suivant
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
             Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
-            this.currentEmail = this.mailbox.createEmail( new ArrayList<Utilisateur>(),utilisateur);
+            currentEmail = mailbox.createEmail(utilisateur);
         } else {
             return SMTP_550_UNKNOWN_USER;
         }
@@ -276,13 +276,14 @@ public class ObjetSmtpConnecte extends Thread{
             return SMTP_550_UNKNOWN_USER;
         }
         String emailAddress = emailAddressNotexploded.substring(4,emailAddressNotexploded.length() - 1);
+        //TODO vérifier warning suivant
         if ((emailAddress  != null ) && TestRegex.CheckMail(emailAddress)) {
-            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
+            Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
 
-            this.currentEmail.addRecipient(utilisateur);
+            currentEmail.addRecipient(utilisateur);
 
         } else {
             return SMTP_550_UNKNOWN_USER;
@@ -306,8 +307,8 @@ public class ObjetSmtpConnecte extends Thread{
      * @return
      */
     private String commandeCrlf(String[] parameters) {
-        this.mailbox.getM_listeEmails().add(currentEmail);
-        this.saveMails();
+        mailbox.getListeEmails().add(currentEmail);
+        saveMails();
         etatServeur = SERVER_IDENTIFICATION;
         idLine = 0;
         return SMTP_250_OK;
@@ -320,12 +321,12 @@ public class ObjetSmtpConnecte extends Thread{
     /**
      * save Emails in files
      */
-    protected void saveMails() {
+    private void saveMails() {
         removeSavedFiles();
         try {
-            for(Email m : mailbox.getM_listeEmails()) {
+            for(Email m : mailbox.getListeEmails()) {
                 for (Utilisateur utilisateur: m.getM_destinataires()) {
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + utilisateur.getM_adresseEmail() + ".pop", true));
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("storage/" + utilisateur.getAdresseEmail() + ".pop", true));
                     writer.write(m.encode().replace("\\n", "\n"));
                     writer.close();
                 }
@@ -344,31 +345,31 @@ public class ObjetSmtpConnecte extends Thread{
         String[] emailEmetteur = TestRegex.Submatches("From: \"(.*?)\" <(.*?)>", line[0]);
         String[] emailDestinataire = TestRegex.Submatches("To: \"(.*?)\" <(.*?)>", line[0]);
         if (emailEmetteur.length>0) {
-            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailEmetteur[1]);
+            Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailEmetteur[1]);
             if (utilisateur != null) {
-                this.currentEmail.setM_emetteur(utilisateur);
+                currentEmail.setEmetteur(utilisateur);
             }
             idLine++;
         } else if (emailDestinataire.length>0) {
-            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailDestinataire[1]);
+            Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailDestinataire[1]);
             if (utilisateur != null) {
-                this.currentEmail.addRecipient(utilisateur);
+                currentEmail.addRecipient(utilisateur);
             }
             idLine++;
         } else if (idLine == 2) {
             idLine++;
         } else if (idLine == 3) {
-            this.currentEmail.setM_subject(line[0]);
+            currentEmail.setSubject(line[0]);
             idLine++;
-        } else if (this.currentEmail.getM_message().equals("")) {
-            this.currentEmail.setM_message(line[0]);
+        } else if (currentEmail.getMessage().equals("")) {
+            currentEmail.setMessage(line[0]);
         } else {
-            this.currentEmail.setM_message(this.currentEmail.getM_message() + "\n" + line[0]);
+            currentEmail.setMessage(currentEmail.getMessage() + "\n" + line[0]);
         }
     }
 
 
-    public void removeSavedFiles() {
+    private void removeSavedFiles() {
         File directory = new File("storage/");
         for (File f : directory.listFiles()) {
             if (f.getName().endsWith(".com.pop")) {

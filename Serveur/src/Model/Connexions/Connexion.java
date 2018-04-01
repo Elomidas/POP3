@@ -10,9 +10,9 @@ import java.net.Socket;
 
 public abstract class Connexion extends Thread{
 
-    Socket socket;
-    ServerSocket serverSocket;
-    int port;
+    private Socket socket;
+    private ServerSocket serverSocket;
+    private int port;
 
     public Connexion(int port){
         this.socket = null;
@@ -58,5 +58,4 @@ public abstract class Connexion extends Thread{
             e.printStackTrace();
         }
     }
-
 }

@@ -7,30 +7,27 @@ import java.util.ArrayList;
 
 import static java.lang.System.out;
 
-/**
- * Created by tardy on 22/03/2018.
- */
+
 public class RepertoireUtilisateur {
 
-    private ArrayList<Utilisateur> m_listeUtilisateurs;
+    private ArrayList<Utilisateur> listeUtilisateurs;
 
     public RepertoireUtilisateur() {
-        m_listeUtilisateurs = new ArrayList<Utilisateur>();
+        listeUtilisateurs = new ArrayList<>();
         loadUsersFromFile();
     }
 
-    public ArrayList<Utilisateur> getM_listeUtilisateurs() {
-        return m_listeUtilisateurs;
+    public ArrayList<Utilisateur> getListeUtilisateurs() {
+        return listeUtilisateurs;
     }
 
-    public void setM_listeUtilisateurs(ArrayList<Utilisateur> m_listeUtilisateurs) {
-        this.m_listeUtilisateurs = m_listeUtilisateurs;
+    public void setListeUtilisateurs(ArrayList<Utilisateur> listeUtilisateurs) {
+        listeUtilisateurs = listeUtilisateurs;
     }
 
     public Utilisateur getUtilisateurParEmail(String email) {
-        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
-            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
-            if (utilisateur.getM_adresseEmail().equals(email)) {
+        for (Utilisateur utilisateur : listeUtilisateurs) {
+            if (utilisateur.getAdresseEmail().equals(email)) {
                 return utilisateur;
             }
         }
@@ -38,9 +35,8 @@ public class RepertoireUtilisateur {
     }
 
     public Utilisateur getUtilisateurParNom(String nomUtilisateur) {
-        for(int i = 0; i < m_listeUtilisateurs.size(); i++) {
-            Utilisateur utilisateur = m_listeUtilisateurs.get(i);
-            if (utilisateur.getM_adresseEmail().equals(nomUtilisateur)) {
+        for (Utilisateur utilisateur : listeUtilisateurs) {
+            if (utilisateur.getAdresseEmail().equals(nomUtilisateur)) {
                 return utilisateur;
             }
         }
@@ -56,7 +52,7 @@ public class RepertoireUtilisateur {
             int i = 0;
             while((line != null) && (line.length() > 4)) {
                 Utilisateur u = new Utilisateur(line);
-                m_listeUtilisateurs.add(u);
+                listeUtilisateurs.add(u);
                 line = br.readLine();
                 i++;
             }
@@ -72,14 +68,14 @@ public class RepertoireUtilisateur {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (Utilisateur utilisateur: m_listeUtilisateurs
+        for (Utilisateur utilisateur: listeUtilisateurs
              ) {
-            stringBuilder.append("Nom : ").append(utilisateur.getM_nom()).append(" Email: ").append(utilisateur.getM_adresseEmail()).append("\n");
+            stringBuilder.append("Nom : ").append(utilisateur.getNom()).append(" Email: ").append(utilisateur.getAdresseEmail()).append("\n");
         }
         return stringBuilder.toString();
     }
 
     public void addUtilisateur(Utilisateur u) {
-        this.getM_listeUtilisateurs().add(u);
+        getListeUtilisateurs().add(u);
     }
 }

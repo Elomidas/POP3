@@ -9,63 +9,51 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-/**
- * Created by tardy on 26/02/2018.
- */
 public class Email {
-    protected String m_id;
-    protected String m_message;
-    protected String m_date;
-    protected String m_subject;
-    protected ArrayList<Utilisateur> m_destinataire;
-    protected Utilisateur m_emetteur;
-    protected boolean m_etat;
+    private String id;
+    private String message;
+    private String date;
+    private String subject;
+    private ArrayList<Utilisateur> destinataire;
+    private Utilisateur emetteur;
+    private boolean etat;
 
-    protected static final String _DATE = "Date: ";
-    protected static final String _FROM = "From: ";
-    protected static final String _SUBJECT = "Subject: ";
-    protected static final String _MIME = "MIME-Version: 1.0";
-    protected static final String _CONTENT  = "Content-Type: text/plain; charset: UTF-8\nContent-Transfer-Encoding: quoted-printable";
-    public static final String _EOM = "\n.\n";
-    protected static final String _PATTERN = (_DATE + "([^\\\\]*)\n" + _FROM + "([^\\\\]*)\n" + _SUBJECT + "([^\\\\]*)\n" + _MIME + "\n" + _CONTENT + "\n(.*)\n" + _EOM);
+    private static final String _DATE = "Date: ";
+    private static final String _FROM = "From: ";
+    private static final String _SUBJECT = "Subject: ";
+    private static final String _MIME = "MIME-Version: 1.0";
+    private static final String _CONTENT  = "Content-Type: text/plain; charset: UTF-8\nContent-Transfer-Encoding: quoted-printable";
+    private static final String _EOM = "\n.\n";
+    private static final String _PATTERN = (_DATE + "([^\\\\]*)\n" + _FROM + "([^\\\\]*)\n" + _SUBJECT + "([^\\\\]*)\n" + _MIME + "\n" + _CONTENT + "\n(.*)\n" + _EOM);
 
-
-
-    public Email(String m_id, String m_message, ArrayList<Utilisateur> m_destinataire, Utilisateur m_emetteur, boolean m_etat) {
-        this.m_id = m_id;
-        this.m_message = m_message;
-        this.m_destinataire = m_destinataire;
-        this.m_emetteur = m_emetteur;
-        this.m_etat = m_etat;
-    }
 
     public Email(ArrayList<Utilisateur> dest, String encoded, ArrayList<Utilisateur> list) {
-        m_destinataire = dest;
+        this.destinataire = dest;
         decode(encoded, list);
     }
 
     public Email(String id, ArrayList<Utilisateur> dest, Utilisateur emetteur) {
-        m_id = id;
-        m_destinataire = dest;
-        m_emetteur = emetteur;
+        this.id = id;
+        this.destinataire = dest;
+        this.emetteur = emetteur;
         DateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
-        this.m_date = formatDate.format(date);
-        this.m_subject = null;
-        this.m_message = "";
+        this.date = formatDate.format(date);
+        this.subject = null;
+        this.message = "";
     }
 
-    protected void decode(String encrypted, ArrayList<Utilisateur> usrs) {
+    private void decode(String encrypted, ArrayList<Utilisateur> usrs) {
         String[] fields = TestRegex.Submatches(_PATTERN.replace("\n", "\\\\n"), encrypted.replace("\n", "\\n"));
         if(fields.length != 4) {
             System.out.println("Fail, not enough fields (" + fields.length + ").");
         } else {
-            this.m_date = fields[0];
-            this.m_subject = fields[2];
-            this.m_message = fields[3];
+            date = fields[0];
+            subject = fields[2];
+            message = fields[3];
             for (Utilisateur u : usrs) {
-                if (u.getM_adresseEmail().equals(fields[1])) {
-                    this.m_emetteur = u;
+                if (u.getAdresseEmail().equals(fields[1])) {
+                    emetteur = u;
                 }
             }
         }
@@ -73,22 +61,22 @@ public class Email {
 
     public String encode() {
         StringBuilder sbuilder = new StringBuilder();
-        sbuilder.append(m_id)
+        sbuilder.append(id)
                 .append("\n")
                 .append(_DATE)
-                .append(m_date)
+                .append(date)
                 .append("\n")
                 .append(_FROM)
-                .append(m_emetteur.getM_adresseEmail())
+                .append(emetteur.getAdresseEmail())
                 .append("\n")
                 .append(_SUBJECT)
-                .append(m_subject)
+                .append(subject)
                 .append("\n")
                 .append(_MIME)
                 .append("\n")
                 .append(_CONTENT)
                 .append("\n")
-                .append(m_message)
+                .append(message)
                 .append("\n")
                 .append(_EOM);
         return sbuilder.toString();
@@ -96,80 +84,80 @@ public class Email {
 
     public String encodeWithReturn() {
         StringBuilder sbuilder = new StringBuilder();
-        sbuilder.append(m_id)
+        sbuilder.append(id)
                 .append("\r\n")
                 .append(_DATE)
-                .append(m_date)
+                .append(date)
                 .append("\r\n")
                 .append(_FROM)
-                .append(m_emetteur.getM_adresseEmail())
+                .append(emetteur.getAdresseEmail())
                 .append("\r\n")
                 .append(_SUBJECT)
-                .append(m_subject)
+                .append(subject)
                 .append("\r\n")
                 .append(_MIME)
                 .append("\r\n")
                 .append(_CONTENT)
                 .append("\r\n")
-                .append(m_message)
+                .append(message)
                 .append("\r\n")
                 .append("\r\n")
                 .append(_EOM);
         return sbuilder.toString();
     }
 
-    public boolean getM_etat() {
-        return m_etat;
+    public boolean getEtat() {
+        return etat;
     }
 
-    public void setM_etat(boolean m_etat) {
-        this.m_etat = m_etat;
+    public void setEtat(boolean etat) {
+        this.etat = etat;
     }
 
-    public String getM_id() {
-        return m_id;
+    public String getId() {
+        return id;
     }
 
-    public void setM_id(String m_id) {
-        this.m_id = m_id;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getM_message() {
-        return m_message;
+    public String getMessage() {
+        return message;
     }
 
-    public void setM_message(String m_message) {
-        this.m_message = m_message;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public ArrayList<Utilisateur> getM_destinataires() {
-        return m_destinataire;
+        return destinataire;
     }
 
-    public void setM_destinataire(ArrayList<Utilisateur> m_destinataire) {
-        this.m_destinataire = m_destinataire;
+    public void setDestinataire(ArrayList<Utilisateur> destinataire) {
+        this.destinataire = destinataire;
     }
 
-    public Utilisateur getM_emetteur() {
-        return m_emetteur;
+    public Utilisateur getEmetteur() {
+        return emetteur;
     }
 
-    public void setM_emetteur(Utilisateur m_emetteur) {
-        this.m_emetteur = m_emetteur;
+    public void setEmetteur(Utilisateur emetteur) {
+        this.emetteur = emetteur;
     }
 
-    public String getM_subject() {
-        return m_subject;
+    public String getSubject() {
+        return subject;
     }
 
-    public void setM_subject(String m_subject) {
-        this.m_subject = m_subject;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     public int Size() {
         int size = 0;
         try {
-            size = this.encode().getBytes("UTF-8").length;
+            size = encode().getBytes("UTF-8").length;
         } catch(IOException e) {
             e.printStackTrace();
         }
@@ -177,8 +165,8 @@ public class Email {
     }
 
     public void addRecipient(Utilisateur utilisateur) {
-        if (!this.m_destinataire.contains(utilisateur)) {
-            this.m_destinataire.add(utilisateur);
+        if (!destinataire.contains(utilisateur)) {
+            destinataire.add(utilisateur);
         }
     }
 }

@@ -1,7 +1,5 @@
 package Model.Protocols.POP3S;
 
-//import Commun.TcpPOP3S;
-
 import Model.Protocols.POP3.ObjetConnecte;
 
 import java.io.*;
@@ -14,16 +12,13 @@ import java.util.HashMap;
 
 import static java.lang.System.*;
 
-/**
- * Created by tardy on 12/03/2018.
- */
 public class ObjetConnecteSecurise extends ObjetConnecte {
 
     private Timestamp timeConnexion;
     private int processId;
 
     static {
-        m_locked = new HashMap<>();
+        locked = new HashMap<>();
     }
 
 
@@ -32,18 +27,17 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
     }
 
     public void run() {
-
-       this.m_etat = POP3_ETAT_AUTORISATION;
+       etat = POP3_ETAT_AUTORISATION;
         String input;
         try {
-            m_tcp.send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " Model.Protocols.POP3 server ready "  + generateTimbre());
+            tcp.send(ObjetConnecteSecurise.POP3_REPONSE_POSITIVE + " Model.Protocols.POP3 server ready "  + generateTimbre());
         } catch (InvocationTargetException | NoSuchMethodException | NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        while (m_continuer) {
+        while (continuer) {
             try {
 //                out.println("Wait...");
-                input = m_tcp.receive();
+                input = tcp.receive();
 //                out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
@@ -54,47 +48,48 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                 }
                 String response;
                 if(command.equals("")) {
-                    m_blankCount++;
+                    blankCount++;
                 } else {
-                    m_blankCount = 0;
+                    blankCount = 0;
                 }
-                if(m_blankCount == 9) {
+                if(blankCount == 9) {
                     response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
-                } else if(m_blankCount >= 10) {
-                    if(m_lock) {
-                        this.unlock(m_current.getM_adresseEmail());
+                } else if(blankCount >= 10) {
+                    if(lock) {
+                        unlock(currentUser.getAdresseEmail());
                     }
                     response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
-                    m_continuer = false;
+                    continuer = false;
                 } else {
-                    switch (m_etat) {
+                    switch (etat) {
                         case ObjetConnecte.POP3_ETAT_AUTORISATION:
                             response = AuthorisationState(command, parameters);
                             break;
                         case ObjetConnecte.POP3_ETAT_TRANSACTION:
-                            response = TransactionState(command, parameters);
+                            response = transaction(command, parameters);
                             break;
                         default:
-                            out.println("What is that (state/command) : " + m_etat + "/" + command);
+                            out.println("What is that (state/command) : " + etat + "/" + command);
                             response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
                             break;
                     }
                 }
                 out.println("S: " + response);
-                m_tcp.send(response);
+                tcp.send(response);
             } catch (IOException e) {
 
                 System.out.println(e.getMessage());
-                m_continuer = false;
-                this.quitTransaction();
+                continuer = false;
+                quitTransaction();
+                //TODO vérifier utilité du return ici
                 return;
             }
         }
-        this.m_tcp.Destroy();
+        tcp.Destroy();
         out.println("End of POP3S");
     }
 
-    public int getProcessId() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
+    private int getProcessId() throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
         java.lang.management.RuntimeMXBean runtime =
                 java.lang.management.ManagementFactory.getRuntimeMXBean();
         java.lang.reflect.Field jvm = runtime.getClass().getDeclaredField("jvm");
@@ -105,38 +100,36 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                 mgmt.getClass().getDeclaredMethod("getProcessId");
         pid_method.setAccessible(true);
 
-        this.processId = (Integer) pid_method.invoke(mgmt);
+        processId = (Integer) pid_method.invoke(mgmt);
         return processId;
     }
 
-    public Long getTimestamp(){
-        this.timeConnexion = new Timestamp(System.currentTimeMillis());
+    private Long getTimestamp(){
+        timeConnexion = new Timestamp(System.currentTimeMillis());
         return  timeConnexion.getTime();
 
     }
 
-    public String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+    private String generateTimbre() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
         return "<"+getProcessId()+"."+getTimestamp()+"@localhost>";
     }
 
-    public boolean decrypteTimbre(String encryptUser) throws NoSuchAlgorithmException {
+    private boolean decrypteTimbre(String encryptUser) throws NoSuchAlgorithmException {
         StringBuilder decrypt = new StringBuilder();
 
         MessageDigest md = MessageDigest.getInstance("MD5");
         decrypt.append("<")
-                .append(this.processId)
+                .append(processId)
                 .append(".")
-                .append(this.timeConnexion.getTime())
+                .append(timeConnexion.getTime())
                 .append("@localhost>")
-                .append(this.m_current.getM_mdp());
+                .append(currentUser.getMdp());
         byte[] digestedBytes = md.digest(decrypt.toString().getBytes());
         StringBuilder returnBuilder = new StringBuilder();
-        for(int i = 0; i < digestedBytes.length; i++) {
-            returnBuilder.append(String.format("%02X", digestedBytes[i]));
+        for (byte digestedByte : digestedBytes) {
+            returnBuilder.append(String.format("%02X", digestedByte));
         }
-        if(returnBuilder.toString().equals(encryptUser))
-            return true;
-        return false;
+        return returnBuilder.toString().equals(encryptUser);
     }
 
     /*  ###
@@ -154,12 +147,12 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
 
             if(checkUser(username)) {
                 try {
-                    if(this.decrypteTimbre(password)) {
-                        if (this.isFree(m_current.getM_adresseEmail())) {
-                            this.lock(m_current.getM_adresseEmail());
-                            this.m_mailbox.loadMails(m_current);
-                            this.m_mailbox.setEmailsUndeleted(m_current);
-                            m_etat = POP3_ETAT_TRANSACTION;
+                    if(decrypteTimbre(password)) {
+                        if (isFree(currentUser.getAdresseEmail())) {
+                            lock(currentUser.getAdresseEmail());
+                            mailbox.loadMails(currentUser);
+                            mailbox.setEmailsUndeleted(currentUser);
+                            etat = POP3_ETAT_TRANSACTION;
                             return ObjetConnecte.POP3_REPONSE_POSITIVE;
                         } else {
                             return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
@@ -170,7 +163,6 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
-
             } else {
                 return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
             }

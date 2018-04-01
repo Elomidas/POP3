@@ -1,56 +1,46 @@
 package Model.Protocols.POP3;
 
 import Model.MailBox.Email;
-import Model.MailBox.Mailbox;
-import Model.Protocols.TCP.Tcp;
+import Model.Protocols.ObjetConnecteUnderTCP;
 import Model.Utilisateur.Utilisateur;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
-/**
- * Created by tardy on 13/02/2018.
- */
-public class ObjetConnecte extends Thread{
+public class ObjetConnecte extends ObjetConnecteUnderTCP {
     protected static final String POP3_ETAT_AUTORISATION = "Autorisation";
-    protected static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
+    private static final String POP3_ETAT_AUTHENTIFICATION = "Authentification";
     protected static final String POP3_ETAT_TRANSACTION = "Transaction";
     protected static final String POP3_REPONSE_NEGATIVE = "-ERR";
     protected static final String POP3_REPONSE_POSITIVE = "+OK";
-    protected static HashMap<String, Boolean> m_locked;
+    protected static HashMap<String, Boolean> locked;
 
     static {
-        m_locked = new HashMap<>();
+        locked = new HashMap<>();
     }
 
-    protected boolean m_continuer;
-    protected String m_etat;
-    protected Mailbox m_mailbox;
-    protected Utilisateur m_current;
-    protected boolean m_lock;
-    protected Tcp m_tcp;
-    protected int m_blankCount;
+    protected String etat;
+    protected Utilisateur currentUser;
+    protected boolean lock;
+    protected int blankCount;
 
     public ObjetConnecte(Socket socket) throws IOException {
-        this.m_tcp = new Tcp(socket);
-        m_mailbox = new Mailbox();
-        m_current = null;
-        m_continuer = true;
-        m_lock = false;
-        m_blankCount = 0;
-        m_mailbox.getRepertoireUtilisateur().loadUsersFromFile();
+        super(socket);
+
+        this.currentUser = null;
+        this.lock = false;
+        this.blankCount = 0;
+
+        super.mailbox.getRepertoireUtilisateur().loadUsersFromFile();
     }
 
     public void run() {
-
-        m_etat = POP3_ETAT_AUTORISATION;
+        etat = POP3_ETAT_AUTORISATION;
         String input;
-        while (m_continuer) {
+        while (continuer) {
             try {
-//                System.out.println("Wait...");
-                input = m_tcp.receive();
-//                System.out.println(input + " received");
+                input = tcp.receive();
 
                 String[] explodedCommand = input.split(" ", 2);
                 String command = explodedCommand[0].toUpperCase();
@@ -59,32 +49,45 @@ public class ObjetConnecte extends Thread{
                     parameters = explodedCommand[1].split(" ");
                 }
                 String response;
-
-                switch (m_etat) {
-                    case ObjetConnecte.POP3_ETAT_AUTORISATION:
-                        response = this.AuthorisationState(command, parameters);
-                        break;
-                    case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
-                        response = this.AuthenticationState(command, parameters);
-                        break;
-                    case ObjetConnecte.POP3_ETAT_TRANSACTION:
-                        response = this.TransactionState(command, parameters);
-                        break;
-                    default:
-                        System.out.println("What is that (state/command) : " + m_etat + "/" + command);
-                        response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
-                        break;
+                if(command.equals("")) {
+                    blankCount++;
+                } else {
+                    blankCount = 0;
                 }
-
+                if(blankCount == 9) {
+                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " one more blank command and you will be disconnected.";
+                } else if(blankCount >= 10) {
+                    if(lock) {
+                        unlock(currentUser.getAdresseEmail());
+                    }
+                    response = ObjetConnecte.POP3_REPONSE_NEGATIVE + " you've been deconnected by server.";
+                    continuer = false;
+                } else {
+                    switch (etat) {
+                        case ObjetConnecte.POP3_ETAT_AUTORISATION:
+                            response = AuthorisationState(command, parameters);
+                            break;
+                        case ObjetConnecte.POP3_ETAT_AUTHENTIFICATION:
+                            response = AuthenticationState(command, parameters);
+                            break;
+                        case ObjetConnecte.POP3_ETAT_TRANSACTION:
+                            response = transaction(command, parameters);
+                            break;
+                        default:
+                            System.out.println("What is that (state/command) : " + etat + "/" + command);
+                            response = ObjetConnecte.POP3_REPONSE_NEGATIVE;
+                            break;
+                    }
+                }
                 System.out.println("S: " + response);
-                m_tcp.send(response);
+                tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
-                m_continuer = false;
+                continuer = false;
                 return;
             }
         }
-        this.m_tcp.Destroy();
+        tcp.Destroy();
         System.out.println("End of POP3");
     }
 
@@ -100,8 +103,8 @@ public class ObjetConnecte extends Thread{
             }
             String username = parameters[0];
             System.out.println("username : " + username);
-            if(this.checkUser(username)) {
-                m_etat = POP3_ETAT_AUTHENTIFICATION;
+            if(checkUser(username)) {
+                etat = POP3_ETAT_AUTHENTIFICATION;
                 return ObjetConnecte.POP3_REPONSE_POSITIVE;
             } else {
                 return ObjetConnecte.POP3_REPONSE_NEGATIVE + " username is not valid";
@@ -110,59 +113,64 @@ public class ObjetConnecte extends Thread{
         return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
 
-    protected String AuthenticationState(String command, String[] parameters) {
+    private String AuthenticationState(String command, String[] parameters) {
         if(command.equals("PASS")) {
             if(parameters.length < 1) {
                 return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
             String password = parameters[0];
 
-            if(this.checkPass(password)) {
-                if(this.isFree(m_current.getM_adresseEmail())) {
-                    this.lock(m_current.getM_adresseEmail());
-                    this.m_mailbox.loadMails(m_current);
-                    this.m_mailbox.setEmailsUndeleted(m_current);
-                    m_etat = POP3_ETAT_TRANSACTION;
+            if(checkPass(password)) {
+                if(isFree(currentUser.getAdresseEmail())) {
+                    lock(currentUser.getAdresseEmail());
+                    mailbox.loadMails(currentUser);
+                    mailbox.setEmailsUndeleted(currentUser);
+                    etat = POP3_ETAT_TRANSACTION;
                     return ObjetConnecte.POP3_REPONSE_POSITIVE + " Model.Protocols.POP3 server ready";
                 } else {
                     return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unable to lock/open your repository";
                 }
             }
         } else if(command.equals("QUIT")) {
-            return this.quit();
+            return commandeQuit();
         }
         return ObjetConnecte.POP3_REPONSE_NEGATIVE + " command \"" + command + "\" doesn't seem valid";
     }
 
-    protected String TransactionState(String command, String[] parameters) {
-        if(command.equals("QUIT")) {
-            this.quitTransaction();
-            return this.quit();
-        } else if(command.equals("RETR")) {
-            if(parameters.length < 1) {
-                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
-            }
-            return retr(parameters[0]);
-        } else if(command.equals("NOOP")) {
-            return noop();
-        } else if(command.equals("RSET")) {
-            //To be tested
-            return rset();
-        } else if(command.equals("DELE")) {
-            //To be tested
-            if(parameters.length < 1) {
-                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
-            }
-            return dele(Integer.parseInt(parameters[0]));
-        } else if(command.equals("LIST")) {
-            return list();
-        } else if(command.equals("UIDL")) {
-            return uidl();
-        } else if(command.equals("STAT")) {
-            return stat();
-        } else {
-            //fermetureAutreQueQuit();
-            return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
+    @Override
+    protected String transaction(String command, String[] parameters) {
+        switch (command) {
+            case "QUIT":
+                //TODO verifier cette modif
+                /*
+                quitTransaction();
+                return quit();
+                */
+                return quitTransaction();
+            case "RETR":
+                if (parameters.length < 1) {
+                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+                }
+                return retr(parameters[0]);
+            case "NOOP":
+                return noop();
+            case "RSET":
+                //TODO To be tested
+                return commandeRset();
+            case "DELE":
+                if (parameters.length < 1) {
+                    return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
+                }
+                return dele(Integer.parseInt(parameters[0]));
+            case "LIST":
+                return list();
+            case "UIDL":
+                return uidl();
+            case "STAT":
+                return stat();
+            default:
+                //fermetureAutreQueQuit();
+                return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
         }
     }
 
@@ -175,12 +183,12 @@ public class ObjetConnecte extends Thread{
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
                 .append(" ")
-                .append(m_mailbox.getM_listeEmails().size())
+                .append(mailbox.getListeEmails().size())
                 .append(" message(s) :\n");
-        for(int i = 0; i < m_mailbox.getM_listeEmails().size(); i++) {
+        for(int i = 0; i < mailbox.getListeEmails().size(); i++) {
             sBuilder.append(i+1)
                     .append(" ")
-                    .append(m_mailbox.getM_listeEmails().get(i).Size())
+                    .append(mailbox.getListeEmails().get(i).Size())
                     .append("\n");
         }
         return sBuilder.toString();
@@ -190,45 +198,51 @@ public class ObjetConnecte extends Thread{
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append(ObjetConnecte.POP3_REPONSE_POSITIVE)
                 .append(" ")
-                .append(m_mailbox.getM_listeEmails().size())
+                .append(mailbox.getListeEmails().size())
                 .append(" message(s) :\n");
-        for(int i = 0; i < m_mailbox.getM_listeEmails().size(); i++) {
+        for(int i = 0; i < mailbox.getListeEmails().size(); i++) {
             sBuilder.append(i+1)
                     .append(" ")
-                    .append(m_mailbox.getM_listeEmails().get(i).getM_id())
+                    .append(mailbox.getListeEmails().get(i).getId())
                     .append("\n");
         }
         return sBuilder.toString();
     }
 
-    protected String quit() {
-        m_continuer = false;
-        if(m_lock) {
-            this.unlock(m_current.getM_adresseEmail());
+    @Override
+    protected String commandeQuit() {
+        continuer = false;
+        if(lock) {
+            unlock(currentUser.getAdresseEmail());
         }
         return POP3_REPONSE_POSITIVE;
     }
 
     protected String quitTransaction() {
+        //TODO vérifier que c'est ok
+        /*
         m_continuer = false;
-        if(m_lock) {
-            this.unlock(m_current.getM_adresseEmail());
+        if(lock) {
+            this.unlock(currentUser.getAdresseEmail());
         }
+        */
+        //TODO verifier que l'on peut enlever la première liste
         List<Email> listEmailsToRemove = new ArrayList<>();
-        List<Email> listEmailsOfUser = m_mailbox.recupereEmails(m_current);
+        List<Email> listEmailsOfUser = mailbox.recupereEmails(currentUser);
         for (Email email: listEmailsOfUser) {
-            if (!email.getM_etat()) {
-                m_mailbox.getM_listeEmails().remove(email);
+            if (!email.getEtat()) {
+                mailbox.getListeEmails().remove(email);
                 listEmailsToRemove.add(email);
             }
         }
 
-        this.m_mailbox.removeMails(m_current);
-        return POP3_REPONSE_POSITIVE;
+        mailbox.removeMails(currentUser);
+        //return POP3_REPONSE_POSITIVE;
+        return commandeQuit();
     }
 
     private String retr(String id) {
-        Email m = m_mailbox.getEmail(id);
+        Email m = mailbox.getEmail(id);
         if(m == null) {
             return POP3_REPONSE_NEGATIVE + " unable to find this message.";
         }
@@ -236,19 +250,20 @@ public class ObjetConnecte extends Thread{
     }
 
     private String noop() {
-        //return postive answer
+        // Nothing
         return POP3_REPONSE_POSITIVE;
     }
 
-    private String rset() {
+    @Override
+    protected String commandeRset() {
         int nombreEmailsReset = 0;
         int nombreOctets = 0;
         //drop deleted tag on all message tagged as deleted
 
-        for (Email email: m_mailbox.getM_listeEmails()) {
+        for (Email email: mailbox.getListeEmails()) {
 
-            if (email.getM_etat() == false){
-                email.setM_etat(true);
+            if (!email.getEtat()){
+                email.setEtat(true);
                 nombreEmailsReset++;
                 nombreOctets += email.Size();
             }
@@ -261,15 +276,13 @@ public class ObjetConnecte extends Thread{
     }
 
     private String dele(int idMessage) {
-        //Function delete
-        String reponse = POP3_REPONSE_NEGATIVE;
         //tag message as deleted
         StringBuilder stringBuilder = new StringBuilder();
-        Email email = m_mailbox.getEmail(stringBuilder.append(idMessage).toString());
-        int index = m_mailbox.getM_listeEmails().indexOf(email);
-        if (email.getM_etat()) {
-            email.setM_etat(false);
-            m_mailbox.getM_listeEmails().set(index, email);
+        Email email = mailbox.getEmail(stringBuilder.append(idMessage).toString());
+        int index = mailbox.getListeEmails().indexOf(email);
+        if (email.getEtat()) {
+            email.setEtat(false);
+            mailbox.getListeEmails().set(index, email);
             //return positive answer or negative if message already tagged as deleted + "message" idMessage + "deleted"
             return POP3_REPONSE_POSITIVE + " message " + idMessage + "deleted";
         } else {
@@ -280,7 +293,7 @@ public class ObjetConnecte extends Thread{
     private String stat() {
         int size = 0;
         int number = 0;
-        for(Email m : m_mailbox.getM_listeEmails()) {
+        for(Email m : mailbox.getListeEmails()) {
             size += m.Size();
             number++;
         }
@@ -293,39 +306,39 @@ public class ObjetConnecte extends Thread{
      */
 
     protected boolean checkUser(String username) {
-        Utilisateur u = this.m_mailbox.getRepertoireUtilisateur().getUtilisateurParNom(username);
+        Utilisateur u = mailbox.getRepertoireUtilisateur().getUtilisateurParNom(username);
         if(u == null) {
-            u = this.m_mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(username);
+            u = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(username);
         }
         if (u != null) {
-            m_current = u;
+            currentUser = u;
             return true;
         }
         return false;
     }
 
     private boolean checkPass(String password) {
-        return m_current.checkPassword(password);
+        return currentUser.checkPassword(password);
     }
 
     /*  Check if a mail repository is free or locked
      */
     protected boolean isFree(String mail) {
-        return !m_locked.containsKey(mail) || (m_locked.get(mail) == false);
+        return !locked.containsKey(mail) || (!locked.get(mail));
     }
 
     /*  Lock a mailbox
      */
     protected void lock(String mail) {
-        if(this.isFree(mail)) {
-            m_locked.put(mail, true);
-            m_lock = true;
+        if(isFree(mail)) {
+            locked.put(mail, true);
+            lock = true;
         }
     }
 
     protected void unlock(String mail) {
-        m_locked.put(mail, false);
-        m_lock = false;
+        locked.put(mail, false);
+        lock = false;
     }
 
 

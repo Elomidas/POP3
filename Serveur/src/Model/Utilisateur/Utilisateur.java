@@ -1,23 +1,20 @@
 package Model.Utilisateur;
 
-/**
- * Created by tardy on 26/02/2018.
- */
 public class Utilisateur {
 
-    protected int m_id;
-    protected String m_nom;
-    protected String m_mdp;
-    protected String m_adresseEmail;
+    private int id;
+    private String nom;
+    private String mdp;
+    private String adresseEmail;
 
-    protected static final String _SEPARATOR = "#@@@#";
+    private static final String _SEPARATOR = "#@@@#";
 
-    public String getM_adresseEmail() {
-        return m_adresseEmail;
+    public String getAdresseEmail() {
+        return adresseEmail;
     }
 
-    public void setM_adresseEmail(String m_adresseEmail) {
-        this.m_adresseEmail = m_adresseEmail;
+    public void setAdresseEmail(String adresseEmail) {
+        this.adresseEmail = adresseEmail;
     }
 
     public Utilisateur(String line) {
@@ -25,78 +22,64 @@ public class Utilisateur {
         for(String s : strs) {
             System.out.println("> " + s);
         }
-        m_id = Integer.parseInt(strs[0]);
-        m_nom = decode(strs[1]);
-        m_adresseEmail = decode(strs[2]);
-        m_mdp = decode(strs[3]);
-    }
-
-    public Utilisateur(int m_id, String m_nom, String m_mdp, String m_adresseEmail) {
-
-        this.m_id = m_id;
-        this.m_nom = m_nom;
-        this.m_mdp = m_mdp;
-        this.m_adresseEmail = m_adresseEmail;
-    }
-
-    public Utilisateur(int m_id, String m_nom, String m_mdp) {
-        this.m_id = m_id;
-        this.m_nom = m_nom;
-        this.m_mdp = m_mdp;
+        id = Integer.parseInt(strs[0]);
+        nom = decode(strs[1]);
+        adresseEmail = decode(strs[2]);
+        mdp = decode(strs[3]);
     }
 
     public String toLine() {
         StringBuilder sBuilder = new StringBuilder();
-        sBuilder.append(m_id)
-                .append(encode(m_nom))
+        sBuilder.append(id)
+                .append(encode(nom))
                 .append(_SEPARATOR)
-                .append(encode(m_adresseEmail))
+                .append(encode(adresseEmail))
                 .append(_SEPARATOR)
-                .append(encode(m_mdp));
+                .append(encode(mdp));
         return sBuilder.toString();
     }
 
-    protected String encode(String str) {
+    private String encode(String str) {
         return str.replace("\\", "\\\\");
     }
 
-    protected String decode(String str) {
+    private String decode(String str) {
         return str.replace("\\\\", "\\");
     }
 
-    public int getM_id() {
-        return m_id;
+    public int getId() {
+        return id;
     }
 
-    public void setM_id(int m_id) {
-        this.m_id = m_id;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getM_nom() {
-        return m_nom;
+    public String getNom() {
+        return nom;
     }
 
-    public void setM_nom(String m_nom) {
-        this.m_nom = m_nom;
+    public void setNom(String nom) {
+        this.nom = nom;
     }
 
-    public String getM_mdp() {
-        return m_mdp;
+    public String getMdp() {
+        return mdp;
     }
 
-    public void setM_mdp(String m_mdp) {
-        this.m_mdp = m_mdp;
+    public void setMdp(String mdp) {
+        this.mdp = mdp;
     }
 
     public boolean checkPassword(String password) {
-        return password.equals(m_mdp);
+        return password.equals(mdp);
     }
 
     @Override
     public String toString() {
         return "Utilisateur{" +
-                "m_nom='" + m_nom + '\'' +
-                ", m_adresseEmail='" + m_adresseEmail + '\'' +
+                "nom='" + nom + '\'' +
+                ", adresseEmail='" + adresseEmail + '\'' +
                 '}';
     }
 }

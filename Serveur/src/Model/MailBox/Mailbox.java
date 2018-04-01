@@ -7,46 +7,36 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by tardy on 22/03/2018.
- */
 public class Mailbox {
 
     private RepertoireUtilisateur repertoireUtilisateur;
-    private ArrayList<Email> m_listeEmails;
+    private ArrayList<Email> listeEmails;
     private int id;
 
     public Mailbox() {
         this.repertoireUtilisateur = new RepertoireUtilisateur();
-        this.m_listeEmails = new ArrayList<>();
+        this.listeEmails = new ArrayList<>();
         id = 1;
-    }
-
-    public Mailbox(int i) {
-        this.repertoireUtilisateur = new RepertoireUtilisateur();
-        this.m_listeEmails = new ArrayList<>();
-        id = 1;
-        this.loadMails();
     }
 
     public RepertoireUtilisateur getRepertoireUtilisateur() {
-        return this.repertoireUtilisateur;
+        return repertoireUtilisateur;
     }
 
     public void setRepertoireUtilisateur(RepertoireUtilisateur repertoireUtilisateur) {
         this.repertoireUtilisateur = repertoireUtilisateur;
     }
 
-    public ArrayList<Email> getM_listeEmails() {
-        return m_listeEmails;
+    public ArrayList<Email> getListeEmails() {
+        return listeEmails;
     }
 
-    public void setM_listeEmails(ArrayList<Email> m_listeEmails) {
-        this.m_listeEmails = m_listeEmails;
+    public void setListeEmails(ArrayList<Email> listeEmails) {
+        this.listeEmails = listeEmails;
     }
 
     public void loadMails() {
-        for (Utilisateur u: this.repertoireUtilisateur.getM_listeUtilisateurs()) {
+        for (Utilisateur u: repertoireUtilisateur.getListeUtilisateurs()) {
             loadMails(u);
         }
     }
@@ -54,9 +44,9 @@ public class Mailbox {
     public void loadMails(Utilisateur u) {
         if (u != null) {
             try {
-                BufferedReader br = new BufferedReader(new FileReader("storage/" + u.getM_adresseEmail() + ".pop"));
+                BufferedReader br = new BufferedReader(new FileReader("storage/" + u.getAdresseEmail() + ".pop"));
                 int i = 0;
-                while (this.readMail(br, u)) {
+                while (readMail(br, u)) {
                     id++;
                     i++;
                 }
@@ -75,9 +65,9 @@ public class Mailbox {
 
     public List<Email> recupereEmails(Utilisateur utilisateur) {
         //To be tested
-        List<Email> listEmails = new ArrayList<Email>();
-        for (Email email: m_listeEmails) {
-            if (email.getM_emetteur().equals(utilisateur)) {
+        List<Email> listEmails = new ArrayList<>();
+        for (Email email: listeEmails) {
+            if (email.getEmetteur().equals(utilisateur)) {
                 listEmails.add(email);
             }
             for (Utilisateur utilisateur1 : email.getM_destinataires()) {
@@ -90,7 +80,7 @@ public class Mailbox {
     }
 
 
-    protected boolean readMail(BufferedReader br, Utilisateur u) {
+    private boolean readMail(BufferedReader br, Utilisateur u) {
         ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
         utilisateurArrayList.add(u);
         try {
@@ -103,10 +93,11 @@ public class Mailbox {
                 String line = br.readLine();
                 if(line.equals(".")) {
                     sBuilder.append(".\n");
-                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), this.repertoireUtilisateur.getM_listeUtilisateurs());
-                    m.setM_id(id);
-                    m_listeEmails.add(m);
+                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), repertoireUtilisateur.getListeUtilisateurs());
+                    m.setId(id);
+                    listeEmails.add(m);
                     return true;
+                    //TODO a check condition ci dessous
                 } else if(line == null) {
                     return false;
                 } else {
@@ -121,14 +112,13 @@ public class Mailbox {
     }
 
 
-    public int removeMails(Utilisateur u) {
-        String temp ="";
-        String idMail ="";
-        int i = 0;
+    public void removeMails(Utilisateur u) {
+        String temp;
+        String idMail;
         if(u != null) {
             try {
-                BufferedReader br = new BufferedReader(new FileReader("storage/" + u.getM_adresseEmail() + ".pop"));
-                BufferedWriter bw = new BufferedWriter(new FileWriter("storage/" + u.getM_adresseEmail() + "temp.pop"));
+                BufferedReader br = new BufferedReader(new FileReader("storage/" + u.getAdresseEmail() + ".pop"));
+                BufferedWriter bw = new BufferedWriter(new FileWriter("storage/" + u.getAdresseEmail() + "temp.pop"));
                 idMail = br.readLine();
                 Email email = getEmail(idMail);
                 if (email != null) {
@@ -152,17 +142,16 @@ public class Mailbox {
                 }
                 bw.close();
                 br.close();
-                File oldFile =  new File("storage/" + u.getM_adresseEmail() + ".pop");
+                File oldFile =  new File("storage/" + u.getAdresseEmail() + ".pop");
                 oldFile.delete();
-                File newFile = new File("storage/" + u.getM_adresseEmail() + "temp.pop");
-                newFile.renameTo(new File("storage/" + u.getM_adresseEmail() + ".pop"));
+                File newFile = new File("storage/" + u.getAdresseEmail() + "temp.pop");
+                newFile.renameTo(new File("storage/" + u.getAdresseEmail() + ".pop"));
             } catch(FileNotFoundException e) {
                 //Do nothing
             } catch(Exception e) {
                 e.printStackTrace();
             }
         }
-        return i;
     }
 
     public void setEmailsUndeleted(Utilisateur utilisateur) {
@@ -170,24 +159,24 @@ public class Mailbox {
         List<Email> listeEmailsDeUtilisateur = recupereEmails(utilisateur);
         for (Email email: listeEmailsDeUtilisateur
                 ) {
-            email.setM_etat(true);
-            m_listeEmails.set(m_listeEmails.indexOf(email), email);
+            email.setEtat(true);
+            listeEmails.set(listeEmails.indexOf(email), email);
         }
     }
 
     public Email getEmail(String emailId){
-        for (Email email: this.getM_listeEmails()) {
-            if (email.getM_id().equals(emailId)) {
+        for (Email email: getListeEmails()) {
+            if (email.getId().equals(emailId)) {
                 return email;
             }
         }
         return null;
     }
 
-    public Email createEmail(ArrayList<Utilisateur> dest, Utilisateur emetteur){
+    public Email createEmail(Utilisateur emetteur){
         String i = String.valueOf(id);
         id++;
-        return new Email(i,new ArrayList<Utilisateur>(),emetteur);
+        return new Email(i, new ArrayList<>(),emetteur);
     }
 
 }
