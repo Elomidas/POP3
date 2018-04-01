@@ -30,7 +30,6 @@ public class ConnexionSMTP extends Thread{
 
         try {
             this.serverSocket = new ServerSocket(this.m_port);
-            serverSocket.setSoTimeout(60000);
             while (m_continuer) {
                 System.out.println("Attente de connexion au port 1212 ");
                 this.socket = this.serverSocket.accept();

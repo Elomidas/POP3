@@ -26,12 +26,9 @@ public class ConnexionPOP3 extends Thread{
     public void run(){
         try {
             this.serverSocket = new ServerSocket(this.m_port);
-            serverSocket.setSoTimeout(60000);
             while (m_continuer) {
                 System.out.println("Attente de connexion au port 1210 ");
                 this.socket = this.serverSocket.accept();
-                socket.setSoTimeout(60000);
-
                 ObjetConnecte objetConnecte = new ObjetConnecte(this.socket);
                 objetConnecte.start();
                 System.out.println("Début de connexion POP3");
