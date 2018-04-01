@@ -53,6 +53,7 @@ public class Email {
         this.m_date = formatDate.format(date);
         this.m_subject = null;
         this.m_message = "";
+        this.m_etat=true;
     }
 
     protected void decode(String encrypted, ArrayList<Utilisateur> usrs) {

@@ -219,15 +219,23 @@ public class ObjetConnecte extends Thread{
         if(m_lock) {
             this.unlock(m_current.getM_adresseEmail());
         }
-        List<Email> listEmailsToRemove = new ArrayList<>();
+        List<String> listEmailsIdToRemove = new ArrayList<>();
         List<Email> listEmailsOfUser = m_mailbox.recupereEmails(m_current);
+        List<Email> listEmailsToRemove = new ArrayList<>();
         for (Email email: listEmailsOfUser) {
             if (!email.getM_etat()) {
                 m_mailbox.getM_listeEmails().remove(email);
-                listEmailsToRemove.add(email);
+                listEmailsIdToRemove.add(email.getM_id());
             }
         }
-
+        m_mailbox.supprimeEmails(m_current);
+        m_mailbox.loadMails(m_current);
+        for (Email email2: m_mailbox.getM_listeEmails()) {
+            if (listEmailsIdToRemove.contains(email2.getM_id())) {
+                listEmailsToRemove.add(email2);
+            }
+        }
+        m_mailbox.getM_listeEmails().removeAll(listEmailsToRemove);
         this.m_mailbox.removeMails(m_current);
         return POP3_REPONSE_POSITIVE;
     }

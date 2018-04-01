@@ -89,6 +89,12 @@ public class Mailbox {
         return listEmails;
     }
 
+    public void supprimeEmails(Utilisateur utilisateur) {
+        //To be tested
+        List<Email> listEmails = recupereEmails(utilisateur);
+        m_listeEmails.removeAll(listEmails);
+    }
+
 
     protected boolean readMail(BufferedReader br, Utilisateur u) {
         ArrayList<Utilisateur> utilisateurArrayList = new ArrayList<>();
