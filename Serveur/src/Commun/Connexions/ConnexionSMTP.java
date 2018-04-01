@@ -27,6 +27,7 @@ public class ConnexionSMTP extends Thread{
     }
 
     public void run(){
+
         try {
             this.serverSocket = new ServerSocket(this.m_port);
             serverSocket.setSoTimeout(60000);

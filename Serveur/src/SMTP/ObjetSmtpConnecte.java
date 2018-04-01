@@ -84,7 +84,7 @@ public class ObjetSmtpConnecte extends Thread{
                         reponseServeur = SMTP_500_UNKNOWN_COMMAND;
                 }
                 if (reponseServeur != null) {
-                    System.out.println("S: " + reponseServeur);
+                    System.out.println("S SMTP: " + reponseServeur);
                     tcp.send(reponseServeur);
                 }
             } catch (IOException e) {

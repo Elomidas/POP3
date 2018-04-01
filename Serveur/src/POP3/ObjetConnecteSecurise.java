@@ -79,7 +79,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                             break;
                     }
                 }
-                out.println("S: " + response);
+                out.println("S POP3S: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
 

@@ -57,6 +57,7 @@ public class Tcp {
             } while (((i != -1) & (iChar != '\n') & (i != '\r')) || first);
             System.out.println("C: \"" + messageReceived + "\"");
         } catch(Exception e) {
+            System.out.println("Errrrrrreur: " + e.getMessage());
             return e.getMessage();
         }
 
@@ -66,6 +67,8 @@ public class Tcp {
     public void Destroy(){
         try {
             this.socket.close();
+            this.m_output.close();
+            this.m_input.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

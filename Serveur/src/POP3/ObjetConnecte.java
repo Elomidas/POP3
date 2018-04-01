@@ -81,7 +81,7 @@ public class ObjetConnecte extends Thread{
                         break;
                 }
 
-                System.out.println("S: " + response);
+                System.out.println("S POP3: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
                 e.printStackTrace();
