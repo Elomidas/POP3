@@ -1,4 +1,4 @@
-package Model.Mail;
+package Model.MailBox;
 
 import Model.Utilisateur.RepertoireUtilisateur;
 import Model.Utilisateur.Utilisateur;

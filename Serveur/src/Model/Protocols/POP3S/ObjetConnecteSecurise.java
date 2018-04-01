@@ -1,6 +1,8 @@
-package Model.Protocols.POP3;
+package Model.Protocols.POP3S;
 
 //import Commun.TcpPOP3S;
+
+import Model.Protocols.POP3.ObjetConnecte;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +32,6 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
     }
 
     public void run() {
-        this.initialize();
 
        this.m_etat = POP3_ETAT_AUTORISATION;
         String input;
@@ -68,10 +69,10 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                 } else {
                     switch (m_etat) {
                         case ObjetConnecte.POP3_ETAT_AUTORISATION:
-                            response = this.AuthorisationState(command, parameters);
+                            response = AuthorisationState(command, parameters);
                             break;
                         case ObjetConnecte.POP3_ETAT_TRANSACTION:
-                            response = this.TransactionState(command, parameters);
+                            response = TransactionState(command, parameters);
                             break;
                         default:
                             out.println("What is that (state/command) : " + m_etat + "/" + command);

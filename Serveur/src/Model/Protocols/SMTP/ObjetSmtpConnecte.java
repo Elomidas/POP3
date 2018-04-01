@@ -1,7 +1,7 @@
 package Model.Protocols.SMTP;
 
-import Model.Mail.Email;
-import Model.Mail.Mailbox;
+import Model.MailBox.Email;
+import Model.MailBox.Mailbox;
 import Model.Protocols.TCP.Tcp;
 import Utilities.TestRegex;
 import Model.Utilisateur.Utilisateur;

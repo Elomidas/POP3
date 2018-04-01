@@ -1,4 +1,4 @@
-package Model.Mail;
+package Model.MailBox;
 
 import Utilities.TestRegex;
 import Model.Utilisateur.Utilisateur;

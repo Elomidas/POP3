@@ -1,7 +1,7 @@
 package Model.Protocols.POP3;
 
-import Model.Mail.Email;
-import Model.Mail.Mailbox;
+import Model.MailBox.Email;
+import Model.MailBox.Mailbox;
 import Model.Protocols.TCP.Tcp;
 import Model.Utilisateur.Utilisateur;
 
@@ -34,10 +34,6 @@ public class ObjetConnecte extends Thread{
 
     public ObjetConnecte(Socket socket) throws IOException {
         this.m_tcp = new Tcp(socket);
-
-    }
-
-    protected void initialize() {
         m_mailbox = new Mailbox();
         m_current = null;
         m_continuer = true;
@@ -47,7 +43,6 @@ public class ObjetConnecte extends Thread{
     }
 
     public void run() {
-        this.initialize();
 
         m_etat = POP3_ETAT_AUTORISATION;
         String input;
@@ -90,7 +85,7 @@ public class ObjetConnecte extends Thread{
             }
         }
         this.m_tcp.Destroy();
-        System.out.println("End of Model.Protocols.POP3");
+        System.out.println("End of POP3");
     }
 
     /*  ###

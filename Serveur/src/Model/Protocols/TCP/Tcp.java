@@ -9,7 +9,7 @@ import java.net.Socket;
 /**
  * Created by tardy on 31/03/2018.
  */
-public class    Tcp {
+public class  Tcp {
 
     BufferedInputStream m_input;
     PrintStream m_output;

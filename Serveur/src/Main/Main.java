@@ -8,11 +8,11 @@ public class Main {
 
     public static void main(String[] args) {
         try{
-            ConnexionPOP3 connexionPOP3 = new ConnexionPOP3();
+            ConnexionPOP3 connexionPOP3 = new ConnexionPOP3(portPOP3);
             connexionPOP3.start();
-            ConnexionPOP3S connexionPOP3S = new ConnexionPOP3S();
+            ConnexionPOP3S connexionPOP3S = new ConnexionPOP3S(portPOP3S);
             connexionPOP3S.start();
-            ConnexionSMTP connexionSMTP = new ConnexionSMTP();
+            ConnexionSMTP connexionSMTP = new ConnexionSMTP(portSMTP);
             connexionSMTP.start();
         }catch(Exception e){
             e.printStackTrace();
