@@ -1,21 +1,25 @@
 package Commun;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
 
-public class Connexion extends Thread {
+/**
+ * Created by tardy on 31/03/2018.
+ */
+public class Tcp {
 
     BufferedInputStream m_input;
     PrintStream m_output;
     Socket socket;
-    int m_port;
 
-    public Connexion(int port){
-        this.m_port = port;
-        this.socket = null;
+    public Tcp(Socket socket) throws IOException {
+        this.socket = socket;
         this.m_input = null;
         this.m_output = null;
+        this.createIO();
     }
     public void send(String message) {
         m_output.println(message + "\r");
@@ -51,11 +55,20 @@ public class Connexion extends Thread {
                     }
                 }
             } while (((i != -1) & (iChar != '\n') & (i != '\r')) || first);
-            System.out.println("Requête reçue: \"" + messageReceived + "\"");
+            System.out.println("C: \"" + messageReceived + "\"");
         } catch(Exception e) {
             return e.getMessage();
         }
 
         return messageReceived.toString();
+    }
+
+    public void Destroy(){
+        try {
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
