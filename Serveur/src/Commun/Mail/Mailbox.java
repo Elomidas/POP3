@@ -16,8 +16,8 @@ public class Mailbox {
     private ArrayList<Email> m_listeEmails;
     private int id;
 
-    public Mailbox() {
-        this.repertoireUtilisateur = new RepertoireUtilisateur();
+    public Mailbox(String domain) {
+        this.repertoireUtilisateur = new RepertoireUtilisateur(domain);
         this.m_listeEmails = new ArrayList<>();
         id = 1;
     }
