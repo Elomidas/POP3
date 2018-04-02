@@ -15,8 +15,11 @@ public class RepertoireUtilisateur {
     private ArrayList<Utilisateur> m_listeUtilisateurs;
 
     public RepertoireUtilisateur() {
-        m_listeUtilisateurs = new ArrayList<Utilisateur>();
-        loadUsersFromFile();
+        m_listeUtilisateurs = loadUsersFromFile();
+    }
+
+    public RepertoireUtilisateur(String domain) {
+        m_listeUtilisateurs = loadUsersFromFile("." + domain);
     }
 
     public ArrayList<Utilisateur> getM_listeUtilisateurs() {
@@ -47,16 +50,20 @@ public class RepertoireUtilisateur {
         return null;
     }
 
+    public ArrayList<Utilisateur> loadUsersFromFile() {
+        return loadUsersFromFile("");
+    }
 
-    public void loadUsersFromFile() {
+    public ArrayList<Utilisateur> loadUsersFromFile(String domain) {
+        ArrayList<Utilisateur> utilisateurs = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new FileReader("data/users.pop"));
+            BufferedReader br = new BufferedReader(new FileReader("data/users" + domain + ".pop"));
 
             String line = br.readLine();
             int i = 0;
             while((line != null) && (line.length() > 4)) {
                 Utilisateur u = new Utilisateur(line);
-                m_listeUtilisateurs.add(u);
+                utilisateurs.add(u);
                 line = br.readLine();
                 i++;
             }
@@ -67,6 +74,7 @@ public class RepertoireUtilisateur {
         } catch(Exception e) {
             e.printStackTrace();
         }
+        return utilisateurs;
     }
 
     @Override

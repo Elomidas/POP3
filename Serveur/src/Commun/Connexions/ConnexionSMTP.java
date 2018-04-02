@@ -18,12 +18,14 @@ public class ConnexionSMTP extends Thread{
     ServerSocket serverSocket;
     int m_port;
     boolean m_continuer;
+    String serverDomain;
 
-    public ConnexionSMTP(){
+    public ConnexionSMTP(String serverDomain){
         this.m_port = 1212;
         this.socket = null;
         this.serverSocket = null;
         this.m_continuer = true;
+        this.serverDomain = serverDomain;
     }
 
     public void run(){
@@ -34,7 +36,7 @@ public class ConnexionSMTP extends Thread{
                 System.out.println("Attente de connexion au port 1212 ");
                 this.socket = this.serverSocket.accept();
 
-                ObjetSmtpConnecte objetConnecte = new ObjetSmtpConnecte(this.socket);
+                ObjetSmtpConnecte objetConnecte = new ObjetSmtpConnecte(this.socket, this.serverDomain);
                 objetConnecte.start();
                 System.out.println("Début de connexion SMTP");
             }

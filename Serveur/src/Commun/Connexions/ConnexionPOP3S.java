@@ -1,11 +1,8 @@
 package Commun.Connexions;
 
-import POP3.ObjetConnecte;
 import POP3.ObjetConnecteSecurise;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;

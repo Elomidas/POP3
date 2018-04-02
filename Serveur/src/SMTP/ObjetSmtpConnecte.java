@@ -25,15 +25,16 @@ public class ObjetSmtpConnecte extends Thread{
     protected Mailbox mailbox;
     protected String clientDomain;
     private int idLine;
+    protected String serverDomain;
 
-    public ObjetSmtpConnecte(Socket socket) throws IOException {
+    public ObjetSmtpConnecte(Socket socket, String serverDomain) throws IOException {
         this.tcp = new Tcp(socket);
-
+        this.serverDomain = serverDomain;
         this.etatServeur = SERVER_READY;
         this.continuer = true;
         this.currentEmail = null;
         this.m_listeEmails = new ArrayList<>();
-        this.mailbox = new Mailbox(0);
+        this.mailbox = new Mailbox(0,serverDomain);
         clientDomain = null;
         idLine = 0;
     }
@@ -371,7 +372,7 @@ public class ObjetSmtpConnecte extends Thread{
     public void removeSavedFiles() {
         File directory = new File("data/");
         for (File f : directory.listFiles()) {
-            if (f.getName().endsWith(".com.pop")) {
+            if (f.getName().endsWith(".pop") && !f.getName().startsWith("users")) {
                 try {
                     FileOutputStream writer = new FileOutputStream(f.getAbsolutePath());
                     writer.close();

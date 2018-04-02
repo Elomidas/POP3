@@ -22,8 +22,8 @@ public class Mailbox {
         id = 1;
     }
 
-    public Mailbox(int i) {
-        this.repertoireUtilisateur = new RepertoireUtilisateur();
+    public Mailbox(int i, String serverDomain) {
+        this.repertoireUtilisateur = new RepertoireUtilisateur(serverDomain);
         this.m_listeEmails = new ArrayList<>();
         id = 1;
         this.loadMails();
