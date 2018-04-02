@@ -4,7 +4,7 @@ public class ReponseServeur {
 
     public final static String SMTP_SERVER_READY = "220 Simple Mail Transfer Service Ready";
     public final static String SMTP_500_UNKNOWN_COMMAND = "500 Erreur de syntaxe, commande non reconnue";
-    public final static String SMTP_250_SERVERDOMAIN = "250 localhost";
+    public final static String SMTP_250_SERVERDOMAIN = "250 ";
     public final static String SMTP_221_CLOSING = "221 fermeture";
     public final static String SMTP_250_OK = "250 OK";
     public final static String SMTP_550_UNKNOWN_USER = "250 utilisateur inconnu";

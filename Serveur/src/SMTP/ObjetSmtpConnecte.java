@@ -209,7 +209,7 @@ public class ObjetSmtpConnecte extends Thread{
     private String commandeEhlo(String[] parameters) {
         this.clientDomain = parameters.length >= 1 ? parameters[0] : "";
         etatServeur = SERVER_IDENTIFICATION;
-        return SMTP_250_SERVERDOMAIN ;
+        return SMTP_250_SERVERDOMAIN + this.serverDomain ;
     }
 
     /**
