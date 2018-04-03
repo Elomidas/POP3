@@ -31,15 +31,13 @@ public class ObjetConnecte extends Thread{
     protected boolean m_lock;
     protected Tcp m_tcp;
     protected int m_blankCount;
-    protected String domain;
 
-    public ObjetConnecte(Socket socket, String domain) throws IOException {
+    public ObjetConnecte(Socket socket) throws IOException {
         this.m_tcp = new Tcp(socket);
-        this.domain = domain;
     }
 
     protected void initialize() {
-        m_mailbox = new Mailbox(domain);
+        m_mailbox = new Mailbox();
         m_current = null;
         m_continuer = true;
         m_lock = false;
