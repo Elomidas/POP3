@@ -43,16 +43,5 @@ public class ConnexionPOP3S extends Thread{
             e.printStackTrace();
         }
 
-
-//        try {
-//            this.socket.close();
-//            if (socket.isClosed()) {
-//                this.serverSocket.close();
-//                System.out.println("Fin de Commun.Connexions");
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
     }
 }

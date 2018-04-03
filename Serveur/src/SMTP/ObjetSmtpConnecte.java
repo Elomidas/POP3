@@ -4,6 +4,7 @@ import Commun.Mail.Email;
 import Commun.Mail.Mailbox;
 import Commun.Tcp;
 import Commun.Utiles.TestRegex;
+import Commun.Utilisateur.RepertoireUtilisateur;
 import Commun.Utilisateur.Utilisateur;
 
 import java.io.*;
@@ -250,7 +251,9 @@ public class ObjetSmtpConnecte extends Thread{
         }
         String emailAddress = emailAddressNotexploded.substring(6,emailAddressNotexploded.length() - 1);
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
-            Utilisateur utilisateur = mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailAddress);
+            RepertoireUtilisateur users = new RepertoireUtilisateur();
+            users.loadUsersFromFile();
+            Utilisateur utilisateur = users.getUtilisateurParEmail(emailAddress);
             if (utilisateur == null) {
                 return SMTP_550_UNKNOWN_USER;
             }
