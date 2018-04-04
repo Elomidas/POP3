@@ -41,9 +41,7 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
         }
         while (m_continuer) {
             try {
-//                out.println("Wait...");
                 input = m_tcp.receive();
-//                out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
                 String command = explodedCommand[0].toUpperCase();

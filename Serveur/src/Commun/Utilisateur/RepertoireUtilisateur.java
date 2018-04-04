@@ -90,4 +90,8 @@ public class RepertoireUtilisateur {
     public void addUtilisateur(Utilisateur u) {
         this.getM_listeUtilisateurs().add(u);
     }
+
+    public int getIdMax(){
+        return this.getM_listeUtilisateurs().size()-1;
+    }
 }

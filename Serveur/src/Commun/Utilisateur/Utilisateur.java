@@ -10,7 +10,15 @@ public class Utilisateur {
     protected String m_mdp;
     protected String m_adresseEmail;
 
+
     protected static final String _SEPARATOR = "#@@@#";
+
+    public Utilisateur(String emailAddress, int id) {
+        this.m_id = id;
+        this.m_nom = null;
+        this.m_mdp = null;
+        this.m_adresseEmail = emailAddress;
+    }
 
     public String getM_adresseEmail() {
         return m_adresseEmail;

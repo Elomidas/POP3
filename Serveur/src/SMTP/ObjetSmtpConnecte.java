@@ -251,12 +251,7 @@ public class ObjetSmtpConnecte extends Thread{
         }
         String emailAddress = emailAddressNotexploded.substring(6,emailAddressNotexploded.length() - 1);
         if (emailAddress != null && TestRegex.CheckMail(emailAddress)) {
-            RepertoireUtilisateur users = new RepertoireUtilisateur();
-            users.loadUsersFromFile();
-            Utilisateur utilisateur = users.getUtilisateurParEmail(emailAddress);
-            if (utilisateur == null) {
-                return SMTP_550_UNKNOWN_USER;
-            }
+            Utilisateur utilisateur = new Utilisateur(emailAddress, mailbox.getRepertoireUtilisateur().getIdMax());
             this.currentEmail = this.mailbox.createEmail( new ArrayList<Utilisateur>(),utilisateur);
         } else {
             return SMTP_550_UNKNOWN_USER;
