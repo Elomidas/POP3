@@ -14,7 +14,7 @@ public class MainSMTP {
     public static void main(String[] args) {
         Mailbox m = new Mailbox();
         try {
-            m.joinServer("127.0.0.1", 1211, 1212);
+            m.joinServer("email.com");
         } catch (MailException e) {
             e.printStackTrace();
         }
@@ -24,7 +24,7 @@ public class MainSMTP {
         System.out.println("Test 2");
         try {
             System.out.println("Test 3");
-            smtp.Connect("127.0.0.1", port);
+            smtp.Connect("email.com");
             System.out.println("Test 4");
             smtp.Observe();
             System.out.println("Test 5");

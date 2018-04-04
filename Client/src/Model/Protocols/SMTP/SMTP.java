@@ -5,8 +5,15 @@ import Model.Protocols.ProtocolUnderTCP;
 import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCP;
 import Model.Protocols.TCP.TCPException;
+import Utilities.DNS;
+import Utilities.DNSException;
 import Utilities.TestRegex;
 import jdk.nashorn.internal.runtime.regexp.joni.Regex;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SMTP extends ProtocolUnderTCP {
 
@@ -60,6 +67,17 @@ public class SMTP extends ProtocolUnderTCP {
         super.setProtocolName(protocolName);
     }
 
+    @Override
+    protected int computePort(String domain) throws SMTPException {
+        int port;
+        try {
+            port = DNS.getSMTP(domain);
+        } catch (DNSException e) {
+            throw new SMTPException("Unable to find SMTP port for this domain.", e);
+        }
+        return port;
+    }
+
 
     /**
      * Main functions
@@ -67,15 +85,14 @@ public class SMTP extends ProtocolUnderTCP {
 
     /**
      * Set the connection parameters
-     * @param address
-     * @param port
+     * @param domain Domain name of the server to reach
      * @throws SMTPException
      */
     @Override
-    public void Connect(String address, int port) throws SMTPException {
+    public void Connect(String domain) throws SMTPException {
         if(currentState == SMTP._UNINITIALIZED) {
             try {
-                super.setParameters(address, port);
+                super.setParameters(domain);
                 currentState = SMTP._INITIALIZED;
             } catch (ProtocolUnderTCPException e) {
                 throw (SMTPException) e;
@@ -115,36 +132,28 @@ public class SMTP extends ProtocolUnderTCP {
     /**
      * Send a mail to one or more targets
      * @param targets String containing targets, separated by ";" or "; "
-     * @param from Mail of the sender
-     * @param subject Mail's subject
-     * @param mail Mail's text
+     * @param mailConvertor Mail to send
+     * @return Error list
      * @throws SMTPException Error while sending the mail(s)
      */
-    public void SendMail(String targets, String from, String subject, String mail) throws SMTPException {
+    List<String> SendMail(String targets, MailConvertor mailConvertor) throws SMTPException {
         this.connect();
         String[] to = targets.split(";");
-        MailConvertor mailConvertor = new MailConvertor();
-        mailConvertor.setSubject(subject);
-        mailConvertor.setFrom(from);
-        mailConvertor.setMessage(mail);
-        StringBuilder errors = new StringBuilder("");
-        for(int i = 0; i < to.length; i++) {
-            String target = to[i].trim();
-            mailConvertor.setTo(target);
-            if(!this.sendSimpleMail(mailConvertor)) {
-                errors.append("Mail to ")
-                        .append(target)
+        ArrayList<String> errors = new ArrayList<>();
+
+        for (String dest : to) {
+            mailConvertor.setTo(dest);
+            if (!this.sendSimpleMail(mailConvertor)) {
+                StringBuilder error = new StringBuilder("Mail to ");
+                error.append(dest)
                         .append(" hasn't been delivered.\n");
+                errors.add(error.toString());
             }
         }
-        try {
-            this.Close();
-        } catch (ProtocolUnderTCPException e) {
-            throw (SMTPException)e;
-        }
-        if(!errors.toString().equals("")) {
-            throw new SMTPException(errors.toString());
-        }
+
+        this.Close();
+
+        return errors;
     }
 
     /**

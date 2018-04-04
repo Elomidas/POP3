@@ -3,6 +3,7 @@ package Utilities;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DNS {
     private static List<ServerIntels> servers = Arrays.asList(
@@ -74,5 +75,17 @@ public class DNS {
      */
     public static int getSMTP(String domain) throws DNSException {
         return getServer(domain).getSMTP();
+    }
+
+    /**
+     * Get the number of servers.
+     * @return The number of servers.
+     */
+    public static int getServersNumber() {
+        return servers.size();
+    }
+
+    public static List<String> getDomains() {
+        return servers.stream().map(ServerIntels::getDomainName).collect(Collectors.toList());
     }
 }
