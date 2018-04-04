@@ -31,13 +31,15 @@ public class ObjetConnecte extends Thread{
     protected boolean m_lock;
     protected Tcp m_tcp;
     protected int m_blankCount;
+    protected String domain;
 
-    public ObjetConnecte(Socket socket) throws IOException {
+    public ObjetConnecte(Socket socket, String domain) throws IOException {
         this.m_tcp = new Tcp(socket);
+        this.domain = domain;
     }
 
     protected void initialize() {
-        m_mailbox = new Mailbox();
+        m_mailbox = new Mailbox(this.domain);
         m_current = null;
         m_continuer = true;
         m_lock = false;
@@ -51,9 +53,7 @@ public class ObjetConnecte extends Thread{
         String input;
         while (m_continuer) {
             try {
-//                System.out.println("Wait...");
                 input = m_tcp.receive();
-//                System.out.println(input + " received");
 
                 String[] explodedCommand = input.split(" ", 2);
                 String command = explodedCommand[0].toUpperCase();

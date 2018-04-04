@@ -15,12 +15,14 @@ public class ConnexionPOP3 extends Thread{
     ServerSocket serverSocket;
     int m_port;
     boolean m_continuer;
+    String domain;
 
-    public ConnexionPOP3(){
+    public ConnexionPOP3(String domain){
         this.m_port = 1210;
         this.socket = null;
         this.serverSocket = null;
         this.m_continuer = true;
+        this.domain = domain;
     }
 
     public void run(){
@@ -29,7 +31,7 @@ public class ConnexionPOP3 extends Thread{
             while (m_continuer) {
                 System.out.println("Attente de connexion au port 1210 ");
                 this.socket = this.serverSocket.accept();
-                ObjetConnecte objetConnecte = new ObjetConnecte(this.socket);
+                ObjetConnecte objetConnecte = new ObjetConnecte(this.socket, this.domain);
                 objetConnecte.start();
                 System.out.println("Début de connexion POP3");
             }

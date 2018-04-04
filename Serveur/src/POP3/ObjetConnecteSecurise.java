@@ -25,8 +25,8 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
     }
 
 
-    public ObjetConnecteSecurise(Socket socket) throws IOException {
-        super(socket);
+    public ObjetConnecteSecurise(Socket socket, String domain) throws IOException {
+        super(socket, domain);
     }
 
     public void run() {
