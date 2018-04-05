@@ -25,7 +25,7 @@ public abstract class Connexion extends Thread{
     public void run(){
         try {
             while(!available(port)) {
-                port++;
+                port += 3;
             }
             this.serverSocket = new ServerSocket(port);
             while (continuer) {
