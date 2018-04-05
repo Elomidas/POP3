@@ -1,52 +1,74 @@
 package Model.Protocols;
 
 import Model.Protocols.TCP.*;
+import Utilities.DNS;
+import Utilities.DNSException;
 
 public abstract class ProtocolUnderTCP {
 
     protected String protocolName;
     protected TCP tcp;
 
+    /**
+     * Create a new ProtocolUnderTCP
+     * @param protocolName explicit
+     */
     public ProtocolUnderTCP(String protocolName){
         this.protocolName = protocolName;
         tcp = new TCP();
     }
 
-    /*  ###
-     *  # ACCESSORS
-     *  ###
+    /**
+     * Get protocol's name
+     * @return Protocol's name
      */
-
     public String getProtocolName() {
         return protocolName;
     }
 
-
-    /*  ###
-     *  # MUTATORS
-     *  ###
+    /**
+     * Set protocol's name
+     * @param protocolName protocol's name
      */
-
     public void setProtocolName(String protocolName) {
         this.protocolName = protocolName;
     }
 
-
-    /*  ###
-     *  # MAIN FUNCTIONS
-     *  ###
+    /**
+     * Compute server's address thanks to DNS class
+     * @param domain Server's domain name
+     * @return Server's IP address
+     * @throws ProtocolUnderTCPException No server with this domain name
      */
+    private String computeAddress(String domain) throws ProtocolUnderTCPException {
+        String address;
+        try {
+            address = DNS.getAddress(domain);
+        } catch (DNSException e) {
+            throw new ProtocolUnderTCPException("Unable to determine address.", e);
+        }
+        return address;
+    }
 
     /**
-     * SetTCP connection parameters
-     * @param address
-     * @param port
-     * @throws ProtocolUnderTCPException
+     * Determine the port to use
+     * @param domain Server's domain name
+     * @return port to use
+     * @throws ProtocolUnderTCPException Error while determinig the port
      */
-    protected void setParameters(String address, int port) throws ProtocolUnderTCPException {
+    protected int computePort(String domain) throws ProtocolUnderTCPException {
+        throw new ProtocolUnderTCPException("Something is wrong here...");
+    }
+
+    /**
+     * Set protocol's parameters
+     * @param domain Domain name of the server to reach
+     * @throws ProtocolUnderTCPException Error while computing parameters
+     */
+    protected void setParameters(String domain) throws ProtocolUnderTCPException {
         try {
-            tcp.setServerAddress(address);
-            tcp.setServerPort(port);
+            tcp.setServerAddress(computeAddress(domain));
+            tcp.setServerPort(computePort(domain));
         } catch (TCPException e) {
             throw new ProtocolUnderTCPException("Unable to set TCP parameters.", e);
         }
@@ -55,12 +77,11 @@ public abstract class ProtocolUnderTCP {
 
     /**
      * Join the server through TCP
-     * @param address
-     * @param port
+     * @param domain Domain name of the server to reach
      * @throws ProtocolUnderTCPException
      */
-    public void Connect(String address, int port) throws ProtocolUnderTCPException {
-        this.setParameters(address, port);
+    public void Connect(String domain) throws ProtocolUnderTCPException {
+        this.setParameters(domain);
         this.connect();
     }
 

@@ -5,10 +5,14 @@ import Model.Protocols.POP3.POP3Exception;
 import Model.Protocols.POP3.POP3S;
 import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.SMTP.SMTP;
+import Model.Protocols.SMTP.SMTPDispatcher;
 import Model.Protocols.SMTP.SMTPException;
+import Utilities.DNS;
+import Utilities.TestRegex;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class Mailbox {
@@ -16,7 +20,7 @@ public class Mailbox {
     private String[] UUIDs;
     private MailAddress user;
     private POP3S pop3;
-    private SMTP smtp;
+    private SMTPDispatcher smtp;
 
     //Constructor
     public Mailbox() {
@@ -24,7 +28,6 @@ public class Mailbox {
         user = null;
         pop3 = null;
         smtp = null;
-        UUIDs = new String[0];
     }
 
     /**
@@ -100,29 +103,25 @@ public class Mailbox {
 
     /**
      * Try to join the server. Useful to test validity of address:port
-     * @param address Address of the server to join (can be an IP or an URL)
-     * @param portPOP Port on which joining the server for POP3S protocol.
-     * @param portSMTP Port on which joining the server for SMTP protocol.
+     * @param domain Domain name of the server to join.
      * @return true if the server has been reached, false else.
      * @throws MailException Error while joining the server.
      */
-    public boolean joinServer(String address, int portPOP, int portSMTP) throws MailException {
+    public boolean joinServer(String domain) throws MailException {
         if(pop3 == null) {
             pop3 = new POP3S();
             try {
-                pop3.Connect(address, portPOP);
+                pop3.Connect(domain);
             } catch(ProtocolUnderTCPException e) {
                 pop3 = null;
-                throw new MailException("Your POP3 configuration " + address + ":" + portPOP + " seems invalid...", e);
+                throw new MailException("Your domain name " + domain + " seems invalid as POP3S server...", e);
             }
         }
         if(smtp == null) {
-            smtp = new SMTP();
             try {
-                smtp.Connect(address, portSMTP);
+                smtp = new SMTPDispatcher();
             } catch (SMTPException e) {
-                smtp = null;
-                throw new MailException("Your SMTP configuration " + address + ":" + portSMTP + " seems invalid...", e);
+                throw new MailException("Unable to prepare SMTP connections.", e);
             }
         }
         return this.ServerJoined();
@@ -213,11 +212,12 @@ public class Mailbox {
      * @param to Address to which send the mail, separated with a ';'
      * @param subject mail's subject
      * @param mail mail's body
+     * @return Error list
      * @throws MailException Error while doing something
      */
-    public void SendMail(String to, String subject, String mail) throws MailException {
+    public List<String> SendMail(String to, String subject, String mail) throws MailException {
         try {
-            smtp.SendMail(to, this.user.getAddress(), subject, mail);
+            return smtp.SendMail(to, this.user.getAddress(), subject, mail);
         } catch (SMTPException e) {
             throw new MailException("Unable to send mail(s).", e);
         }

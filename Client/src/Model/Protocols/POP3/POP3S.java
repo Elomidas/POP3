@@ -2,6 +2,8 @@ package Model.Protocols.POP3;
 
 import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCPException;
+import Utilities.DNS;
+import Utilities.DNSException;
 import Utilities.TestRegex;
 
 import java.security.MessageDigest;
@@ -26,14 +28,13 @@ public class POP3S extends POP3 {
 
     /**
      * Trying to join the server
-     * @param address   Server's address (IP or URL)
-     * @param port      Port on which trying to join the server
+     * @param domain Server's domain name
      * @throws POP3Exception Exception during connection
      */
     @Override
-    public void Connect(String address, int port) throws POP3Exception {
+    public void Connect(String domain) throws POP3Exception {
         try {
-            super.Connect(address, port);
+            super.Connect(domain);
         } catch (ProtocolUnderTCPException e) {
             throw new POP3Exception("Unable to connect.", e);
         }
@@ -54,6 +55,15 @@ public class POP3S extends POP3 {
         }
     }
 
+    @Override
+    protected int computePort(String domain) throws POP3Exception {
+        try {
+            return DNS.getPOP3S(domain);
+        } catch (DNSException e) {
+            throw new POP3Exception("Unable to find a valid POP3S port.", e);
+        }
+    }
+
     /**
      * Authentication function with password encoded through MD5 protocol
      * @param login     User's login
@@ -64,7 +74,7 @@ public class POP3S extends POP3 {
     @Override
     public boolean Authentication(String login, String password) throws POP3Exception {
         System.out.println(login+":"+password);
-        if(this.CheckConnected() == false) {
+        if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
         if(m_authenticated) {
@@ -121,8 +131,8 @@ public class POP3S extends POP3 {
                 .append(clear);
         byte[] digestedBytes = m_digest.digest(sBuilder.toString().getBytes());
         StringBuilder returnBuilder = new StringBuilder();
-        for(int i = 0; i < digestedBytes.length; i++) {
-            returnBuilder.append(String.format("%02X", digestedBytes[i]));
+        for (byte digestedByte : digestedBytes) {
+            returnBuilder.append(String.format("%02X", digestedByte));
         }
         return returnBuilder.toString();
     }

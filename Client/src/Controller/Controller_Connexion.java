@@ -80,7 +80,7 @@ public class Controller_Connexion extends Controller {
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
             try {
-                if(mailbox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPortPOP3.getText()), Integer.parseInt(_tfPortSMTP.getText())))
+                if(mailbox.joinServer(TestRegex.GetDomain(_tfAdresseMail.getText())))
                 {
                     mailbox.setUser(_tfAdresseMail.getText());
                     if(mailbox.Authenticate(_tfMotDePasse.getText())){

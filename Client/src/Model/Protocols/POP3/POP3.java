@@ -3,6 +3,8 @@ package Model.Protocols.POP3;
 import Model.Protocols.ProtocolUnderTCP;
 import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.*;
+import Utilities.DNS;
+import Utilities.DNSException;
 import Utilities.TestRegex;
 
 public class POP3 extends ProtocolUnderTCP{
@@ -57,6 +59,15 @@ public class POP3 extends ProtocolUnderTCP{
             return POP3._AUTHENTICATED;
         }
         return POP3._CONNECTED;
+    }
+
+    @Override
+    protected int computePort(String domain) throws POP3Exception {
+        try {
+            return DNS.getPOP3(domain);
+        } catch (DNSException e) {
+            throw new POP3Exception("Unable to find a valid POP3 port.", e);
+        }
     }
 
     /*  ###

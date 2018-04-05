@@ -1,5 +1,6 @@
 package Utilities;
 
+import java.util.Arrays;
 import java.util.regex.*;
 
 public class TestRegex {
@@ -7,6 +8,7 @@ public class TestRegex {
     protected static final String _IP = "(?:\\d+\\.)+\\d+";
     protected static final String _POP = "\\+OK.*";
     public static final String _MD5 = "<[^>]+>";
+    protected static final String _DOMAIN = ".+@(.+)";
 
 
     public static boolean Match(String pattern, String target) {
@@ -41,5 +43,9 @@ public class TestRegex {
 
     public static boolean CheckMD5(String key) {
         return Match(_MD5, key);
+    }
+
+    public static String GetDomain(String email) {
+        return Submatches(_DOMAIN, email)[0];
     }
 }

@@ -2,6 +2,7 @@ package Test;
 
 import Model.MyLogger.MyLogger;
 import Model.Protocols.TCP.*;
+import Utilities.TestRegex;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
