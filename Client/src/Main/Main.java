@@ -34,7 +34,7 @@ public class Main extends Application {
     /**
      * Logs utilisé pour notre application
      */
-    protected Logger logs;
+    private Logger logs;
 
     /**
      * Constructeur par défaut
@@ -76,7 +76,7 @@ public class Main extends Application {
             FXMLLoader loader = new FXMLLoader();
 
             loader.setLocation(Main.class.getResource("../View/Root.fxml"));
-            rootLayout = (BorderPane) loader.load();
+            rootLayout = loader.load();
 
             Scene scene = new Scene(rootLayout);
             primaryStage.setScene(scene);
