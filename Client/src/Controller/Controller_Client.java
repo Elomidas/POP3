@@ -13,9 +13,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.util.Callback;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -158,7 +157,7 @@ public class Controller_Client extends Controller{
 
     /**
      *
-     * @param mails
+     * @param mails liste des mails récupérés
      * @return VerticalBox contenant les mails de la page
      */
     private VBox createPage(Mail[] mails) {
@@ -214,7 +213,8 @@ public class Controller_Client extends Controller{
             objet = _tfObjet.getText();
             contenu = _tfContenu.getText();
 
-            if(TestRegex.CheckMail(destinataire)){
+            if(TestRegex.CheckMails(destinataire)){
+                System.out.println("test");
                 if(!objet.equals(""))
                 {
                     EnvoiMail(destinataire, objet, contenu);
@@ -240,8 +240,8 @@ public class Controller_Client extends Controller{
                 main.getLogs().log(Level.SEVERE, "Invalid target.");
                 //affichage message erreur à l'utilisateur
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Erreur destinataire !");
-                alert.setContentText("Veuillez renseigner une adresse mail valide.");
+                alert.setTitle("Erreur destinataire(s) !");
+                alert.setContentText("Veuillez renseigner une ou plusieurs adresse(s) mail valide(s).");
                 alert.show();
             }
         });
@@ -249,18 +249,34 @@ public class Controller_Client extends Controller{
 
     /**
      * Envoie un mail
-     * @param destinataire
-     * @param objet
-     * @param contenu
+     * @param destinataire mail du ou des destinataires
+     * @param objet objet du ou des mails
+     * @param contenu contenu du ou des mails
      */
     private void EnvoiMail(String destinataire,String objet,String contenu){
         try {
-            mailbox.SendMail(destinataire, objet, contenu);
-            main.getLogs().info("Mail sent.");
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Envoi réussi !");
-            alert.setContentText("Message envoyé avec succès.");
-            alert.show();
+            List<String> adresses;
+            adresses = mailbox.SendMail(destinataire, objet, contenu);
+            if(adresses.isEmpty()){
+                main.getLogs().info("Mail sent.");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Envoi réussi !");
+                alert.setContentText("Message envoyé avec succès.");
+                alert.show();
+            }
+            else
+            {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur destinataire !");
+                alert.setContentText("Les destinataires suivants sont invalides :\n");
+                for(String adresse : adresses){
+                    //gestion erreur de connexion dans les logs
+                    main.getLogs().log(Level.SEVERE, adresse + " isn't a valid adress. Unable to send this mail.");
+                    //affichage message erreur à l'utilisateur
+                    alert.setContentText(alert.getContentText() + adresse + "\n");
+                }
+                alert.show();
+            }
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
             main.getLogs().log(Level.SEVERE, "Unable to send mail.", e);
@@ -274,10 +290,10 @@ public class Controller_Client extends Controller{
 
     /**
      * Mettre à jour le texteFlow avec le contenu des messages
-     * @param ind
-     * @param destinataire
-     * @param objet
-     * @param contenu
+     * @param ind indice du mail sélectionné
+     * @param destinataire emmeteur du mail
+     * @param objet objet du mail
+     * @param contenu contenu du mail
      */
     private void updateTF(String ind, String destinataire, String objet, Text contenu){
         Platform.runLater(() -> {
@@ -293,10 +309,10 @@ public class Controller_Client extends Controller{
     /**
      * Met à jour les boutons répondre et supprimer en fonction de lé sélection d'un message
      * Initialise ces boutons pour leur assigner une tache à effectuer en cas d'action du bouton
-     * @param ind
-     * @param destinataire
-     * @param objet
-     * @param contenu
+     * @param ind indice du mail sélectionné
+     * @param destinataire emmeteur du mail
+     * @param objet objet du mail
+     * @param contenu contenu du mail
      */
     private void updateBTN(String ind, String destinataire, String objet, String contenu){
         Platform.runLater(() -> {
@@ -362,9 +378,9 @@ public class Controller_Client extends Controller{
     /**
      * Permet de répondre à un mail lors du clic sur le bouton répondre
      * Remplis tous les champs nécessaires dans la partie envoi
-     * @param destinataire
-     * @param objet
-     * @param contenu
+     * @param destinataire emmeteur du mail
+     * @param objet objet du mail
+     * @param contenu contenu du mail
      */
     private void RepondreMail(String destinataire, String objet, String contenu){
         _tabPane.getSelectionModel().select(1);
@@ -397,7 +413,7 @@ public class Controller_Client extends Controller{
 
     /**
      * Synchronisation du main avec le controlleur
-     * @param main
+     * @param main cette classe ci
      */
     public void setMain(Main main, Mailbox mailbox)
     {

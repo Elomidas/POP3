@@ -46,7 +46,7 @@ public class Main extends Application {
 
     /**
      *
-     * @return
+     * @return logs coté client client
      */
     public Logger getLogs() {
         return logs;
@@ -54,7 +54,7 @@ public class Main extends Application {
 
     /**
      * Redéfinition de la fonction Start
-     * @param primaryStage
+     * @param primaryStage Stage de notre applicatio
      */
     @Override
     public void start(Stage primaryStage)
@@ -90,8 +90,8 @@ public class Main extends Application {
 
     /**
      * Affiche le contenu de la fenêtre de connexion
-     * @param rootLayout
-     * @param main
+     * @param rootLayout BorderPane
+     * @param main ce fichier actuel
      */
     private void afficherConnexion(BorderPane rootLayout, Main main){
         Mailbox mailbox = controller.getMailbox();
@@ -100,9 +100,9 @@ public class Main extends Application {
     }
 
     /**
-     *
-     * @param rootLayout
-     * @param main
+     * Affiche le contenu de la fenetre du client
+     * @param rootLayout Border Pane
+     * @param main ce fichier actuel
      */
     private void afficherClient(BorderPane rootLayout, Main main){
         Mailbox mailbox = controller.getMailbox();
@@ -113,9 +113,9 @@ public class Main extends Application {
     /**
      * Affiche le contenu de la fenetre
      * Initialise le controlleur
-     * @param rootLayout
-     * @param main
-     * @param root
+     * @param rootLayout BorderPane
+     * @param main ce fichier actuel
+     * @param root path du fichier fxml à charger
      */
     private void afficherContenu(BorderPane rootLayout, Main main, String root, Mailbox mailbox){
         try
@@ -163,7 +163,7 @@ public class Main extends Application {
 
     /**
      * Fonction main appelée pour lancer l'application
-     * @param args
+     * @param args paramètres de main
      */
     public static void main(String[] args){
         launch(args);
