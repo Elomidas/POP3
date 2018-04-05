@@ -124,10 +124,7 @@ public class Controller_Connexion extends Controller {
      * Le bouton sort de l'état désactivé si tous les champs ont été correctement remplis
      */
     private void gestionBtnConnexion(){
-        if((_tfPortPOP3.getText().matches("[0-9]+")) &&
-                (_tfPortSMTP.getText().matches("[0-9]+")) &&
-                TestRegex.CheckMail(_tfAdresseMail.getText()) &&
-                TestRegex.CheckIP(_tfAdresseIP.getText()) &&
+        if(TestRegex.CheckMail(_tfAdresseMail.getText())&&
                 !_tfMotDePasse.getText().equals(""))
         {
             _btnConnexion.setDisable(false);
@@ -147,9 +144,6 @@ public class Controller_Connexion extends Controller {
         });
         EventHandler<KeyEvent> eventHandlerTF = event -> gestionBtnConnexion();
         _tfAdresseMail.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-        _tfAdresseIP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfMotDePasse.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-        _tfPortPOP3.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-        _tfPortSMTP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
     }
 }
