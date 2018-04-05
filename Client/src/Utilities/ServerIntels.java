@@ -12,6 +12,7 @@ public class ServerIntels {
         portPOP3 = POP3;
         portPOP3S = POP3S;
         portSMTP = SMTP;
+        domainName = domain;
     }
 
     String getDomainName() {

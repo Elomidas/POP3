@@ -28,6 +28,7 @@ public class DNS {
      * @throws DNSException No server matching this domain name.
      */
     private static ServerIntels getServer(String domain) throws DNSException {
+        System.out.println(domain);
         Optional<ServerIntels> myserv = servers.stream()
                 .filter(server -> server.getDomainName().equalsIgnoreCase(domain))
                 .findFirst();
