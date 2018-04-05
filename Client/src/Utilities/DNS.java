@@ -16,9 +16,9 @@ public class DNS {
         new ServerIntels(
                 "email.fr",
                 "127.0.0.1",
-                1220,
-                1221,
-                1222)
+                1213,
+                1214,
+                1215)
     );
 
     /**
