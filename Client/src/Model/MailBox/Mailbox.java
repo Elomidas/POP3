@@ -28,6 +28,7 @@ public class Mailbox {
         user = null;
         pop3 = null;
         smtp = null;
+        UUIDs = new String[0];
     }
 
     /**

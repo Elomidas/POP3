@@ -4,9 +4,7 @@ import Model.MailBox.MailException;
 import Utilities.DNS;
 import Utilities.TestRegex;
 
-import javax.print.DocFlavor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,6 +12,7 @@ public class SMTPDispatcher {
     private HashMap<String, SMTP> smtps;
 
     public SMTPDispatcher() throws SMTPException {
+        smtps = new HashMap<>();
         List<String> domains = DNS.getDomains();
         for(String domain : domains) {
             if((!smtps.containsKey(domain)) || (smtps.get(domain) == null)) {
