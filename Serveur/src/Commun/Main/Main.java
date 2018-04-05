@@ -1,12 +1,14 @@
 package Commun.Main;
 
 import Commun.Connexions.*;
+
 public class Main {
 
     public final static String DOMAIN = "email.com";
     public final static String DOMAIN2 = "email.fr";
     public static void main(String[] args) {
-        String domain = DOMAIN;
+        String domain = DOMAIN2;
+        System.out.println("Lancement du domaine " + domain);
         try{
             ConnexionPOP3 connexionPOP3 = new ConnexionPOP3(domain);
             connexionPOP3.start();
