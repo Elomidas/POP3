@@ -33,24 +33,6 @@ public class Controller_Connexion extends Controller {
     private TextField _tfMotDePasse;
 
     /**
-     * champ correspondant à l'adresse IP
-     */
-    @FXML
-    private TextField _tfAdresseIP;
-
-    /**
-     * Champ correspondant au port POP3
-     */
-    @FXML
-    private TextField _tfPortPOP3;
-
-    /**
-     * Champ correspondant au port SMTP
-     */
-    @FXML
-    private TextField _tfPortSMTP;
-
-    /**
      * Bouton utilisé pour se connecter à une boite mail
      */
     @FXML
