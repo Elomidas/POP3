@@ -9,7 +9,7 @@
 *  TAGUEJOU Christian
 *  TARDY Martial
 
-**Code du Projet :** [lien GitHub](GitHub)
+**Code du Projet :** [lien GitHub][GitHub]
 
 ## Table des matières
 
