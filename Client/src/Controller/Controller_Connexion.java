@@ -62,7 +62,9 @@ public class Controller_Connexion extends Controller {
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
             try {
-                if(mailbox.joinServer(TestRegex.GetDomain(_tfAdresseMail.getText())))
+                String domain = TestRegex.GetDomain(_tfAdresseMail.getText());
+                System.out.println("Domain used : " + domain);
+                if(mailbox.joinServer(domain))
                 {
                     mailbox.setUser(_tfAdresseMail.getText());
                     if(mailbox.Authenticate(_tfMotDePasse.getText())){
