@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.Tab?>
@@ -11,14 +15,14 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller_Client">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller_Client">
    <children>
-      <Button fx:id="_btnDeconnexion" layoutX="828.0" layoutY="14.0" mnemonicParsing="false" text="Se déconnecter" />
       <Text fx:id="_txtMailEmetteur" layoutX="58.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="358.89453125">
          <font>
             <Font size="20.0" />
          </font>
       </Text>
+      <Button fx:id="_btnDeconnexion" layoutX="828.0" layoutY="14.0" mnemonicParsing="false" text="Se déconnecter" />
       <TabPane fx:id="_tabPane" layoutY="55.0" prefHeight="645.0" prefWidth="1000.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="55.0">
         <tabs>
           <Tab text="Réception">
@@ -41,9 +45,6 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <Button fx:id="_btnEnvoi" layoutX="880.0" layoutY="14.0" mnemonicParsing="false" text="Envoyer" />
-                        <TextArea fx:id="_tfContenu" layoutX="41.0" layoutY="99.0" prefHeight="533.0" prefWidth="912.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="100.0" />
-                        <TextField fx:id="_tfDestinataire" layoutX="236.0" layoutY="14.0" prefHeight="31.0" prefWidth="500.0" />
                         <Text layoutX="40.0" layoutY="39.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Destinataire(s) :">
                            <font>
                               <Font size="23.0" />
@@ -54,7 +55,10 @@
                               <Font size="23.0" />
                            </font>
                         </Text>
+                        <TextField fx:id="_tfDestinataire" layoutX="236.0" layoutY="14.0" prefHeight="31.0" prefWidth="500.0" />
                         <TextField fx:id="_tfObjet" layoutX="236.0" layoutY="51.0" prefHeight="31.0" prefWidth="500.0" />
+                        <TextArea fx:id="_tfContenu" layoutX="41.0" layoutY="99.0" prefHeight="533.0" prefWidth="912.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="100.0" />
+                        <Button fx:id="_btnEnvoi" layoutX="880.0" layoutY="14.0" mnemonicParsing="false" text="Envoyer" />
                      </children>
                   </AnchorPane>
             </content>

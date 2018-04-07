@@ -1,6 +1,6 @@
 package Controller;
 
-import Main.Main_Connexion;
+import Main.Main;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;
 import Utilities.TestRegex;
@@ -13,10 +13,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+import java.util.logging.Level;
+
 /**
  * Controlleur associé à la fenêtre de connexion
  */
-public class Controller_Connexion {
+public class Controller_Connexion extends Controller {
 
     /**
      * champ correspondant à l'adresse mail
@@ -31,64 +33,16 @@ public class Controller_Connexion {
     private TextField _tfMotDePasse;
 
     /**
-     * champ correspondant à l'adresse IP
-     */
-    @FXML
-    private TextField _tfAdresseIP;
-
-    /**
-     * Champ correspondant au port
-     */
-    @FXML
-    private TextField _tfPort;
-
-    /**
      * Bouton utilisé pour se connecter à une boite mail
      */
     @FXML
     private Button _btnConnexion;
 
     /**
-     * Mail utilisé
-     */
-    private Main_Connexion _main;
-
-    /**
-     * Objet mailBox correspondant à la messagerie ou on se connecte
-     */
-    private Mailbox _mailBox;
-
-    /**
      * Constructeur
      */
     public Controller_Connexion(){
-        _mailBox = new Mailbox();
-
-    }
-
-    /**
-     *
-     * @return mailBox à laquelle on est connecté
-     */
-    public Mailbox getMailbox(){
-        return _mailBox;
-    }
-
-    /**
-     * Fonction appelée par le main lors d'un clic sur la croix rouge
-     */
-    public void close(){
-        try {
-            _mailBox.Close();
-        } catch (MailException e) {
-            //gestion erreur de connexion dans les logs
-            //todo
-            //affichage message erreur à l'utilisateur
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Une erreur est survenue.");
-            alert.setContentText(e.getMessage());
-            alert.show();
-        }
+        super.mailbox = new Mailbox();
     }
 
     /**
@@ -108,14 +62,19 @@ public class Controller_Connexion {
         Platform.runLater(() ->{
             //On vérifie que les informations demandées soient cohérentes
             try {
-                if(_mailBox.joinServer(_tfAdresseIP.getText(), Integer.parseInt(_tfPort.getText())))
+                String domain = TestRegex.GetDomain(_tfAdresseMail.getText());
+                System.out.println("Domain used : " + domain);
+                if(mailbox.joinServer(domain))
                 {
-                    _mailBox.setUser(_tfAdresseMail.getText());
-                    if(_mailBox.Authenticate(_tfMotDePasse.getText())){
-                        _main.lancerClient();
+                    mailbox.setUser(_tfAdresseMail.getText());
+                    if(mailbox.Authenticate(_tfMotDePasse.getText())){
+                        main.lancerClient();
+                        main.getLogs().info("User authenticated, client started.");
                     }
                     else
                     {
+                        //gestion erreur de connexion dans les logs
+                        main.getLogs().log(Level.SEVERE, "Unable to authenticate.");
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Connexion impossible !");
                         alert.setContentText("Nous ne parvenons pas à vous identifier.");
@@ -124,6 +83,8 @@ public class Controller_Connexion {
                 }
                 else
                 {
+                    //gestion erreur de connexion dans les logs
+                    main.getLogs().log(Level.SEVERE, "Unable to join server.");
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Impossible de joindre le serveur !");
                     alert.setContentText("Nous ne parvenons pas à joindre le serveur.");
@@ -132,14 +93,13 @@ public class Controller_Connexion {
 
             } catch (MailException e) {
                 //gestion erreur de connexion dans les logs
-                //todo
+                main.getLogs().log(Level.SEVERE, "An error occurred on mailbox.", e);
                 //affichage message erreur à l'utilisateur
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Une erreur est survenue !");
                 alert.setContentText(e.getMessage());
                 alert.show();
             }
-
         });
     }
 
@@ -148,9 +108,7 @@ public class Controller_Connexion {
      * Le bouton sort de l'état désactivé si tous les champs ont été correctement remplis
      */
     private void gestionBtnConnexion(){
-        if((_tfPort.getText().matches("[0-9]+")) &&
-                TestRegex.CheckMail(_tfAdresseMail.getText()) &&
-                TestRegex.CheckIP(_tfAdresseIP.getText()) &&
+        if(TestRegex.CheckMail(_tfAdresseMail.getText())&&
                 !_tfMotDePasse.getText().equals(""))
         {
             _btnConnexion.setDisable(false);
@@ -159,25 +117,17 @@ public class Controller_Connexion {
 
     /**
      * Déifnit le main à utiliser
-     * @param main Main_Connexion que l'on utilise
+     * @param main Main que l'on utilise
      */
-    public void setMain(Main_Connexion main) {
-        this._main = main;
+    public void setMain(Main main, Mailbox mailbox) {
+        super.main = main;
         _btnConnexion.setOnMouseClicked(MouseEvent -> connexion());
         _btnConnexion.setOnKeyPressed((final KeyEvent ke) ->{
             if(ke.getCode() == KeyCode.ENTER)
                 connexion();
         });
-        EventHandler<KeyEvent> eventHandlerTF = new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                //Playing the animation
-                gestionBtnConnexion();
-            }
-        };
+        EventHandler<KeyEvent> eventHandlerTF = event -> gestionBtnConnexion();
         _tfAdresseMail.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-        _tfAdresseIP.addEventHandler(KeyEvent.ANY, eventHandlerTF);
         _tfMotDePasse.addEventHandler(KeyEvent.ANY, eventHandlerTF);
-        _tfPort.addEventHandler(KeyEvent.ANY, eventHandlerTF);
     }
 }

@@ -1,6 +1,9 @@
 package Model.Protocols.POP3;
 
+import Model.Protocols.ProtocolUnderTCPException;
 import Model.Protocols.TCP.TCPException;
+import Utilities.DNS;
+import Utilities.DNSException;
 import Utilities.TestRegex;
 
 import java.security.MessageDigest;
@@ -25,16 +28,19 @@ public class POP3S extends POP3 {
 
     /**
      * Trying to join the server
-     * @param address   Server's address (IP or URL)
-     * @param port      Port on which trying to join the server
+     * @param domain Server's domain name
      * @throws POP3Exception Exception during connection
      */
     @Override
-    public void Connect(String address, int port) throws POP3Exception {
-        super.Connect(address, port);
+    public void Connect(String domain) throws POP3Exception {
+        try {
+            super.Connect(domain);
+        } catch (ProtocolUnderTCPException e) {
+            throw new POP3Exception("Unable to connect.", e);
+        }
         if(this.CheckConnected()) {
             try {
-                String response = m_tcp.Receive();
+                String response = tcp.Receive();
                 if (TestRegex.CheckPOP(response)) {
                     String[] matches = TestRegex.Submatches("\\+OK[^<]+(<.*>)", response);
                     if (matches.length != 1) {
@@ -49,6 +55,15 @@ public class POP3S extends POP3 {
         }
     }
 
+    @Override
+    protected int computePort(String domain) throws POP3Exception {
+        try {
+            return DNS.getPOP3S(domain);
+        } catch (DNSException e) {
+            throw new POP3Exception("Unable to find a valid POP3S port.", e);
+        }
+    }
+
     /**
      * Authentication function with password encoded through MD5 protocol
      * @param login     User's login
@@ -58,7 +73,8 @@ public class POP3S extends POP3 {
      */
     @Override
     public boolean Authentication(String login, String password) throws POP3Exception {
-        if(this.CheckConnected() == false) {
+        System.out.println(login+":"+password);
+        if(!this.CheckConnected()) {
             throw new POP3Exception("Unable to authenticate, client not connected to server.");
         }
         if(m_authenticated) {
@@ -85,7 +101,12 @@ public class POP3S extends POP3 {
                     .append(login)
                     .append(" ")
                     .append(digestedPassword);
-            String response = dialog(sBuilder.toString());
+            String response = null;
+            try {
+                response = dialog(sBuilder.toString());
+            } catch (ProtocolUnderTCPException e) {
+                throw new POP3Exception("APOP failed.", e);
+            }
             if(TestRegex.CheckPOP(response)) {
                 return true;
             } else {
@@ -102,7 +123,7 @@ public class POP3S extends POP3 {
      * @throws POP3Exception If secure key is not set
      */
     protected String encrypt(String clear) throws POP3Exception {
-        if(this.checkKey() == false) {
+        if(!this.checkKey()) {
             throw new POP3Exception("Secure Key not set");
         }
         StringBuilder sBuilder = new StringBuilder();
@@ -110,8 +131,8 @@ public class POP3S extends POP3 {
                 .append(clear);
         byte[] digestedBytes = m_digest.digest(sBuilder.toString().getBytes());
         StringBuilder returnBuilder = new StringBuilder();
-        for(int i = 0; i < digestedBytes.length; i++) {
-            returnBuilder.append(String.format("%02X", digestedBytes[i]));
+        for (byte digestedByte : digestedBytes) {
+            returnBuilder.append(String.format("%02X", digestedByte));
         }
         return returnBuilder.toString();
     }
@@ -120,7 +141,7 @@ public class POP3S extends POP3 {
      * Check if secure key is correctly set
      * @return true if secure key is correct, false else
      */
-    protected  boolean checkKey() {
+    protected boolean checkKey() {
         return TestRegex.CheckMD5(m_secureKey);
     }
 }

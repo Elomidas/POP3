@@ -9,7 +9,7 @@
 *  TAGUEJOU Christian
 *  TARDY Martial
 
-**Code du Projet :** [lien GitHub](GitHub)
+**Code du Projet :** [lien GitHub][GitHub]
 
 ## Table des matières
 
@@ -17,7 +17,7 @@
   * II - [Client](#II)
     * 1 - [Automate](#II1)
     * 2 - [Backend](#II2)
-      * A - [SMTP Basique (Simple Mail Transfert Protocol)](#II2A)
+      * A - [SMTP Basique](#II2A)
       * B - [Fonctionnement avec plusieurs noms de domaines](#II2B)
       * C - [Optimisation](#II2C)
     * 3 - [Frontend](#II3)
@@ -41,7 +41,7 @@ Lien vers la [norme RFC utilisée][RFC].
 
 ### 2 - Backend <a name="II2" />
 
-#### A - SMTP Basique (Simple Mail Transfert Protocol) <a name="II2A" />
+#### A - SMTP Basique <a name="II2A" />
 
 Dans un premier temps, nous avions un unic domaine à gérer *email.com*.
 Ainsi l'implémentation du protocole était relativement simple, il suffisait nous de connaitre l'adresse du serveur, or celle-ci était déjà renseignée pour le fonctionnement des protocoles POP3 et POP3S. 
@@ -113,6 +113,9 @@ Avec notre premier développement, nous avions créé un unique objet SMTP, qui,
 Tous ces objets ```SMTP``` sont manipulés grâce à la classe ```SMTPDispatcher``` et stockés dans une ```HashMap<String, SMTP>``` utilisant le nom de domaine comme clé.
 Ces objets ne gardent pas les connexions TCP toujours ouvertes étant donné que ceci serait inutile : à l'appel de la fonction ```SMTP::SendMail(String targets, MailConvertor mailConvertor)```, la connexion est ouverte, le message envoyé, et la connexion est fermée.
 De cette façon la connexion ne reste pas toujours ouverte mais le fait d'avoir plusieurs instances nous permet de ne pas avoir à refaire toute la configuration de la connexion à chaque ouverture.
+
+L'objet ```MailConvertor``` passé en paramètre à la fonction d'envoi de mail ci-dessus est un objet permettant, en lui donnant l'expéditeur d'un mail, son objet et son corps, de générer les lignes à envoyer avec les headers une seule fois.
+Nous avions ainsi la possibilité de changer le(s) destinataire(s) du mail et de récupérer à nouveau toutes les lignes à envoyer au serveur sans pour autant regénérer la totalité des headers du mail.
 
 Une seconde amélioration a été de regrouper les destinataires par nom de domaine, afin d'ouvrir une seule fois la connexion TCP vers un serveur, envoyer le mail pour tous les utilisateurs sur ce domaine et fermer la connexion.
 

@@ -1,6 +1,8 @@
 package Model.Protocols.POP3;
 
-public class POP3Exception extends Exception {
+import Model.Protocols.ProtocolUnderTCPException;
+
+public class POP3Exception extends ProtocolUnderTCPException {
 
     public POP3Exception() {
         super();
