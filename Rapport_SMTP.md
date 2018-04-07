@@ -17,6 +17,7 @@
       * A - [SMTP Basique (Simple Mail Transfert Protocol)](#II2A)
       * B - [Fonctionnement avec plusieurs noms de domaines](#II2B)
     * 3 - [Frontend](#II3)
+      * A - [Présentation interface graphique](#II3A)
   * III - [Serveur](#III)
   * IV - [Conclusion](#IV)
 
@@ -75,9 +76,17 @@ Ces informations sont en dur dans le code, mais nous ne considérons pas cela co
 
 ### 3 - Frontend <a name="II3" />
 
+#### A - Présentation interface graphique <a name=II3A" />
+
+L'interface graphique utilisée dans le cadre du protocole STMP est toujours la m^eme que celle utilisée pour le protocole POP3S. 
+Toutefois, on utilise non pas le premier onglet, listant tous les mails reçus par l'utilisateur,  mais le second onglet 
+qui nous permettra d'envoyer un mails à un ou plusieurs destinataires. 
+
+Vous trouverez ci-dessous un aperçu de notre fen^etre d'envoi de mails :
+
 
 ## III - Serveur <a name="III" />
-Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci 
+Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci :
 ![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png).
 Pour le développement SMTP, nous nous sommes servi de ce que nous avions fait pour POP3, donc la structure du projet est similaire.
 Dans le main, nous avons défini une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Le serveur étant concurrent, lorsqu'un client se connectera sur le port, un thread sera créé dans la classe Tcp pour lui permettre de communiquer avec le serveur.
