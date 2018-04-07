@@ -121,15 +121,16 @@ public class Controller_Client extends Controller{
     /**
      * Création de la pagination
      */
-    private void creationPagination(){
+    private void creationPagination(boolean isUpdate){
+        if(!isUpdate)
+            _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         int nbPages = (int)Math.ceil(mailbox.getMailNumber()/(float)itemsPerPage());
-        _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         _pagination.setPageCount(nbPages);
         _pagination.setPageFactory(pageIndex -> {
             if(pageIndex >= nbPages)
                 return null;
             else
-                return createPage(recuperationMails(pageIndex));
+                return createPage(recuperationMails(pageIndex, isUpdate));
         });
     }
 
@@ -138,18 +139,29 @@ public class Controller_Client extends Controller{
      * @param indexPage index de la page à charger
      * @return tableau de mails qui a été récupéré
      */
-    private Mail[] recuperationMails(int indexPage){
+    private Mail[] recuperationMails(int indexPage, boolean isUpdate){
         Mail[] mails = null;
         try {
-            mails = mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
-            main.getLogs().info("Messages collected.");
+            if(isUpdate){
+                mails = mailbox.getMailsUpdated(indexPage*itemsPerPage(), itemsPerPage());
+                main.getLogs().info("Update ended successfully .");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Update terminé !");
+                alert.setContentText("Update réalisé avec succès.");
+                alert.show();
+                System.out.println("test update OK");
+            }
+            else{
+                mails = mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
+                main.getLogs().info("Messages collected.");
+            }
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
-            main.getLogs().log(Level.SEVERE, "Unable to collect messages.", e);
+            main.getLogs().log(Level.SEVERE, "Unable to collect/update messages.", e);
             //affichage message erreur à l'utilisateur
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Une erreur est survenue !");
-            alert.setContentText(e.getMessage());
+            alert.setContentText("Impossible de charger les messages.");
             alert.show();
         }
         return mails;
@@ -189,6 +201,14 @@ public class Controller_Client extends Controller{
             link.setOnMouseClicked(MouseEvent -> updateTF(ind, destinataire.getText(), objet.getText(), contenu));
         }
         return box;
+    }
+
+    /**
+     * Met à jour notre pagination en cas d'appui sur le bouton actualiser
+     */
+    private void UpdatePagination(){
+        //TODO
+        creationPagination(true);
     }
 
     /**
@@ -323,23 +343,6 @@ public class Controller_Client extends Controller{
     }
 
     /**
-     * Met à jour notre pagination en cas d'appui sur le bouton actualiser
-     */
-    private void UpdatePagination(){
-        //Non fonctionnel !!!
-        //TODO
-        int pageActuelle = _pagination.getCurrentPageIndex();
-        //ATTENTIOn indice
-        for (int i=pageActuelle; i<_pagination.getMaxPageIndicatorCount()+1;i++){
-            _pagination.getPageFactory().call(i);
-        }
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Update terminé !");
-        alert.setContentText("Update réalisé avec succès.");
-        alert.show();
-    }
-
-    /**
      * Supprime le mail sélectionné
      * CSS pour l'afficher en rouge lorsqu'il est marqué comme supprimé
      * @param ind indice du message à supprimer
@@ -419,7 +422,7 @@ public class Controller_Client extends Controller{
         super.main= main;
         super.mailbox = mailbox;
         _txtMailEmetteur.setText(super.mailbox.getUser());
-        creationPagination();
+        creationPagination(false);
 
         _btnEnvoi.setOnMouseClicked(mouseEvent -> TestEnvoiMail());
         _btnDeconnexion.setOnMouseClicked(mouseEvent -> Deconnexion());
