@@ -214,7 +214,6 @@ public class Controller_Client extends Controller{
             contenu = _tfContenu.getText();
 
             if(TestRegex.CheckMails(destinataire)){
-                System.out.println("test");
                 if(!objet.equals(""))
                 {
                     EnvoiMail(destinataire, objet, contenu);
