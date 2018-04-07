@@ -1,6 +1,5 @@
 package Model.Protocols.SMTP;
 
-import Model.MailBox.MailException;
 import Utilities.DNS;
 import Utilities.TestRegex;
 

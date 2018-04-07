@@ -1,25 +1,56 @@
 package Utilities;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DNS {
-    private static List<ServerIntels> servers = Arrays.asList(
-        new ServerIntels(
-                "email.com",
-                "127.0.0.1",
-                1210,
-                1211,
-                1212),
-        new ServerIntels(
-                "email.fr",
-                "127.0.0.1",
-                1213,
-                1214,
-                1215)
-    );
+    private static List<ServerIntels> servers = getConfig();
+
+    private static List<ServerIntels> getConfig() {
+        String path = "config/DNS.csv";
+        BufferedReader bufferedReader = null;
+        String line;
+        List<ServerIntels> list = new ArrayList<>();
+
+        try {
+            bufferedReader = new BufferedReader(new FileReader(path));
+            //Do not read first line
+            if(bufferedReader.readLine() != null) {
+                while ((line = bufferedReader.readLine()) != null) {
+
+                    // use comma as separator
+                    String[] parameters = line.split(",");
+                    if (parameters.length == 5) {
+                        list.add(new ServerIntels(
+                                parameters[0],
+                                parameters[1],
+                                Integer.parseInt(parameters[2]),
+                                Integer.parseInt(parameters[3]),
+                                Integer.parseInt(parameters[4])
+                        ));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return list;
+    }
 
     /**
      * Find the first server matching the given domain name.

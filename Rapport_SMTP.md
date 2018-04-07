@@ -23,7 +23,10 @@
     * 3 - [Frontend](#II3)
       * A - [Présentation interface graphique](#II3A)
   * III - [Serveur](#III)
-  * IV - [Conclusion](#IV)
+  * IV - [Utilisation](#IV)
+    * 1 - [Le Serveur](#IV1)
+    * 2 - [Le Client](#IV2)
+  * V - [Conclusion](#V)
 
 ## I - Introduction<a name="I" />
 
@@ -57,25 +60,16 @@ Nous avons ensuite dû faire fonctionner le client pour qu'il puisse gérer plus
 Afin de savoir sur quelle adresse IP et sur quel port envoyer le message selon l'adresse du destinataire, nous avons créé une classe ```DNS``` permettant de simuler le fonctionnement d'un serveur DNS classique : récupérer l'adresse IP d'un serveur en fonction de son nom de domaine.
 
 Notre classe ```DNS``` se compose d'une liste de ```ServerIntels```, une classe contenant toutes les informations utiles à propos d'un serveur.
-Cette liste est déclarée comme ci-dessous, elle doit être mise à jour après le lancement des serveurs.
+Cette liste est lue dans le fichier de configuration *config/DNS.csv*, elle doit être mise à jour après le lancement des serveurs.
 Les différentes fonctions *public* de cette classe permettent de récupérer les informations qui nous intéressent sur le serveur voulu grâce à son nom de domaine.
 ```java
 public class DNS {
-	private static List<ServerIntels> servers = Arrays.asList(
-			new ServerIntels(
-					"email.com",	//Nom de domaine
-					"127.0.0.1",	//Adresse IP
-					1210,			//Port POP3
-					1211,			//Port POP3S
-					1212),			//Port SMTP
-			new ServerIntels(
-					"email.fr",
-					"127.0.0.1",
-					1213,
-					1214,
-					1215)
-		);
-	
+	private static List<ServerIntels> servers = getConfig();
+
+    private static List<ServerIntels> getConfig() {
+        /* Read "config/DNS.csv" file */
+    }
+
 	public static String getAddress(String domain) throws DNSException {
 		/* Code */
 	}
@@ -102,8 +96,18 @@ public class DNS {
 
 }
 ```
-Ces informations sont en dur dans le code, mais nous ne considérons pas cela comme vraiment génant car dans la vraie vie les coordonées d'un serveur ne sont pas amenées à changer aussi fréquemment.
-Si on veut lancer le programme avec un troisième serveur, il suffirait d'ajouter une troisième objet ```ServerIntels``` à la liste ci-dessus.
+Ces informations doivent parfois être mises à jour, dans ce cas il suffit d'aller éditer le fichier de configuration.
+Celui-ci est au format csv, il est donc simple à modifier.
+Son contenu par défaut est 
+```csv
+Domain name,IP address,POP3,POP3S,SMTP
+email.com,127.0.0.1,1210,1211,1212
+email.fr,127.0.0.1,1213,1214,1215
+```
+mais pour rajouter un serveur avec un autre nom de domaine (comme test.de) qui tournerait sur une autre machine (d'adresse IP 192.168.43.19 par exemple), il suffit d'ajouter la ligne suivante (en ajustant les ports)
+```csv
+test.de,192.168.43.19,1210,1211,1212
+```
 
 #### C - Optimisation <a name="II2C" />
 
@@ -209,4 +213,43 @@ Lorsque le traitement est fini, on utilise la méthode send() de la connexion tc
 	tcp.send(reponseServeur);
 ```
 L'ensemble des commandes fonctionnent de la même manière.
-## IV - Conclusion <a name="IV" />
+
+## IV - Utilisation <a name="IV" />
+
+### 1 - Le Serveur <a name="IV1" />
+
+Pour lancer le serveur, il suffit d"exécuter via une console *Serveur.jar*, situé dans le répertoire *Binaires/Serveur/*.
+Attention, pour son bon fonctionnement, toujours l'exécuter dans ce repertoire (à côté du répertoire *data/*).
+Par défaut, le serveur se lance avec le nom de domaine *email.com*.
+Pour choisir le nom de domaine, il faut le passer en arguement.
+
+Par exemple  :
+```shell
+C:\Users\elomidas\Documents\Polytech\S8\IPC\POP3\Binaires\Serveur>java -jar Serveur.java
+```
+Lance le serveur avec comme nom de domaine *email.com*
+```shell
+C:\Users\elomidas\Documents\Polytech\S8\IPC\POP3\Binaires\Serveur>java -jar Serveur.java "email.fr"
+```
+Lance le serveur avec comme nom de domaine *email.fr*
+
+Vous devriez ensuite avoir l'affichage suivant, afin de savoir sur quels ports peut se connecter le client :
+```shell
+C:\Users\elomidas\Documents\Polytech\S8\IPC\POP3\Binaires\Serveur>java -jar Serveur.java "email.fr"
+Lancement du domaine email.fr
+Attente de connexion POP3 au port 1210
+Attente de connexion POP3S au port 1211
+Attente de connexion SMTP au port 1212
+``` 
+
+*email.fr* et *email.com* sont les deux seuls noms de domaine disponnibles.
+Si vous mettez un nom de domaine qui n'existe pas, c'est le nom de domaine *email.com* qui sera utilisé.
+
+### 2 - Le Client <a name="IV2" />
+
+L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/*.
+Avant de l'exécuter il est conseillé de vérifier que le fichier de configuration *Binaires/Client/config/DNS.csv* est correctement rempli.
+
+Il n'est pas necessaire de le lancer à la console, un double clic suffit à lancer l'interface graphique.
+
+## V - Conclusion <a name="V" />
