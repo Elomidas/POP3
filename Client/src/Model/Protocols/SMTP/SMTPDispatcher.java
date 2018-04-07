@@ -43,9 +43,13 @@ public class SMTPDispatcher {
 
         ArrayList<String> errors = new ArrayList<>();
         for(String domain : recipientTab.keySet()) {
-            String recipientsList = String.join(";", recipientTab.get(domain));
-            SMTP smtp = smtps.get(domain);
-            errors.addAll(smtp.SendMail(recipientsList, mailConvertor));
+            if(smtps.containsKey(domain)) {
+                String recipientsList = String.join(";", recipientTab.get(domain));
+                SMTP smtp = smtps.get(domain);
+                errors.addAll(smtp.SendMail(recipientsList, mailConvertor));
+            } else {
+                errors.add("Domain name " + domain + " does not exist.");
+            }
         }
         return errors;
     }
