@@ -1,7 +1,5 @@
 package POP3;
 
-//import Commun.TcpPOP3S;
-
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;

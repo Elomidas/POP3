@@ -1,6 +1,7 @@
 package Commun.Mail;
 
 import Commun.Utiles.TestRegex;
+import Commun.Utilisateur.RepertoireUtilisateur;
 import Commun.Utilisateur.Utilisateur;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class Email {
         this.m_etat = m_etat;
     }
 
-    public Email(ArrayList<Utilisateur> dest, String encoded, ArrayList<Utilisateur> list) {
+    public Email(ArrayList<Utilisateur> dest, String encoded, RepertoireUtilisateur list) {
         m_destinataire = dest;
         decode(encoded, list);
     }
@@ -56,7 +57,7 @@ public class Email {
         this.m_etat=true;
     }
 
-    protected void decode(String encrypted, ArrayList<Utilisateur> usrs) {
+    protected void decode(String encrypted, RepertoireUtilisateur usrs) {
         String[] fields = TestRegex.Submatches(_PATTERN.replace("\n", "\\\\n"), encrypted.replace("\n", "\\n"));
         if(fields.length != 4) {
             System.out.println("Fail, not enough fields (" + fields.length + ").");
@@ -64,11 +65,8 @@ public class Email {
             this.m_date = fields[0];
             this.m_subject = fields[2];
             this.m_message = fields[3];
-            for (Utilisateur u : usrs) {
-                if (u.getM_adresseEmail().equals(fields[1])) {
-                    this.m_emetteur = u;
-                }
-            }
+            Utilisateur utilisateur = new Utilisateur(fields[1], usrs.getIdMax());
+            this.m_emetteur = utilisateur;
         }
     }
 

@@ -74,7 +74,6 @@ public class Mailbox {
 
 
     public List<Email> recupereEmails(Utilisateur utilisateur) {
-        //To be tested
         List<Email> listEmails = new ArrayList<Email>();
         for (Email email: m_listeEmails) {
             if (email.getM_emetteur().equals(utilisateur)) {
@@ -90,7 +89,6 @@ public class Mailbox {
     }
 
     public void supprimeEmails(Utilisateur utilisateur) {
-        //To be tested
         List<Email> listEmails = recupereEmails(utilisateur);
         m_listeEmails.removeAll(listEmails);
     }
@@ -109,7 +107,7 @@ public class Mailbox {
                 String line = br.readLine();
                 if(line.equals(".")) {
                     sBuilder.append(".\n");
-                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), this.repertoireUtilisateur.getM_listeUtilisateurs());
+                    Email m = new Email(utilisateurArrayList, sBuilder.toString(), this.repertoireUtilisateur);
                     m.setM_id(id);
                     m_listeEmails.add(m);
                     return true;

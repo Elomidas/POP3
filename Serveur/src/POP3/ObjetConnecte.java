@@ -149,10 +149,8 @@ public class ObjetConnecte extends Thread{
         } else if(command.equals("NOOP")) {
             return noop();
         } else if(command.equals("RSET")) {
-            //To be tested
             return rset();
         } else if(command.equals("DELE")) {
-            //To be tested
             if(parameters.length < 1) {
                 return ObjetConnecte.POP3_REPONSE_NEGATIVE + " parameter missing.";
             }
@@ -164,7 +162,6 @@ public class ObjetConnecte extends Thread{
         } else if(command.equals("STAT")) {
             return stat();
         } else {
-            //fermetureAutreQueQuit();
             return ObjetConnecte.POP3_REPONSE_NEGATIVE + " unknown command '" + command + "'.";
         }
     }

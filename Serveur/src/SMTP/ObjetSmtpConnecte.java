@@ -46,7 +46,6 @@ public class ObjetSmtpConnecte extends Thread{
 
         while(continuer){
             try {
-//                System.out.println("Wait...");
                 input = tcp.receive();
 
                 String[] explodedCommand = input.split(" ", 2);
@@ -309,6 +308,7 @@ public class ObjetSmtpConnecte extends Thread{
         this.saveMails();
         etatServeur = SERVER_IDENTIFICATION;
         idLine = 0;
+        currentEmail = null;
         return SMTP_250_OK;
     }
 
@@ -343,16 +343,8 @@ public class ObjetSmtpConnecte extends Thread{
         String[] emailEmetteur = TestRegex.Submatches("From: \"(.*?)\" <(.*?)>", line[0]);
         String[] emailDestinataire = TestRegex.Submatches("To: \"(.*?)\" <(.*?)>", line[0]);
         if (emailEmetteur.length>0) {
-            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailEmetteur[1]);
-            if (utilisateur != null) {
-                this.currentEmail.setM_emetteur(utilisateur);
-            }
             idLine++;
         } else if (emailDestinataire.length>0) {
-            Utilisateur utilisateur = this.mailbox.getRepertoireUtilisateur().getUtilisateurParEmail(emailDestinataire[1]);
-            if (utilisateur != null) {
-                this.currentEmail.addRecipient(utilisateur);
-            }
             idLine++;
         } else if (idLine == 2) {
             idLine++;
@@ -370,7 +362,7 @@ public class ObjetSmtpConnecte extends Thread{
     public void removeSavedFiles() {
         File directory = new File("data/");
         for (File f : directory.listFiles()) {
-            if (f.getName().endsWith(".pop") && !f.getName().startsWith("users")) {
+            if (f.getName().endsWith(this.serverDomain + ".pop") && !f.getName().startsWith("users")) {
                 try {
                     FileOutputStream writer = new FileOutputStream(f.getAbsolutePath());
                     writer.close();
