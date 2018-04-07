@@ -1,4 +1,4 @@
-# Rapport IPC - Partie SMTP
+# Rapport IPC - Partie SMTP <a name="" />
 
 **Etudiants :**
 *  JACOUD Bastien
@@ -8,7 +8,18 @@
 
 [RFC]: https://tools.ietf.org/html/rfc5321
 
-## I - Introduction
+## Table des matières
+*  I - [Introduction](#I)
+*  II - [Client](#II)
+*    1 - [Automate](#II1)
+*    2 - [Backend](#II2)
+*      A - [SMTP Basique (Simple Mail Transfert Protocol)](#II2A)
+*      B - [Fonctionnement avec plusieurs noms de domaines](#II2B)
+*    3 - [Frontend](#II3)
+*  III - [Serveur](#III)
+*  IV - [Conclusion](#IV)
+
+## I - Introduction<a name="I" />
 Suite du TP de développement d'un couple client/serveur mail.
 Cette étape fut la troisième de cette série de TP.
 Durant la première étape, nous avons dû mettre en place le protocole POP3 pour que le client relève ses mails sur le serveur.
@@ -16,13 +27,13 @@ La seconde consistait à adapter le code pour utiliser le protocole POP3S afin d
 Le but de cette dernière étape était de permettre au client d'envoyer des messages à d'autres utilisateurs en permettant au client comme au serveur d'utiliser le protocole SMTP.
 Lien vers la [norme RFC utilisée][RFC].
 
-## II - Client
+## II - Client <a name="II" />
 
-### 1 - Automate
+### 1 - Automate <a name="II1" />
 
-### 2 - Backend
+### 2 - Backend <a name="II2" />
 
-#### A - SMTP Basique (Simple Mail Transfert Protocol)
+#### A - SMTP Basique (Simple Mail Transfert Protocol) <a name="II2A" />
 Dans un premier temps, nous avions un unic domaine à gérer *email.com*.
 Ainsi l'implémentation du protocole était relativement simple, il suffisait nous de connaitre l'adresse du serveur, or celle-ci était déjà renseignée pour le fonctionnement des protocoles POP3 et POP3S. 
 Nous n'avions donc pas besoin d'autre nouvelle information que le port de connexion de SMTP sur le serveur.
@@ -32,7 +43,7 @@ Deux fonctions de la classe ```String``` de java ont rendu cette fonctionnalité
 *  ```String::split(";")``` nous permet de découper une chaine de caractères à chaque occurence du caractère ```";"```.
 *  ```String::trim()``` permet quant à elle de supprimer les espaces en début et fin de chaine de caractères, utile pour avoir une adresse correcte pour le destinnataire, peu importe que l'utilisateur ait décidé de séparer les différentes adresses avec ```";"```, ```"; "``` ou ```" ; "```.
 
-#### B - Fonctionnement avec plusieurs noms de domaines
+#### B - Fonctionnement avec plusieurs noms de domaines <a name="II2B" />
 Nous avons ensuite dû faire fonctionner le client pour qu'il puisse gérer plusieurs noms de domaine (**email.com** et **email.fr**), correspondant à deux serveurs différents.
 Afin de savoir sur quelle adresse IP et sur quel port envoyer le message selon l'adresse du destinataire, nous avons créé une classe ```DNS``` permettant de simuler le fonctionnement d'un serveur DNS classique : récupérer l'adresse IP d'un serveur en fonction de son nom de domaine.
 
@@ -56,10 +67,10 @@ private static List<ServerIntels> servers = Arrays.asList(
 ```
 Ces informations sont en dur dans le code, mais nous ne considérons pas cela comme vraiment génant car dans la vraie vie les coordonées d'un serveur ne sont pas amenées à changer aussi fréquemment.
 
-### 3 - Frontend
+### 3 - Frontend <a name="II3" />
 
 
-## III - Serveur
+## III - Serveur <a name="III" />
 Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci 
 ![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png).
 Pour le développement SMTP, nous nous sommes servi de ce que nous avions fait pour POP3, donc la structure du projet est similaire.
@@ -139,4 +150,4 @@ Lorsque le traitement est fini, on utilise la méthode send() de la connexion tc
     tcp.send(reponseServeur);
 ```
 L'ensemble des commandes fonctionnent de la même manière.
-## IV - Conclusion
+## IV - Conclusion <a name="IV" />
