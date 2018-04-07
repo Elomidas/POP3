@@ -207,7 +207,6 @@ public class Controller_Client extends Controller{
      * Met à jour notre pagination en cas d'appui sur le bouton actualiser
      */
     private void UpdatePagination(){
-        //TODO
         creationPagination(true);
     }
 
