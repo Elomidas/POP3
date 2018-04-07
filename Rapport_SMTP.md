@@ -190,7 +190,7 @@ L'émetteur est alors informé de chaque destinataire n'ayant pas pu recevoir so
 
 ### 1 - Automate <a name="III1" />
 Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci. Nous nous sommes basés sur la documentation du protocole SMTP.
-![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png).
+![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png)
 
 ### 2 - Backend <a name="III2" />
 
@@ -198,7 +198,7 @@ Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate
 
 Les serveurs SMTP, POP3 et POP3S doivent fonctionner ensemble, le but étant que l'utilisateur pourra choisir lors de sa connexion, s'il veut se connecter au POP3 ou au SMTP. Pour éviter toutes incompatibilités lors du l'éxécution du main, on a utilisé la structure ci-dessus:
 
-![uml_connexion](https://raw.githubusercontent.com/Elomidas/POP3/master/images/uml_connexion.png).
+![uml_connexion](https://raw.githubusercontent.com/Elomidas/POP3/master/images/uml_connexion.png)
 
 La méthode ```run()``` de la classe Connexion contient une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Ainsi, lorsqu'on éxécute le main, les 3 serveurs se mettent en écoutent sur les différents ports qu'on leur a assigné. 
 Le serveur POP3 écoute sur le port 1210, le POP3S sur le 1211 et le SMTP sur le port 1212.
