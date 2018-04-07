@@ -28,6 +28,7 @@ public class SMTP extends ProtocolUnderTCP {
     private static final int _RECEIVERIDENTIFIED = 4;
     private static final int _MAILSENDING = 5;
     private static final int _CONTENTSENT = 6;
+    private static final int _DISCONNECTION = 7;
     private int currentState;
     protected static final String _EOM = ".";
 
@@ -161,7 +162,7 @@ public class SMTP extends ProtocolUnderTCP {
      * @param mail Mail to be send
      * @return true if the mail has been send, false else.
      */
-    protected boolean sendSimpleMail(MailConvertor mail) {
+    private boolean sendSimpleMail(MailConvertor mail) {
         try {
             this.sendFrom(mail.getFrom());
             this.sendTo(mail.getTo());
@@ -265,8 +266,9 @@ public class SMTP extends ProtocolUnderTCP {
         }
         try {
             tcp.Send("QUIT");
-            currentState = SMTP._INITIALIZED;
+            currentState = SMTP._DISCONNECTION;
             super.Close();
+            currentState = SMTP._INITIALIZED;
         } catch (TCPException e) {
             throw new SMTPException("Unable to use command QUIT.", e);
         } catch (ProtocolUnderTCPException e) {
@@ -276,7 +278,7 @@ public class SMTP extends ProtocolUnderTCP {
 
     /**
      * Function used to test
-     * @throws SMTPException
+     * @throws SMTPException Error while testing
      */
     public void Observe() throws SMTPException {
         try {
