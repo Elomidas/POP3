@@ -50,6 +50,10 @@ Nous n'avons pas commencé le développement du client immédiatement, nous avon
 
 ![Automate Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Automate-client-smtp.png)
 
+Gr^ace à cet automate, nous avons réalisé la table de transition du fonctionnement de l'application cliente :
+
+![Table Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-client-smtp.png)
+
 ### 2 - Backend <a name="II2" />
 
 #### A - SMTP Basique <a name="II2A" />
