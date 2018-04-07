@@ -24,6 +24,10 @@
       * A - [Présentation interface graphique](#II3A)
       * B - [Gestion de plusieurs adresses mail valides ou non](#II3B)
   * III - [Serveur](#III)
+      * 1 - [Automate](#III1)
+      * 2 - [Backend](#III2)
+        * A - [Fonctionnement avec plusieurs serveurs](#III1A)
+        * B - [Implémentation du serveur SMTP](#III2B)
   * IV - [Conclusion](#IV)
 
 ## I - Introduction<a name="I" />
@@ -174,84 +178,121 @@ mais n'existe pas au niveau de notre serveur, un message est envoyé à l'utilis
 
 L'émetteur est alors informé de chaque destinataire n'ayant pas pu recevoir son mail. 
 
-## III - Serveur <a name="III" />
-Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci :
-![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png).
-Pour le développement SMTP, nous nous sommes servi de ce que nous avions fait pour POP3, donc la structure du projet est similaire.
-Dans le main, nous avons défini une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Le serveur étant concurrent, lorsqu'un client se connectera sur le port, un thread sera créé dans la classe Tcp pour lui permettre de communiquer avec le serveur.
-Le client ainsi connecté se verra attribuer une instanciation de la classe ObjetSmtpConnecte. Cette classe est chargé de faire respecté l'automate du serveur. Il recevra les commandes de l'utilisateur et retournera les résultats grâce aux méthode receive() et send() de la classe Tcp. 
 
-Les messages d'erreurs et de confirmation que peuvent envoyer le serveur sont stockés dans la classe ReponseServeur.
+## III - Serveur <a name="III" />
+
+### 1 - Automate <a name="III1" />
+Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci. Nous nous sommes basés sur la documentation du protocole SMTP.
+![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png).
+
+### 2 - Backend <a name="III2" />
+
+#### A - Fonctionnement avec plusieurs serveurs <a name="III1A" />
+
+Les serveurs SMTP, POP3 et POP3S doivent fonctionner ensemble, le but étant que l'utilisateur pourra choisir lors de sa connexion, s'il veut se connecter au POP3 ou au SMTP. Pour éviter toutes incompatibilités lors du l'éxécution du main, on a utilisé la structure ci-dessus:
+
+![uml_connexion](https://raw.githubusercontent.com/Elomidas/POP3/images/uml-connexion.png).
+
+La méthode ```run()``` de la classe Connexion contient une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Ainsi, lorsqu'on éxécute le main, les 3 serveurs se mettent en écoutent sur les différents ports qu'on leur a assigné. 
+Le serveur POP3 écoute sur le port 1210, le POP3S sur le 1211 et le SMTP sur le port 1212.
+```java
+        try{
+            ConnexionPOP3 connexionPOP3 = new ConnexionPOP3(domain);
+            connexionPOP3.start();
+            ConnexionPOP3S connexionPOP3S = new ConnexionPOP3S(domain);
+            connexionPOP3S.start();
+            ConnexionSMTP connexionSMTP = new ConnexionSMTP(domain);
+            connexionSMTP.start();
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+```
+Lorsqu'un client va se connecter à l'un des serveurs, la méthode launchObjet() va s'éxécuter pour créer un objet correspondant au serveur choisit. Par exemple, le serveur SMTP exécutera cette méthode:
+```java
+    protected void launchObject(Socket socket) throws IOException {
+        ObjetSmtpConnecte objetConnecte = new ObjetSmtpConnecte(socket, domain);
+        objetConnecte.start();
+    }
+```
+
+#### B - Implémentation du serveur SMTP <a name="III2B" />
+
+Pour le développement SMTP, nous nous sommes servi de ce que nous avions fait pour POP3, donc la structure du projet est similaire.
+Le serveur étant concurrent, lorsqu'un client se connectera sur le port 1212, un thread sera créé dans la classe ObjetSmtpConnecte pour lui permettre de communiquer avec le serveur. Elle est aussi chargé de faire respecter l'automate du serveur. 
+Les méthodes ```send()``` et ```receive()``` qui permettent la communication entre le serveur et le client sont implémentées dans la classe Tcp(). Cette classe sera instanciée dans le constructeur de ObjetSmtpConnecte.
+
+Pour simplifier l'organisation du code, les messages d'erreurs et de confirmation que peuvent envoyer le serveur ont été stockés dans la classe ReponseServeur.
 ```java
 public class ReponseServeur {
 
-	public final static String SMTP_SERVER_READY = "220 Simple Mail Transfer Service Ready";
-	public final static String SMTP_500_UNKNOWN_COMMAND = "500 Erreur de syntaxe, commande non reconnue";
-	public final static String SMTP_250_SERVERDOMAIN = "250 localhost";
-	public final static String SMTP_221_CLOSING = "221 fermeture";
-	public final static String SMTP_250_OK = "250 OK";
-	public final static String SMTP_550_UNKNOWN_USER = "250 utilisateur inconnu";
-	public final static String SMTP_354_START_READING = "354 debut de lecture";
-	/* Etat */
-	public final static String SERVER_READY = "Initialisation";
-	public final static String SERVER_CONNEXION = "Connexion";
-	public final static String SERVER_IDENTIFICATION = "Identification";
-	public final static String SERVER_TRANSACTION = "Transaction de Messagerie";
-	public final static String SERVER_ENVOIE = "Envoie de Message";
-	public final static String SERVER_LECTURE = "Lecture des Lignes";
+    public final static String SMTP_SERVER_READY = "220 Simple Mail Transfer Service Ready";
+    public final static String SMTP_500_UNKNOWN_COMMAND = "500 Erreur de syntaxe, commande non reconnue";
+    public final static String SMTP_250_SERVERDOMAIN = "250 localhost";
+    public final static String SMTP_221_CLOSING = "221 fermeture";
+    public final static String SMTP_250_OK = "250 OK";
+    public final static String SMTP_550_UNKNOWN_USER = "250 utilisateur inconnu";
+    public final static String SMTP_354_START_READING = "354 debut de lecture";
+    /* Etat */
+    public final static String SERVER_READY = "Initialisation";
+    public final static String SERVER_CONNEXION = "Connexion";
+    public final static String SERVER_IDENTIFICATION = "Identification";
+    public final static String SERVER_TRANSACTION = "Transaction de Messagerie";
+    public final static String SERVER_ENVOIE = "Envoie de Message";
+    public final static String SERVER_LECTURE = "Lecture des Lignes";
 
-	public final static String SMTP_CRLF = "\\r\\n";
+    public final static String SMTP_CRLF = "\\r\\n";
 }
 ```
-Comme dit plus haut, la classe ObjetSmtpConnecte va permettre la communication entre le client et le serveur. Afin de pouvoir traiter toutes les requêtes de l'utilisateur, l'ensemble des traitements possibles est contenue dans une boucle 'while(true)' qui ne s'arretera que lorsque l'utilisateur émettra une requête QUIT.
-Dans un premier temps, on commence par initialiser l'état du serveur comme c'est marqué dans l'automate. Ensuite, on recupère la commande et les paramètres envoyés par le client. Selon l'état du serveur, la méthode correspondante sera appelé et prendra en paramètre les informations envoyées par l'utilisateur.
+Comme dit plus haut, la classe ObjetSmtpConnecte va permettre la communication entre le client et le serveur. Afin de pouvoir traiter toutes les requêtes de l'utilisateur, l'ensemble des traitements possibles est contenue dans une boucle ```while(continuer)``` ('continuer' etant un booléèn ayant pour valeur par défaut true) qui ne s'arretera que lorsque l'utilisateur émettra une requête QUIT.
+Dans un premier temps, on commence par initialiser l'état du serveur comme c'est marqué dans l'automate. Ensuite, on recupère la commande et les paramètres envoyés par le client à travers la méthode ```receive()```. Selon l'état dans lequel se trouve le serveur, la méthode correspondante sera appelée et prendra en paramètre les informations envoyées par l'utilisateur.
 ```java
-			switch (etatServeur) {
-				case SERVER_CONNEXION:
-					reponseServeur = this.connexion(command, parameters);
-					break;
-				case SERVER_IDENTIFICATION:
-					reponseServeur = this.identification(command, parameters);
-					break;
-				case SERVER_TRANSACTION:
-					reponseServeur = this.transaction(command, parameters);
-					break;
-				case SERVER_ENVOIE:
-					reponseServeur = this.envoie(command, parameters);
-					break;
-				case SERVER_LECTURE:
-					reponseServeur = this.lecture(command, parameters);
-					break;
-				default:
-					reponseServeur = SMTP_500_UNKNOWN_COMMAND;
-			}
+            switch (etatServeur) {
+                case SERVER_CONNEXION:
+                    reponseServeur = this.connexion(command, parameters);
+                    break;
+                case SERVER_IDENTIFICATION:
+                    reponseServeur = this.identification(command, parameters);
+                    break;
+                case SERVER_TRANSACTION:
+                    reponseServeur = this.transaction(command, parameters);
+                    break;
+                case SERVER_ENVOIE:
+                    reponseServeur = this.envoie(command, parameters);
+                    break;
+                case SERVER_LECTURE:
+                    reponseServeur = this.lecture(command, parameters);
+                    break;
+                default:
+                    reponseServeur = SMTP_500_UNKNOWN_COMMAND;
+            }
 ```
 Chaque état a un ensemble de commande qui est possible d'éxécuter. Par exemple, dans l'état Identification, il sera possible pour l'utilisateur d'utiliser les commandes MAIL, RSET et QUIT.
 ```java
-	private String identification(String command, String[] parameters) {
-		switch (command){
-			case "MAIL":
-				return commandeMailFrom(parameters);
-			case "QUIT":
-				return commandeQuit();
-			case "RSET":
-				return commandeRset();
-			default :
-				return SMTP_500_UNKNOWN_COMMAND;
-		}
-	}
+    private String identification(String command, String[] parameters) {
+        switch (command){
+            case "MAIL":
+                return commandeMailFrom(parameters);
+            case "QUIT":
+                return commandeQuit();
+            case "RSET":
+                return commandeRset();
+            default :
+                return SMTP_500_UNKNOWN_COMMAND;
+        }
+    }
 ```
-Si l'utilisateur envoie la commande QUIT, la méthode commandeQuit() va s'exécuter. Le booléen continuer devient false ce qui va entrainer l'arret de la boucle "while". Le serveur va se mettre dans l'état d'initialisation et va retourner à l'utilisateur un message de fermeture.
+Si l'utilisateur envoie la commande QUIT, la méthode ```commandeQuit()``` va s'exécuter. Le booléen ```continuer``` devient false ce qui va entrainer l'arret de la boucle ```while```. Le serveur va se mettre dans l'état d'initialisation et va retourner à l'utilisateur un message de fermeture.
 ```java
-	private String commandeQuit() {
-		continuer = false;
-		etatServeur = SERVER_READY;
-		return SMTP_221_CLOSING;
-	}
+    private String commandeQuit() {
+        continuer = false;
+        etatServeur = SERVER_READY;
+        return SMTP_221_CLOSING;
+    }
 ```
 Lorsque le traitement est fini, on utilise la méthode send() de la connexion tcp du client pour lui renvoyer la réponses:
 ```java
-	tcp.send(reponseServeur);
+    tcp.send(reponseServeur);
 ```
 L'ensemble des commandes fonctionnent de la même manière.
 ## IV - Conclusion <a name="IV" />
