@@ -1,12 +1,15 @@
 # Rapport IPC - Partie SMTP <a name="" />
 
+[RFC]: https://tools.ietf.org/html/rfc5321
+[GitHub]: https://github.com/Elomidas/POP3
+
 **Etudiants :**
 *  JACOUD Bastien
 *  REMOND Victor
 *  TAGUEJOU Christian
 *  TARDY Martial
 
-[RFC]: https://tools.ietf.org/html/rfc5321
+**Code du Projet :** [lien GitHub](GitHub)
 
 ## Table des matières
 
@@ -16,11 +19,13 @@
     * 2 - [Backend](#II2)
       * A - [SMTP Basique (Simple Mail Transfert Protocol)](#II2A)
       * B - [Fonctionnement avec plusieurs noms de domaines](#II2B)
+      * C - [Optimisation](#II2C)
     * 3 - [Frontend](#II3)
   * III - [Serveur](#III)
   * IV - [Conclusion](#IV)
 
 ## I - Introduction<a name="I" />
+
 Suite du TP de développement d'un couple client/serveur mail.
 Cette étape fut la troisième de cette série de TP.
 Durant la première étape, nous avons dû mettre en place le protocole POP3 pour que le client relève ses mails sur le serveur.
@@ -35,6 +40,7 @@ Lien vers la [norme RFC utilisée][RFC].
 ### 2 - Backend <a name="II2" />
 
 #### A - SMTP Basique (Simple Mail Transfert Protocol) <a name="II2A" />
+
 Dans un premier temps, nous avions un unic domaine à gérer *email.com*.
 Ainsi l'implémentation du protocole était relativement simple, il suffisait nous de connaitre l'adresse du serveur, or celle-ci était déjà renseignée pour le fonctionnement des protocoles POP3 et POP3S. 
 Nous n'avions donc pas besoin d'autre nouvelle information que le port de connexion de SMTP sur le serveur.
@@ -45,20 +51,22 @@ Deux fonctions de la classe ```String``` de java ont rendu cette fonctionnalité
 *  ```String::trim()``` permet quant à elle de supprimer les espaces en début et fin de chaine de caractères, utile pour avoir une adresse correcte pour le destinnataire, peu importe que l'utilisateur ait décidé de séparer les différentes adresses avec ```";"```, ```"; "``` ou ```" ; "```.
 
 #### B - Fonctionnement avec plusieurs noms de domaines <a name="II2B" />
+
 Nous avons ensuite dû faire fonctionner le client pour qu'il puisse gérer plusieurs noms de domaine (**email.com** et **email.fr**), correspondant à deux serveurs différents.
 Afin de savoir sur quelle adresse IP et sur quel port envoyer le message selon l'adresse du destinataire, nous avons créé une classe ```DNS``` permettant de simuler le fonctionnement d'un serveur DNS classique : récupérer l'adresse IP d'un serveur en fonction de son nom de domaine.
 
 Notre classe ```DNS``` se compose d'une liste de ```ServerIntels```, une classe contenant toutes les informations utiles à propos d'un serveur.
 Cette liste est déclarée comme ci-dessous, elle doit être mise à jour après le lancement des serveurs.
+Les différentes fonctions *public* de cette classe permettent de récupérer les informations qui nous intéressent sur le serveur voulu grâce à son nom de domaine.
 ```java
 public class DNS {
 	private static List<ServerIntels> servers = Arrays.asList(
 			new ServerIntels(
-					"email.com",
-					"127.0.0.1",
-					1210,
-					1211,
-					1212),
+					"email.com",	//Nom de domaine
+					"127.0.0.1",	//Adresse IP
+					1210,			//Port POP3
+					1211,			//Port POP3S
+					1212),			//Port SMTP
 			new ServerIntels(
 					"email.fr",
 					"127.0.0.1",
@@ -66,12 +74,45 @@ public class DNS {
 					1214,
 					1215)
 		);
-	/**
-	 * Reste du code
-	 */
+	
+	public static String getAddress(String domain) throws DNSException {
+		/* Code */
+	}
+
+	public static int getPOP3(String domain) throws DNSException {
+		/* Code */
+	}
+
+	public static int getPOP3S(String domain) throws DNSException {
+		/* Code */
+	}
+
+	public static int getSMTP(String domain) throws DNSException {
+		/* Code */
+	}
+
+	public static int getServersNumber() {
+		/* Code */
+	}
+
+	public static List<String> getDomains() {
+		/* Code */
+	}
+
 }
 ```
 Ces informations sont en dur dans le code, mais nous ne considérons pas cela comme vraiment génant car dans la vraie vie les coordonées d'un serveur ne sont pas amenées à changer aussi fréquemment.
+Si on veut lancer le programme avec un troisième serveur, il suffirait d'ajouter une troisième objet ```ServerIntels``` à la liste ci-dessus.
+
+#### C - Optimisation <a name="II2C" />
+
+Avec notre premier développement, nous avions créé un unique objet SMTP, qui, pour chaque destinataire, ouvrait une connexion TCP pour envoyer le message et si le destinataire suivant nécessitait la connexion à un autre serveur, il fermait celle précedemment ouverte avant d'en ouvrir une autre sur le nouveau serveur.
+Étant donné que ceci n'était pas du tout optimisé, nous avons choisi de créer un objet SMTP pour chaque serveur renseigné dans la classe ```DNS```.
+Tous ces objets ```SMTP``` sont manipulés grâce à la classe ```SMTPDispatcher``` et stockés dans une ```HashMap<String, SMTP>``` utilisant le nom de domaine comme clé.
+Ces objets ne gardent pas les connexions TCP toujours ouvertes étant donné que ceci serait inutile : à l'appel de la fonction ```SMTP::SendMail(String targets, MailConvertor mailConvertor)```, la connexion est ouverte, le message envoyé, et la connexion est fermée.
+De cette façon la connexion ne reste pas toujours ouverte mais le fait d'avoir plusieurs instances nous permet de ne pas avoir à refaire toute la configuration de la connexion à chaque ouverture.
+
+Une seconde amélioration a été de regrouper les destinataires par nom de domaine, afin d'ouvrir une seule fois la connexion TCP vers un serveur, envoyer le mail pour tous les utilisateurs sur ce domaine et fermer la connexion.
 
 ### 3 - Frontend <a name="II3" />
 
