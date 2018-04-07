@@ -47,6 +47,7 @@ Lien vers la [norme RFC utilisée][RFC].
 ### 1 - Automate <a name="II1" />
 
 Nous n'avons pas commencé le développement du client immédiatement, nous avons dû commencer par faire un automate représentant le fonctionnement attendu pour ce protocole.
+
 ![Automate Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Automate-client-smtp.png)
 
 ### 2 - Backend <a name="II2" />
@@ -190,6 +191,7 @@ L'émetteur est alors informé de chaque destinataire n'ayant pas pu recevoir so
 
 ### 1 - Automate <a name="III1" />
 Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci. Nous nous sommes basés sur la documentation du protocole SMTP.
+
 ![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png)
 
 ### 2 - Backend <a name="III2" />
