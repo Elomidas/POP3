@@ -18,8 +18,6 @@ public class MyLogger {
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
 
-            // the following statement is used to log any messages
-            logger.info("Beginning of Model.Protocols.TCP Test execution");
 
         } catch (Exception e) {
             e.printStackTrace();

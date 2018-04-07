@@ -1,6 +1,6 @@
 package Controller;
 
-import Main.Main;
+import View.Main;
 import Model.MailBox.Mail;
 import Model.MailBox.MailException;
 import Model.MailBox.Mailbox;

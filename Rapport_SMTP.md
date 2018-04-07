@@ -338,9 +338,9 @@ Si vous mettez un nom de domaine qui n'existe pas, c'est le nom de domaine *emai
 
 ### 2 - Le Client <a name="IV2" />
 
-L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/*.
+L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/bin/*.
 
-Avant de l'exécuter il est conseillé de vérifier que le fichier de configuration *Binaires/Client/config/DNS.csv* est correctement rempli.
+Avant de l'exécuter il est conseillé de vérifier que le fichier de configuration *Binaires/Client/bin/config/DNS.csv* est correctement rempli.
 
 Il n'est pas necessaire de le lancer à la console, un double clic suffit à lancer l'interface graphique.
 
