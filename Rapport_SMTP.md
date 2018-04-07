@@ -123,14 +123,14 @@ Une seconde amélioration a été de regrouper les destinataires par nom de doma
 
 #### A - Présentation interface graphique <a name="II3A" />
 
-L'interface graphique utilisée dans le cadre du protocole STMP est toujours la m^eme que celle utilisée pour le protocole POP3S. 
-Il est tout de m^eme important de spécifier que le code de cette dernière n'est plus le m^eme que pour le protocole POP3S, car notre 
+L'interface graphique utilisée dans le cadre du protocole STMP est toujours la même que celle utilisée pour le protocole POP3S. 
+Il est tout de même important de spécifier que le code de cette dernière n'est plus le même que pour le protocole POP3S, car notre 
 interface a été optimisée entre temps.
 
 De plus, on utilise cette fois ci, non pas le premier onglet, listant tous les mails reçus par l'utilisateur,  mais le second onglet 
 qui nous permettra d'envoyer un mails à un ou plusieurs destinataires. 
 
-Vous trouverez ci-dessous un aperçu de notre fen^etre d'envoi de mails :
+Vous trouverez ci-dessous un aperçu de notre fenêtre d'envoi de mails :
 
 ![Fenetre_envoi](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Fenetre_envoi.png)
 
