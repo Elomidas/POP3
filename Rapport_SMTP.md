@@ -11,11 +11,11 @@
 ## Table des matières
 *  I - [Introduction](#I)
 *  II - [Client](#II)
-*    1 - [Automate](#II1)
-*    2 - [Backend](#II2)
-*      A - [SMTP Basique (Simple Mail Transfert Protocol)](#II2A)
-*      B - [Fonctionnement avec plusieurs noms de domaines](#II2B)
-*    3 - [Frontend](#II3)
+  *  1 - [Automate](#II1)
+  *  2 - [Backend](#II2)
+    *  A - [SMTP Basique (Simple Mail Transfert Protocol)](#II2A)
+    *  B - [Fonctionnement avec plusieurs noms de domaines](#II2B)
+  *  3 - [Frontend](#II3)
 *  III - [Serveur](#III)
 *  IV - [Conclusion](#IV)
 
