@@ -109,14 +109,19 @@ public class Mailbox {
      * @throws MailException Error while joining the server.
      */
     public boolean joinServer(String domain) throws MailException {
-        if(pop3 == null) {
-            pop3 = new POP3S();
-            try {
-                pop3.Connect(domain);
-            } catch(ProtocolUnderTCPException e) {
-                pop3 = null;
-                throw new MailException("Your domain name " + domain + " seems invalid as POP3S server...", e);
+        try {
+            if(pop3 != null && pop3.CheckConnected()) {
+                pop3.Close();
             }
+        } catch (ProtocolUnderTCPException e) {
+            throw new MailException("Unable to close POP3", e);
+        }
+        pop3 = new POP3S();
+        try {
+            pop3.Connect(domain);
+        } catch(ProtocolUnderTCPException e) {
+            pop3 = null;
+            throw new MailException("Your domain name " + domain + " seems invalid as POP3S server...", e);
         }
         if(smtp == null) {
             try {
