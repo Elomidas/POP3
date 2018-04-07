@@ -79,8 +79,9 @@ public class ObjetConnecteSecurise extends ObjetConnecte {
                 m_tcp.send(response);
             } catch (IOException e) {
 
-                System.out.println(e.getMessage());
+                System.out.println("Erreur POP3S: " + e.getMessage());
                 m_continuer = false;
+                this.m_tcp.Destroy();
                 this.quitTransaction();
                 return;
             }

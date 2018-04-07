@@ -57,8 +57,7 @@ public class Tcp {
             } while (((i != -1) & (iChar != '\n') & (i != '\r')) || first);
             System.out.println("C: \"" + messageReceived + "\"");
         } catch(Exception e) {
-            System.out.println("Errrrrrreur: " + e.getMessage());
-            return e.getMessage();
+            throw new IOException(e.getMessage());
         }
 
         return messageReceived.toString();

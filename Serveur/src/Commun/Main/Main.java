@@ -7,7 +7,7 @@ public class Main {
     public final static String DOMAIN = "email.com";
     public final static String DOMAIN2 = "email.fr";
     public static void main(String[] args) {
-        String domain = DOMAIN2;
+        String domain = DOMAIN;
         System.out.println("Lancement du domaine " + domain);
         try{
             ConnexionPOP3 connexionPOP3 = new ConnexionPOP3(domain);

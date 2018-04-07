@@ -82,8 +82,9 @@ public class ObjetConnecte extends Thread{
                 System.out.println("S POP3: " + response);
                 m_tcp.send(response);
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Erreur POP3: " + e.getMessage());
                 m_continuer = false;
+                this.m_tcp.Destroy();
                 return;
             }
         }

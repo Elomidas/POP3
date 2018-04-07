@@ -89,8 +89,9 @@ public class ObjetSmtpConnecte extends Thread{
                     tcp.send(reponseServeur);
                 }
             } catch (IOException e) {
-                System.out.println(e.getMessage());
+                System.out.println("Erreur SMTP: " + e.getMessage());
                 continuer = false;
+                this.tcp.Destroy();
                 return;
             }
 
