@@ -22,6 +22,7 @@
       * C - [Optimisation](#II2C)
     * 3 - [Frontend](#II3)
       * A - [Présentation interface graphique](#II3A)
+      * B - [Gestion de plusieurs adresses mail valides ou non](#II3B)
   * III - [Serveur](#III)
   * IV - [Conclusion](#IV)
 
@@ -117,14 +118,58 @@ Une seconde amélioration a été de regrouper les destinataires par nom de doma
 
 ### 3 - Frontend <a name="II3" />
 
-#### A - Présentation interface graphique <a name=II3A" />
+#### A - Présentation interface graphique <a name="II3A" />
 
 L'interface graphique utilisée dans le cadre du protocole STMP est toujours la m^eme que celle utilisée pour le protocole POP3S. 
-Toutefois, on utilise non pas le premier onglet, listant tous les mails reçus par l'utilisateur,  mais le second onglet 
+Il est tout de m^eme important de spécifier que le code de cette dernière n'est plus le m^eme que pour le protocole POP3S, car notre 
+interface a été optimisée entre temps.
+
+De plus, on utilise cette fois ci, non pas le premier onglet, listant tous les mails reçus par l'utilisateur,  mais le second onglet 
 qui nous permettra d'envoyer un mails à un ou plusieurs destinataires. 
 
 Vous trouverez ci-dessous un aperçu de notre fen^etre d'envoi de mails :
 
+![Fenetre_envoi](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Fenetre_envoi.png)
+
+Afin d'améliorer considérablement l'expérience de l'utilisateur, le bouton "Répondre", présenté lors de la partie POP3S redirige automatiquement
+l'émetteur sur l'onglet d'envoi de mails, et ce en remplissant automatiquement les champs nécessaires :
+
+![Fenetre_repondre](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Fenetre_repondre.png)
+
+Ainsi, notre utilisateur n'a plus qu'a écrire sa réponse à l'endroit adéquat pour que son destinataire puisse savoir de quel mail est issue la réponse.
+
+De plus, si le champ "Objet" n'est pas rempli par l'émetteur lors de l'écriture du mail, une confirmation lui sera demandée afin d'envoyer un mail ne comportant
+pas de mention "Objet".
+
+#### B - Gestion de plusieurs adresses mail valides ou non <a name="II3B" />
+
+Bien évidemment, notre service de messagerie étant capable d'envoyer des mails à plusieurs destinataires, appartenant éventuellement à différents serveurs, 
+nous avons du traiter l'existence ou non de chacune des adresses mails des destinataires. 
+
+Dans un premier temps, nous réalisons, à l'aide d'une expression régulière, un test nous permettant de savoir si la syntaxe de chacune des adresses mails insérées est correcte ou non.
+```java
+    private static final String _MAIL = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
+
+    public static boolean CheckMails(String mails){
+        String tabmails[] = mails.split(";");
+        for(String mail : tabmails){
+            if(!CheckMail(mail.trim())){
+                return false;
+            }
+        }
+        return true;
+    }
+```
+
+Deux possibilités s'offrent alors à nous : soit les adresses mails des destinataires possèdent une syntaxe correcte, auquel cas nous essayons d'envoyer 
+le mail à chaque destinataire. Soit une ou plusieurs adresses mails possèdent une syntaxe incorrecte, auquel cas nous affichons un message d'erreur à l'utilisateur. 
+
+Si la syntaxe de chaque adresse écrite par l'utilisateur est correcte, nous essayons d'envoyer le mail à chaque utilisateur ainsi mentionné. Si un utilisateur est mentionné
+mais n'existe pas au niveau de notre serveur, un message est envoyé à l'utilisateur. Ce message indique les adresses mails de tous les utilisateurs inexistants :
+
+![Fenetre_adresses_invalides](https://raw.githubusercontent.com/Elomidas/POP3/master/images/adresses_invalides_SMTP.png)
+
+L'émetteur est alors informé de chaque destinataire n'ayant pas pu recevoir son mail. 
 
 ## III - Serveur <a name="III" />
 Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci :
