@@ -1,4 +1,4 @@
-# Rapport IPC - Partie SMTP <a name="" />
+# Rapport IPC - Partie SMTP
 
 [RFC]: https://tools.ietf.org/html/rfc5321
 [GitHub]: https://github.com/Elomidas/POP3
@@ -45,6 +45,9 @@ Lien vers la [norme RFC utilisée][RFC].
 ## II - Client <a name="II" />
 
 ### 1 - Automate <a name="II1" />
+
+Nous n'avons pas commencé le développement du client immédiatement, nous avons dû commencer par faire un automate représentant le fonctionnement attendu pour ce protocole.
+![Automate Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Automate-client-smtp.png)
 
 ### 2 - Backend <a name="II2" />
 
@@ -334,6 +337,7 @@ Si vous mettez un nom de domaine qui n'existe pas, c'est le nom de domaine *emai
 ### 2 - Le Client <a name="IV2" />
 
 L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/*.
+
 Avant de l'exécuter il est conseillé de vérifier que le fichier de configuration *Binaires/Client/config/DNS.csv* est correctement rempli.
 
 Il n'est pas necessaire de le lancer à la console, un double clic suffit à lancer l'interface graphique.
