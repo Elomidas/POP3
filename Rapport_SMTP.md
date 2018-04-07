@@ -1,4 +1,4 @@
-# Rapport IPC
+# Rapport IPC - Partie SMTP
 
 **Etudiants :**
 *  JACOUD Bastien
@@ -6,10 +6,15 @@
 *  TAGUEJOU Christian
 *  TARDY Martial
 
+[RFC]: https://tools.ietf.org/html/rfc5321
+
 ## I - Introduction
 Suite du TP de développement d'un couple client/serveur mail.
-Durant les étapes précédentes, nous avons d'abord dû mettre en place  
-Le but de cette partie du TP était d
+Cette étape fut la troisième de cette série de TP.
+Durant la première étape, nous avons dû mettre en place le protocole POP3 pour que le client relève ses mails sur le serveur.
+La seconde consistait à adapter le code pour utiliser le protocole POP3S afin de sécuriser la connexion du client.
+Le but de cette dernière étape était de permettre au client d'envoyer des messages à d'autres utilisateurs en permettant au client comme au serveur d'utiliser le protocole SMTP.
+Lien vers la [norme RFC utilisée][RFC].
 
 ## II - Client
 
@@ -17,12 +22,46 @@ Le but de cette partie du TP était d
 
 ### 2 - Backend
 
+#### A - SMTP Basique (Simple Mail Transfert Protocol)
+Dans un premier temps, nous avions un unic domaine à gérer *email.com*.
+Ainsi l'implémentation du protocole était relativement simple, il suffisait nous de connaitre l'adresse du serveur, or celle-ci était déjà renseignée pour le fonctionnement des protocoles POP3 et POP3S. 
+Nous n'avions donc pas besoin d'autre nouvelle information que le port de connexion de SMTP sur le serveur.
+
+Afin de permettre à l'utilisateur d'envoyer son message à plusieurs utilisateurs en même temps, nous lui donnons la possibilité de mettre plusieurs destainataires, séparés par des points-virgules.
+Deux fonctions de la classe ```String``` de java ont rendu cette fonctionnalité facile à implémenter :
+*  ```String::split(";")``` nous permet de découper une chaine de caractères à chaque occurence du caractère ```";"```.
+*  ```String::trim()``` permet quant à elle de supprimer les espaces en début et fin de chaine de caractères, utile pour avoir une adresse correcte pour le destinnataire, peu importe que l'utilisateur ait décidé de séparer les différentes adresses avec ```";"```, ```"; "``` ou ```" ; "```.
+
+#### B - Fonctionnement avec plusieurs noms de domaines
+Nous avons ensuite dû faire fonctionner le client pour qu'il puisse gérer plusieurs noms de domaine (**email.com** et **email.fr**), correspondant à deux serveurs différents.
+Afin de savoir sur quelle adresse IP et sur quel port envoyer le message selon l'adresse du destinataire, nous avons créé une classe ```DNS``` permettant de simuler le fonctionnement d'un serveur DNS classique : récupérer l'adresse IP d'un serveur en fonction de son nom de domaine.
+
+Notre classe ```DNS``` se compose d'une liste de ```ServerIntels```, une classe contenant toutes les informations utiles à propos d'un serveur.
+Cette liste est déclarée comme ci-dessous, elle doit être mise à jour après le lancement des serveurs.
+```java
+private static List<ServerIntels> servers = Arrays.asList(
+        new ServerIntels(
+                "email.com",
+                "127.0.0.1",
+                1210,
+                1211,
+                1212),
+        new ServerIntels(
+                "email.fr",
+                "127.0.0.1",
+                1213,
+                1214,
+                1215)
+    );
+```
+Ces informations sont en dur dans le code, mais nous ne considérons pas cela comme vraiment génant car dans la vraie vie les coordonées d'un serveur ne sont pas amenées à changer aussi fréquemment.
+
 ### 3 - Frontend
 
 
 ## III - Serveur
 Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci 
-![Automate_Serveur](images/Automate-serveur.png).
+![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png).
 Pour le développement SMTP, nous nous sommes servi de ce que nous avions fait pour POP3, donc la structure du projet est similaire.
 Dans le main, nous avons défini une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Le serveur étant concurrent, lorsqu'un client se connectera sur le port, un thread sera créé dans la classe Tcp pour lui permettre de communiquer avec le serveur.
 Le client ainsi connecté se verra attribuer une instanciation de la classe ObjetSmtpConnecte. Cette classe est chargé de faire respecté l'automate du serveur. Il recevra les commandes de l'utilisateur et retournera les résultats grâce aux méthode receive() et send() de la classe Tcp. 
