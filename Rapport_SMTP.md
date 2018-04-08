@@ -50,7 +50,7 @@ Nous n'avons pas commencé le développement du client immédiatement, nous avon
 
 ![Automate Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Automate-client-smtp.png)
 
-Gr^ace à cet automate, nous avons réalisé la table de transition du fonctionnement de l'application cliente :
+Grâce à cet automate, nous avons réalisé la table de transition du fonctionnement de l'application cliente :
 
 ![Table Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-client-smtp.png)
 
@@ -198,6 +198,9 @@ Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate
 
 ![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png)
 
+A partir de cet automate, nous avons pu réaliser sa table de transition:
+
+![Table_Transition_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-serveur-smtp.png)
 ### 2 - Backend <a name="III2" />
 
 #### A - Fonctionnement avec plusieurs serveurs <a name="III1A" />
