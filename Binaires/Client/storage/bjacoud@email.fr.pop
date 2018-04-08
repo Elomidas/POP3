@@ -1,0 +1,32 @@
+1
+Date: 2018/04/08 12:12:11
+From: bjacoud@email.frSubject: Test sur 2 PC 2
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Hey,
+This is my test
+I'm in the list
+
+.
+2
+Date: 2018/04/08 12:20:27
+From: vremond@email.comSubject: Test cross domain
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+This is a test
+
+.
+3
+Date: 2018/04/08 12:20:57
+From: vremond@email.comSubject: Test cross domain error
+MIME-Version: 1.0
+Content-Type: text/plain; charset: UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+This is a test 2
+
+.

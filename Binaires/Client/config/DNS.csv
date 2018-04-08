@@ -1,3 +1,3 @@
 Domain name,IP address,POP3,POP3S,SMTP
-email.com,127.0.0.1,1210,1211,1212
-email.fr,127.0.0.1,1213,1214,1215
+email.com,192.168.1.38,1210,1211,1212
+email.fr,192.168.1.11,1210,1211,1212
