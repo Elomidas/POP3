@@ -50,6 +50,10 @@ Nous n'avons pas commencé le développement du client immédiatement, nous avon
 
 ![Automate Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Automate-client-smtp.png)
 
+Grâce à cet automate, nous avons réalisé la table de transition du fonctionnement de l'application cliente :
+
+![Table Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-client-smtp.png)
+
 ### 2 - Backend <a name="II2" />
 
 #### A - SMTP Basique <a name="II2A" />
@@ -194,36 +198,35 @@ Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate
 
 ![Automate_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/Serveur/images/Automate-serveur.png)
 
+A partir de cet automate, nous avons pu réaliser sa table de transition:
+
+![Table_Transition_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-serveur-smtp.png)
 ### 2 - Backend <a name="III2" />
 
 #### A - Fonctionnement avec plusieurs serveurs <a name="III1A" />
 
-Les serveurs SMTP, POP3 et POP3S doivent fonctionner ensemble, le but étant que l'utilisateur pourra choisir lors de sa connexion, s'il veut se connecter au POP3 ou au SMTP. Pour éviter toutes incompatibilités lors du l'éxécution du main, on a utilisé la structure ci-dessus:
+Les serveurs SMTP, POP3 et POP3S doivent fonctionner ensemble, le but étant que l'utilisateur pourra choisir lors de sa connexion, s'il veut se connecter au POP3 ou au SMTP. Pour éviter toutes incompatibilités lors du l'exécution du main, on a utilisé la structure ci-dessus:
 
 ![uml_connexion](https://raw.githubusercontent.com/Elomidas/POP3/master/images/uml_connexion.png)
 
-La méthode ```run()``` de la classe Connexion contient une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Ainsi, lorsqu'on éxécute le main, les 3 serveurs se mettent en écoutent sur les différents ports qu'on leur a assigné. 
+La méthode ```run()``` de la classe Connexion contient une boucle infini pour que le serveur puisse accepter toutes les connexions tant que celles-ci se font sur le bon port. Ainsi, lorsqu'on exécute le main, les 3 serveurs se mettent en écoutent sur les différents ports qu'on leur a assigné. 
 Le serveur POP3 écoute sur le port 1210, le POP3S sur le 1211 et le SMTP sur le port 1212.
 ```java
-        try{
             ConnexionPOP3 connexionPOP3 = new ConnexionPOP3(domain);
             connexionPOP3.start();
             ConnexionPOP3S connexionPOP3S = new ConnexionPOP3S(domain);
             connexionPOP3S.start();
             ConnexionSMTP connexionSMTP = new ConnexionSMTP(domain);
             connexionSMTP.start();
-
-        }catch(Exception e){
-            e.printStackTrace();
-        }
 ```
-Lorsqu'un client va se connecter à l'un des serveurs, la méthode launchObjet() va s'éxécuter pour créer un objet correspondant au serveur choisit. Par exemple, le serveur SMTP exécutera cette méthode:
+Lorsqu'un client va se connecter à l'un des serveurs, la méthode launchObjet() va s'exécuter pour créer un objet correspondant au serveur choisit. Par exemple, le serveur SMTP exécutera cette méthode:
 ```java
     protected void launchObject(Socket socket) throws IOException {
         ObjetSmtpConnecte objetConnecte = new ObjetSmtpConnecte(socket, domain);
         objetConnecte.start();
     }
 ```
+Les identifiants des utilisateurs pour chaque domaine sont enregistrés dans des fichiers différents et chaque utilisateur possède un fichier dans lequel sera écrit les messages reçus.
 
 #### B - Implémentation du serveur SMTP <a name="III2B" />
 
@@ -276,7 +279,7 @@ Dans un premier temps, on commence par initialiser l'état du serveur comme c'es
                     reponseServeur = SMTP_500_UNKNOWN_COMMAND;
             }
 ```
-Chaque état a un ensemble de commande qui est possible d'éxécuter. Par exemple, dans l'état Identification, il sera possible pour l'utilisateur d'utiliser les commandes MAIL, RSET et QUIT.
+Chaque état a un ensemble de commande qui est possible d'exécuter. Par exemple, dans l'état Identification, il sera possible pour l'utilisateur d'utiliser les commandes MAIL, RSET et QUIT.
 ```java
     private String identification(String command, String[] parameters) {
         switch (command){
@@ -338,9 +341,9 @@ Si vous mettez un nom de domaine qui n'existe pas, c'est le nom de domaine *emai
 
 ### 2 - Le Client <a name="IV2" />
 
-L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/bin/*.
+L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/*.
 
-Avant de l'exécuter il est conseillé de vérifier que le fichier de configuration *Binaires/Client/bin/config/DNS.csv* est correctement rempli.
+Avant de l'exécuter il est conseillé de vérifier que le fichier de configuration *Binaires/Client/config/DNS.csv* est correctement rempli.
 
 Il n'est pas necessaire de le lancer à la console, un double clic suffit à lancer l'interface graphique.
 
