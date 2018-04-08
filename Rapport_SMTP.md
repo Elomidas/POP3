@@ -34,6 +34,7 @@
   * V - [Conclusion](#V)
 
 <a name="I" />
+
 ## I - Introduction
 
 Suite du TP de développement d'un couple client/serveur mail.
@@ -44,9 +45,11 @@ Le but de cette dernière étape était de permettre au client d'envoyer des mes
 Lien vers la [norme RFC utilisée][RFC].
 
 <a name="II" />
+
 ## II - Client
 
 <a name="II1" />
+
 ### 1 - Automate
 
 Nous n'avons pas commencé le développement du client immédiatement, nous avons dû commencer par faire un automate représentant le fonctionnement attendu pour ce protocole.
@@ -58,9 +61,11 @@ Grâce à cet automate, nous avons réalisé la table de transition du fonctionn
 ![Table Client](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-client-smtp.png)
 
 <a name="II2" />
+
 ### 2 - Backend
 
 <a name="II2A" />
+
 #### A - SMTP Basique
 
 Dans un premier temps, nous avions un unique domaine à gérer *email.com*.
@@ -73,6 +78,7 @@ Deux fonctions de la classe ```String``` de java ont rendu cette fonctionnalité
 *  ```String::trim()``` permet quant à elle de supprimer les espaces en début et fin de chaine de caractères, utile pour avoir une adresse correcte pour le destinnataire, peu importe que l'utilisateur ait décidé de séparer les différentes adresses avec ```";"```, ```"; "``` ou ```" ; "```.
 
 <a name="II2B" />
+
 #### B - Fonctionnement avec plusieurs noms de domaines
 
 Nous avons ensuite dû faire fonctionner le client pour qu'il puisse gérer plusieurs noms de domaine (**email.com** et **email.fr**), correspondant à deux serveurs différents.
@@ -129,6 +135,7 @@ test.de,192.168.43.19,1210,1211,1212
 ```
 
 <a name="II2C" />
+
 #### C - Optimisation
 
 Avec notre premier développement, nous avions créé un unique objet SMTP, qui, pour chaque destinataire, ouvrait une connexion TCP pour envoyer le message et si le destinataire suivant nécessitait la connexion à un autre serveur, il fermait celle précedemment ouverte avant d'en ouvrir une autre sur le nouveau serveur.
@@ -143,9 +150,11 @@ Nous avions ainsi la possibilité de changer le(s) destinataire(s) du mail et de
 Une seconde amélioration a été de regrouper les destinataires par nom de domaine, afin d'ouvrir une seule fois la connexion TCP vers un serveur, envoyer le mail pour tous les utilisateurs sur ce domaine et fermer la connexion.
 
 <a name="II3" />
+
 ### 3 - Frontend
 
 <a name="II3A" />
+
 #### A - Présentation interface graphique
 
 L'interface graphique utilisée dans le cadre du protocole STMP est toujours la même que celle utilisée pour le protocole POP3S. 
@@ -170,6 +179,7 @@ De plus, si le champ "Objet" n'est pas rempli par l'émetteur lors de l'écritur
 pas de mention "Objet".
 
 <a name="II3B" />
+
 #### B - Gestion de plusieurs adresses mail valides ou non
 
 Bien évidemment, notre service de messagerie étant capable d'envoyer des mails à plusieurs destinataires, appartenant éventuellement à différents serveurs, 
@@ -201,9 +211,11 @@ mais n'existe pas au niveau de notre serveur, un message est envoyé à l'utilis
 L'émetteur est alors informé de chaque destinataire n'ayant pas pu recevoir son mail. 
 
 <a name="III" />
+
 ## III - Serveur
 
 <a name="III1" />
+
 ### 1 - Automate
 Avant de commencer l'implémentation du Serveur, nous avons réalisé l'automate de celui-ci. Nous nous sommes basés sur la documentation du protocole SMTP.
 
@@ -214,9 +226,11 @@ A partir de cet automate, nous avons pu réaliser sa table de transition:
 ![Table_Transition_Serveur](https://raw.githubusercontent.com/Elomidas/POP3/master/images/Table-transition-serveur-smtp.png)
 
 <a name="III2" />
+
 ### 2 - Backend
 
 <a name="III1A" />
+
 #### A - Fonctionnement avec plusieurs serveurs
 
 Les serveurs SMTP, POP3 et POP3S doivent fonctionner ensemble, le but étant que l'utilisateur pourra choisir lors de sa connexion, s'il veut se connecter au POP3 ou au SMTP. Pour éviter toutes incompatibilités lors du l'exécution du main, on a utilisé la structure ci-dessus:
@@ -243,6 +257,7 @@ Lorsqu'un client va se connecter à l'un des serveurs, la méthode launchObjet()
 Les identifiants des utilisateurs pour chaque domaine sont enregistrés dans des fichiers différents et chaque utilisateur possède un fichier dans lequel sera écrit les messages reçus.
 
 <a name="III2B" />
+
 #### B - Implémentation du serveur SMTP
 
 Pour le développement SMTP, nous nous sommes servi de ce que nous avions fait pour POP3, donc la structure du projet est similaire.
@@ -324,9 +339,11 @@ Lorsque le traitement est fini, on utilise la méthode send() de la connexion tc
 L'ensemble des commandes fonctionnent de la même manière.
 
 <a name="IV" />
+
 ## IV - Utilisation
 
 <a name="IV1" />
+
 ### 1 - Le Serveur
 
 Pour lancer le serveur, il suffit d"exécuter via une console *Serveur.jar*, situé dans le répertoire *Binaires/Serveur/*.
@@ -360,6 +377,7 @@ Attente de connexion SMTP au port 1212
 Si vous mettez un nom de domaine qui n'existe pas, c'est le nom de domaine *email.com* qui sera utilisé.
 
 <a name="IV2" />
+
 ### 2 - Le Client
 
 L'exécutable du client (*Client.java*) se trouve lui dans le répertoire *Binaires/Client/*.
@@ -369,6 +387,7 @@ Avant de l'exécuter il est conseillé de vérifier que le fichier de configurat
 Il n'est pas necessaire de le lancer à la console, un double clic suffit à lancer l'interface graphique.
 
 <a name="V" />
+
 ## V - Conclusion
 
 Nous avons finalement mis au point un serveur permettant de gérer une messagerie identifiée par un nom de domaine sur un serveur, ainsi qu'un client permettant d'y accéder à distance afin de relever son courrier et/ou d'envoyer de nouveaux messages.
