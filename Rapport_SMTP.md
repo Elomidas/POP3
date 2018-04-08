@@ -58,7 +58,7 @@ Grâce à cet automate, nous avons réalisé la table de transition du fonctionn
 
 #### A - SMTP Basique <a name="II2A" />
 
-Dans un premier temps, nous avions un unic domaine à gérer *email.com*.
+Dans un premier temps, nous avions un unique domaine à gérer *email.com*.
 Ainsi l'implémentation du protocole était relativement simple, il suffisait nous de connaitre l'adresse du serveur, or celle-ci était déjà renseignée pour le fonctionnement des protocoles POP3 et POP3S. 
 Nous n'avions donc pas besoin d'autre nouvelle information que le port de connexion de SMTP sur le serveur.
 
@@ -318,16 +318,19 @@ Par défaut, le serveur se lance avec le nom de domaine *email.com*.
 Pour choisir le nom de domaine, il faut le passer en arguement.
 
 Par exemple  :
+
 ```shell
 C:\Users\elomidas\Documents\Polytech\S8\IPC\POP3\Binaires\Serveur>java -jar Serveur.java
 ```
 Lance le serveur avec comme nom de domaine *email.com*
+
 ```shell
 C:\Users\elomidas\Documents\Polytech\S8\IPC\POP3\Binaires\Serveur>java -jar Serveur.java "email.fr"
 ```
 Lance le serveur avec comme nom de domaine *email.fr*
 
 Vous devriez ensuite avoir l'affichage suivant, afin de savoir sur quels ports peut se connecter le client :
+
 ```shell
 C:\Users\elomidas\Documents\Polytech\S8\IPC\POP3\Binaires\Serveur>java -jar Serveur.java "email.fr"
 Lancement du domaine email.fr
@@ -348,3 +351,7 @@ Avant de l'exécuter il est conseillé de vérifier que le fichier de configurat
 Il n'est pas necessaire de le lancer à la console, un double clic suffit à lancer l'interface graphique.
 
 ## V - Conclusion <a name="V" />
+
+Nous avons finalement mis au point un serveur permettant de gérer une messagerie identifiée par un nom de domaine sur un serveur, ainsi qu'un client permettant d'y accéder à distance afin de relever son courrier et/ou d'envoyer de nouveaux messages.
+
+Ce TP nous aura apporté un bon nombre de connaissances sur le fonctionnement des protocoles de communication et les normes que les régissent. Il nous aura aussi permis de revoir le principe de fonctionnement d'un serveur concurrent.
