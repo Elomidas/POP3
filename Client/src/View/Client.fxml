@@ -36,7 +36,6 @@
                         <Text layoutX="719.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Message :" />
                         <Button fx:id="_btnRepondre" disable="true" layoutX="719.0" layoutY="83.0" mnemonicParsing="false" text="Répondre" />
                         <Button fx:id="_btnSuppr" disable="true" layoutX="828.0" layoutY="83.0" mnemonicParsing="false" text="Supprimer" />
-                        <Button fx:id="_btnActualiser" layoutX="610.0" layoutY="83.0" mnemonicParsing="false" text="Actualiser" />
                      </children>
               </AnchorPane>
             </content>

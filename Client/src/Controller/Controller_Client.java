@@ -92,12 +92,6 @@ public class Controller_Client extends Controller{
     private Button _btnDeconnexion;
 
     /**
-     * Bouton pour actualiser la liste de mails
-     */
-    @FXML
-    private Button _btnActualiser;
-
-    /**
      * Hashmap reliant ID du mail et ligne de la pagination correspondant
      */
     private HashMap<String, HBox> m_ligne;
@@ -121,16 +115,15 @@ public class Controller_Client extends Controller{
     /**
      * Création de la pagination
      */
-    private void creationPagination(boolean isUpdate){
-        if(!isUpdate)
-            _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
+    private void creationPagination(){
+        _pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         int nbPages = (int)Math.ceil(mailbox.getMailNumber()/(float)itemsPerPage());
         _pagination.setPageCount(nbPages);
         _pagination.setPageFactory(pageIndex -> {
             if(pageIndex >= nbPages)
                 return null;
             else
-                return createPage(recuperationMails(pageIndex, isUpdate));
+                return createPage(recuperationMails(pageIndex));
         });
     }
 
@@ -139,22 +132,11 @@ public class Controller_Client extends Controller{
      * @param indexPage index de la page à charger
      * @return tableau de mails qui a été récupéré
      */
-    private Mail[] recuperationMails(int indexPage, boolean isUpdate){
+    private Mail[] recuperationMails(int indexPage){
         Mail[] mails = null;
         try {
-            if(isUpdate){
-                mails = mailbox.getMailsUpdated(indexPage*itemsPerPage(), itemsPerPage());
-                main.getLogs().info("Update ended successfully .");
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Update terminé !");
-                alert.setContentText("Update réalisé avec succès.");
-                alert.show();
-                System.out.println("test update OK");
-            }
-            else{
-                mails = mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
-                main.getLogs().info("Messages collected.");
-            }
+            mails = mailbox.getMails(indexPage*itemsPerPage(), itemsPerPage());
+            main.getLogs().info("Messages collected.");
         } catch (MailException e) {
             //gestion erreur de connexion dans les logs
             main.getLogs().log(Level.SEVERE, "Unable to collect/update messages.", e);
@@ -201,13 +183,6 @@ public class Controller_Client extends Controller{
             link.setOnMouseClicked(MouseEvent -> updateTF(ind, destinataire.getText(), objet.getText(), contenu));
         }
         return box;
-    }
-
-    /**
-     * Met à jour notre pagination en cas d'appui sur le bouton actualiser
-     */
-    private void UpdatePagination(){
-        creationPagination(true);
     }
 
     /**
@@ -421,10 +396,9 @@ public class Controller_Client extends Controller{
         super.main= main;
         super.mailbox = mailbox;
         _txtMailEmetteur.setText(super.mailbox.getUser());
-        creationPagination(false);
+        creationPagination();
 
         _btnEnvoi.setOnMouseClicked(mouseEvent -> TestEnvoiMail());
         _btnDeconnexion.setOnMouseClicked(mouseEvent -> Deconnexion());
-        _btnActualiser.setOnMouseClicked(mouseEvent -> UpdatePagination());
     }
 }
